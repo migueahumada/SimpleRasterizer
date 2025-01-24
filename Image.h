@@ -60,6 +60,15 @@ struct BitMapSaveHeader {
 	unsigned long	biClrImportant;
 };
 
+namespace TEXTURE_ADDRESS {
+	enum E {
+		CLAMP = 0,
+		WRAP,
+		MIRROR,
+		MIRROR_ONCE //Espejo en solament en un eje
+	};
+}
+
 class Image
 {
 public:
@@ -98,7 +107,7 @@ public:
 	void clearColor(const Color& color);
 
 	Color getColor(float u, float v);
-	void adjustTextureAddress(float& u, float& v);
+	void adjustTextureAddress(float& u, float& v, TEXTURE_ADDRESS::E textureAddressMode = TEXTURE_ADDRESS::CLAMP);
 
 	void bitBlit(Image& dest, int x, int y, Color* pColorKey);
 	void bitBlit(Image& dest,

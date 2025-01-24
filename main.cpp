@@ -38,10 +38,10 @@ int main() {
 			float u = static_cast<float>(x) / (imgScreen.getWidth() - 1);
 			float v = static_cast<float>(y) / (imgScreen.getHeight() - 1);
 
-			imgScreen.setPixel(x, y, img.getColor(u , v ));
+			imgScreen.setPixel(x, y, img.getColor(u *2.2, v *2.2));
 		}
 	}
-	Color refColor = img.getColor(0.5f,  0.5f);
+
 
 	img.encode("TempImage.bmp");
 	imgScreen.encode("Screen.bmp");

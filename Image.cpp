@@ -167,19 +167,78 @@ void Image::clearColor(const Color& color)
 
 Color Image::getColor(float u, float v)
 {
-	adjustTextureAddress(u, v);
+	adjustTextureAddress(u, v, TEXTURE_ADDRESS::MIRROR);
 	int x = static_cast<int>(u * (m_width - 1));
 	int y = static_cast<int>(v * (m_height - 1));
 
 	return getPixel(x,y);
 }
 
-void Image::adjustTextureAddress(float& u, float& v)
+void Image::adjustTextureAddress(float& u, float& v, TEXTURE_ADDRESS::E textureAddressMode)
 {
-	u = u < 0.0f ? 0.0f : u;
-	u = u > 1.0f ? 1.0f : u;
-	v = v < 0.0f ? 0.0f : v;
-	v = v > 1.0f ? 1.0f : v;
+	//TODO: Explicar todo lo que se hace en esta parte plsss
+	switch (textureAddressMode)
+	{
+	case TEXTURE_ADDRESS::CLAMP:
+		u = u < 0.0f ? 0.0f : u;
+		u = u > 1.0f ? 1.0f : u;
+		v = v < 0.0f ? 0.0f : v;
+		v = v > 1.0f ? 1.0f : v;
+		break;
+
+	case TEXTURE_ADDRESS::WRAP:
+		u = std::fmodf(u, 1.0f);
+		v = std::fmodf(v, 1.0f);
+		break;
+
+	case TEXTURE_ADDRESS::MIRROR:
+		u = std::fmodf(u, 2.0f);
+		v = std::fmodf(v, 2.0f);
+
+		if (u < 0.0f)
+		{
+			u = 2.0f + u;
+		}
+		if (v < 0.0f)
+		{
+			v = 2.0f + v;
+		}
+		if (u > 1.0f)
+		{
+			u = 2.0f - u;
+		}
+		if (v > 1.0f)
+		{
+			v = 2.0f - v;
+		}
+
+
+		break;
+
+	case TEXTURE_ADDRESS::MIRROR_ONCE:
+		if ((u > -1.0f && u < 0.0f) || (u > 1.0f && u < 2.0f))
+		{
+			u = 1.0f - std::fmodf(u, 1.0f);
+		}
+		else {
+			u = u < 0.0f ? 0.0f : u;
+			u = u > 1.0f ? 1.0f : u;
+		}
+
+		if ((v > -1.0f && v < 0.0f) || (v > 1.0f && v < 2.0f))
+		{
+			v = 1.0f - std::fmodf(v, 1.0f);
+		}
+		else {
+			v = v < 0.0f ? 0.0f : v;
+			v = v > 1.0f ? 1.0f : v;
+		}
+
+		break;
+
+	default:
+		break;
+	}
 }
 
 void Image::bitBlit(Image& dest, int x, int y, Color* pColorKey)
