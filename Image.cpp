@@ -1,26 +1,13 @@
 #include "Image.h"
 #include <iostream>
 
-Image::Image()
-{
-
-}
-
-Image::~Image()
-{
-	m_pixels = nullptr;
-	delete m_pixels;
-}
-
 void Image::create(int width, int height, int bpp)
 {
 	m_width = width; //8
 	m_height = height; //8
 	m_bpp = bpp;
 	m_pixels = new unsigned char[getPitch() * m_height];
-	//std::cout << "The resolution of the image is: " << width <<" x " << height << std::endl;
-	//std::cout << "Pixel Size: " << getPitch() * m_height << " bytes" << std::endl;
-	
+
 }
 
 void Image::encode(const char* filename)
@@ -33,6 +20,10 @@ void Image::encode(const char* filename)
 		return;
 	}
 
+	BitMapFileHeader fileHeader;
+	memset(&fileHeader, 0, sizeof(BitMapFileHeader));
+	BitMapSaveHeader bmpInfo;
+	memset(&bmpInfo, 0, sizeof(BitMapSaveHeader));
 
 	int padding = getPitch() % 4;
 	int lineMemoryWidth = getPitch();
@@ -42,11 +33,6 @@ void Image::encode(const char* filename)
 		padding = 4 - padding;
 		lineMemoryWidth += padding;
 	}
-	
-	BitMapFileHeader fileHeader;
-	memset(&fileHeader, 0, sizeof(BitMapFileHeader));
-	BitMapSaveHeader bmpInfo;
-	memset(&bmpInfo, 0, sizeof(BitMapSaveHeader));
 
 	int headerSize = sizeof(BitMapFileHeader) + sizeof(BitMapSaveHeader);
 
@@ -123,19 +109,30 @@ void Image::decode(const char* filename)
 	
 	}
 
-	file.close();
+	int ready = 1;
 
 }
 
-Color Image::getPixel(unsigned int x, unsigned int y) const
-{
-	
+Color Image::getPixel(unsigned int x, unsigned int y) const{
+
+	if (!m_pixels)
+	{
+		return Color{0,0,0,0};
+	}
+
 	Color color;
 	int pixelPos = (y * getPitch()) + (x * getBytesPP());
 
 	color.r = m_pixels[pixelPos + 2];
 	color.g = m_pixels[pixelPos + 1];
 	color.b = m_pixels[pixelPos + 0];
+	if (getBytesPP() == 4)
+	{
+		color.a = m_pixels[pixelPos + 3];
+	}
+	else {
+		color.a = 255;
+	}
 
 	return color;
 }
@@ -165,110 +162,45 @@ void Image::clearColor(const Color& color)
 	}
 }
 
-Color Image::getColor(float u, float v)
-{
-	adjustTextureAddress(u, v, TEXTURE_ADDRESS::MIRROR);
-	int x = static_cast<int>(u * (m_width - 1));
-	int y = static_cast<int>(v * (m_height - 1));
-
-	return getPixel(x,y);
-}
-
-void Image::adjustTextureAddress(float& u, float& v, TEXTURE_ADDRESS::E textureAddressMode)
-{
-	//TODO: Explicar todo lo que se hace en esta parte plsss
-	switch (textureAddressMode)
-	{
-	case TEXTURE_ADDRESS::CLAMP:
-		u = u < 0.0f ? 0.0f : u;
-		u = u > 1.0f ? 1.0f : u;
-		v = v < 0.0f ? 0.0f : v;
-		v = v > 1.0f ? 1.0f : v;
-		break;
-
-	case TEXTURE_ADDRESS::WRAP:
-		u = std::fmodf(u, 1.0f);
-		v = std::fmodf(v, 1.0f);
-		break;
-
-	case TEXTURE_ADDRESS::MIRROR:
-		u = std::fmodf(u, 2.0f);
-		v = std::fmodf(v, 2.0f);
-
-		if (u < 0.0f)
-		{
-			u = 2.0f + u;
-		}
-		if (v < 0.0f)
-		{
-			v = 2.0f + v;
-		}
-		if (u > 1.0f)
-		{
-			u = 2.0f - u;
-		}
-		if (v > 1.0f)
-		{
-			v = 2.0f - v;
-		}
+//Color Image::getColor(float u, float v)
+//{
+//	adjustTextureAddress(u, v, TEXTURE_ADDRESS::MIRROR);
+//	int x = static_cast<int>(u * (m_width - 1));
+//	int y = static_cast<int>(v * (m_height - 1));
+//
+//	return getPixel(x,y);
+//}
 
 
-		break;
 
-	case TEXTURE_ADDRESS::MIRROR_ONCE:
-		if ((u > -1.0f && u < 0.0f) || (u > 1.0f && u < 2.0f))
-		{
-			u = 1.0f - std::fmodf(u, 1.0f);
-		}
-		else {
-			u = u < 0.0f ? 0.0f : u;
-			u = u > 1.0f ? 1.0f : u;
-		}
-
-		if ((v > -1.0f && v < 0.0f) || (v > 1.0f && v < 2.0f))
-		{
-			v = 1.0f - std::fmodf(v, 1.0f);
-		}
-		else {
-			v = v < 0.0f ? 0.0f : v;
-			v = v > 1.0f ? 1.0f : v;
-		}
-
-		break;
-
-	default:
-		break;
-	}
-}
-
-void Image::bitBlit(Image& dest, int x, int y, Color* pColorKey)
-{
-
-	//Recorro el pixel array de SOURCE IMAGE
-	for (int i = 0; i < m_height; i++)
-	{
-		for (int j = 0; j < m_width; j++)
-		{
-			//Guardo el pixel de la SOURCE IMAGE
-			Color pxColor = getPixel(j, i);
-			if (pColorKey)
-			{
-				if (pxColor.r == pColorKey->r &&
-					pxColor.g == pColorKey->g &&
-					pxColor.b == pColorKey->b)
-				{
-					continue;
-				}
-			}
-			//i y j es el pixel source
-			//x y y son un offset, por eso se le suma
-			//getpixel tiene el pixel de la imagen source
-			//entonces si es 1,1 y mi offset es de 3,3 entonces
-			//la imagen empezará en 4,4
-			dest.setPixel(j+x,i+y,getPixel(j,i));
-		}
-	}
-}
+//void Image::bitBlit(Image& dest, int x, int y, Color* pColorKey)
+//{
+//
+//	//Recorro el pixel array de SOURCE IMAGE
+//	for (int i = 0; i < m_height; i++)
+//	{
+//		for (int j = 0; j < m_width; j++)
+//		{
+//			//Guardo el pixel de la SOURCE IMAGE
+//			Color pxColor = getPixel(j, i);
+//			if (pColorKey)
+//			{
+//				if (pxColor.r == pColorKey->r &&
+//					pxColor.g == pColorKey->g &&
+//					pxColor.b == pColorKey->b)
+//				{
+//					continue;
+//				}
+//			}
+//			//i y j es el pixel source
+//			//x y y son un offset, por eso se le suma
+//			//getpixel tiene el pixel de la imagen source
+//			//entonces si es 1,1 y mi offset es de 3,3 entonces
+//			//la imagen empezará en 4,4
+//			dest.setPixel(j+x,i+y,getPixel(j,i));
+//		}
+//	}
+//}
 
 void Image::bitBlit(Image& source, int x, int y, int srcInitX, 
 					int srcInitY, int srcEndX, int srcEndY, 
@@ -280,9 +212,9 @@ void Image::bitBlit(Image& source, int x, int y, int srcInitX,
 
 	//Si no especificamos donde termina la imagen source, lo tomamos como completa.
 	if (srcEndX == 0)
-		srcEndX == source.getWidth();
+		srcEndX = source.getWidth();
 	if (srcEndY == 0)
-		srcEndY == source.getWidth();
+		srcEndY = source.getWidth();
 	
 	//Si la imagen en x o y está en -3, restamos donde empieza el srcimage menos el offset.
 	//Terminamos con igualar el offset a 0 para saber que dibujamos en la destimage a partir
@@ -318,10 +250,10 @@ void Image::bitBlit(Image& source, int x, int y, int srcInitX,
 
 	if (y + realHeight > getHeight())
 	{
-		realHeight -= (x + realHeight) - getHeight();
+		realHeight -= (y + realHeight) - getHeight();
 	}
 
-	for (int i = 0; i < realHeight; i++)
+	for (int i = 0; i < realHeight; ++i)
 	{
 		for (int j = 0; j < realWidth; j++)
 		{
@@ -339,4 +271,58 @@ void Image::bitBlit(Image& source, int x, int y, int srcInitX,
 		}
 	}
 	
+}
+
+void Image::line(int x0, int y0, int x1, int y1, const Color& color)
+{
+	// 4,4 y  12,8
+	float dx = x1 - x0; // 12 - 4 = 8
+	float dy = y1 - y0; // 8 - 4 = 4
+
+	float steps = std::max(std::abs(dx), std::abs(dy)); // 8
+
+	float xInc = dx / steps; // 8 / 8 = 1
+	float yInc = dy / steps; // 4 / 8 = 0.5
+
+	float x = x0;
+	float y = y0;
+
+	//
+
+	for (int i = 0; i < int(steps); i++)
+	{
+		setPixel(int(x),int(y),color);
+		x += xInc;
+		y += yInc;
+	}
+}
+
+void Image::bresehamLine(int x0, int y0, int x1, int y1, const Color& color)
+{
+	//clipLine(x0, y0, x1, y1, color);
+
+	int dx = abs(x1 - x0);
+	int dy = abs(y1 - y0);
+
+	int sx = x0 < x1 ? 1 : -1;
+	int sy = y0 < y1 ? 1 : -1;
+
+	int err = dx - dy;
+	int e2;
+
+	while (x0 != x1 || y0 != y1)
+	{
+		setPixel(x0, y0, color);
+		e2 = 2 * err;
+		if (e2 > -dy)
+		{
+			err -= dy;
+			x0 += sx;
+		}
+		if (e2 < dx)
+		{
+			err += dx;
+			y0 += sy;
+		}
+	}
 }

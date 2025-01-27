@@ -60,20 +60,12 @@ struct BitMapSaveHeader {
 	unsigned long	biClrImportant;
 };
 
-namespace TEXTURE_ADDRESS {
-	enum E {
-		CLAMP = 0,
-		WRAP,
-		MIRROR,
-		MIRROR_ONCE //Espejo en solament en un eje
-	};
-}
-
 class Image
 {
 public:
-	Image();
-	~Image();
+	Image() = default;
+	~Image() = default;
+
 	
 	void create(int width, int height, int bpp);
 	void encode(const char* filename);
@@ -106,21 +98,24 @@ public:
 	void setPixel(unsigned int x, unsigned int y, const Color& color);
 	void clearColor(const Color& color);
 
-	Color getColor(float u, float v);
-	void adjustTextureAddress(float& u, float& v, TEXTURE_ADDRESS::E textureAddressMode = TEXTURE_ADDRESS::CLAMP);
+	//Color getColor(float u, float v);
+	
 
-	void bitBlit(Image& dest, int x, int y, Color* pColorKey);
-	void bitBlit(Image& dest,
+	//void bitBlit(Image& dest, int x, int y, Color* pColorKey);
+	void bitBlit(Image& source,
 				int x,
 				int y,
-				int srcInitX,
-				int srcInitY,
-				int srcEndX,
-				int srcEndY,
-				Color* pColorKey);
+				int srcInitX = 0,
+				int srcInitY = 0,
+				int srcEndX = 0,
+				int srcEndY = 0,
+				Color* pColorKey = nullptr);
+
+	void line(int x0, int y0, int x1, int y1, const Color& color);
+	void bresehamLine(int x0, int y0, int x1, int y1, const Color& color);
 protected:
-	int m_width;
-	int m_height;
+	int m_width = 0;
+	int m_height = 0;
 
 	//m_pixels -> is an array of colors
 	//Instead of representing the pixels as a
@@ -128,7 +123,7 @@ protected:
 	// 1 byte of memory and we will set the amount of 
 	// information, each pixel will have
 	//This way each pixel will be 1 byte
-	unsigned char* m_pixels;
+	unsigned char* m_pixels = nullptr;
 
 	// Pixel(1 byte of memory) * (bitsPerPixel(24 bits) / 8)
 	// Size of a pixel -> pixel(bytes) * (bpp/8) = size of info in a pixel
@@ -138,7 +133,7 @@ protected:
 	//char -> 1 byte -> 1111 1111 -> greatest 255
 
 	//Bits per pixel -> how much info is in one pixel
-	int m_bpp;
+	int m_bpp = 0;
 
 
 };

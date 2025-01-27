@@ -1,6 +1,6 @@
 #include <iostream>
 #include "Image.h"
-
+#include "Texture.h" //Added
 /*
 	Caso 1:
 		- Width: 776 px
@@ -17,33 +17,48 @@
 
 int main() {
 
-	
-
+	//----------Imagen de la pantalla--------
 	Image imgScreen;
 	imgScreen.create(1920, 1080, 24);
-	imgScreen.clearColor({0,0,255,0});
-	
-	
-	Image img;
-	img.decode("Player.bmp");
-	
+	//imgScreen.clearColor({ 255,0,255,255 });
 
-	Color colorKey = { 255,0,255,255 };
-	imgScreen.bitBlit(img,0, 23,0,0,280,300, &colorKey);
+	//----------Generar Terreno--------
+	Image imgTerrain;
+	imgTerrain.decode("Terrain.bmp");
+	/*Texture terrainTexture;
+	terrainTexture.createImage(imgTerrain);*/
 
-	for (int y = 0; y < imgScreen.getHeight(); ++y)
+	for (int y = 0; y < (imgScreen.getHeight() / imgTerrain.getHeight()) + 1; y++)
+		for (int x = 0; x < (imgScreen.getWidth() / imgTerrain.getWidth()) + 1; x++)
+			imgScreen.bitBlit(imgTerrain, imgTerrain.getWidth() * x, imgTerrain.getHeight() * y);
+
+	/*for (int y = 0; y < imgScreen.getHeight(); ++y)
 	{
 		for (int x = 0; x < imgScreen.getWidth(); x++)
 		{
 			float u = static_cast<float>(x) / (imgScreen.getWidth() - 1);
 			float v = static_cast<float>(y) / (imgScreen.getHeight() - 1);
 
-			imgScreen.setPixel(x, y, img.getColor(u *2.2, v *2.2));
+			imgScreen.setPixel(x, y, terrainTexture.getColor(u,v,TEXTURE_ADDRESS::WRAP).toColor());
 		}
-	}
+	}*/
 
+	//----------Imagen del player--------
+	Image imgPlayer;
+	imgPlayer.decode("Player.bmp");
+	Texture playerTexture;
+	playerTexture.createImage(imgPlayer);
 
-	img.encode("TempImage.bmp");
+	
+	playerTexture.draw(imgScreen,0,0,150,150,500, 500,TEXTURE_ADDRESS::MIRROR, BLEND_MODE::ADDITIVE);
+
+	imgScreen.line(0, 0, imgScreen.getWidth()/2, imgScreen.getHeight()/2, Color{255,0,0,255});
+	
+	imgScreen.bresehamLine(565, 788, 1000, 890, Color{255,255,0,255});
+
 	imgScreen.encode("Screen.bmp");
+
 	return 0;
+
+
 }
