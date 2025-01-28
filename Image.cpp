@@ -275,14 +275,13 @@ void Image::bitBlit(Image& source, int x, int y, int srcInitX,
 
 void Image::line(int x0, int y0, int x1, int y1, const Color& color)
 {
-	// 4,4 y  12,8
-	float dx = x1 - x0; // 12 - 4 = 8
-	float dy = y1 - y0; // 8 - 4 = 4
+	float dx = x1 - x0; 
+	float dy = y1 - y0; 
 
-	float steps = std::max(std::abs(dx), std::abs(dy)); // 8
+	float steps = std::max(std::abs(dx), std::abs(dy)); 
 
-	float xInc = dx / steps; // 8 / 8 = 1
-	float yInc = dy / steps; // 4 / 8 = 0.5
+	float xInc = dx / steps; 
+	float yInc = dy / steps; 
 
 	float x = x0;
 	float y = y0;

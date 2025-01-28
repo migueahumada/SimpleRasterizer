@@ -52,9 +52,9 @@ int main() {
 	
 	playerTexture.draw(imgScreen,0,0,150,150,500, 500,TEXTURE_ADDRESS::MIRROR, BLEND_MODE::ADDITIVE);
 
-	imgScreen.line(0, 0, imgScreen.getWidth()/2, imgScreen.getHeight()/2, Color{255,0,0,255});
+	imgScreen.line(565, 788, 400, 230, Color{255,0,0,255});
 	
-	imgScreen.bresehamLine(565, 788, 1000, 890, Color{255,255,0,255});
+	imgScreen.bresehamLine(565, 788, 180, 890, Color{255,255,0,255});
 
 	imgScreen.encode("Screen.bmp");
 
