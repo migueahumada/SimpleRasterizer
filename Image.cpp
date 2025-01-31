@@ -421,6 +421,50 @@ void Image::lineRectangle(int x0, int y0, int width, int height, const Color& co
 		bresehamLine(x0,y0 + i,x0 + width ,y0 + i, color);
 	}
 }
+
+void Image::fillTriangle(const VERTEX& v0, const VERTEX& v1, const VERTEX& v2, const Color& color) {
+	
+
+	/*bresehamLine(v0.position.x, v0.position.y, v1.position.x, v1.position.y, color);
+
+	bresehamLine(v1.position.x, v1.position.y, v2.position.x, v2.position.y, color);
+
+	bresehamLine(v2.position.x, v2.position.y, v0.position.x, v0.position.y, color);*/
+	
+
+	Vector3 uNom = (v1.position - v0.position).normalize();
+
+	Vector3 vNom = (v2.position - v0.position).normalize();
+	
+	float maxSize = (v1.position - v0.position).size();
+
+	Vector3 offset = v0.position;
+
+	while (uNom.size() < maxSize && vNom.size() < maxSize) {
+		
+		/*int distance = std::abs(( vNom.x+ offset.x) - (uNom.x + offset.x));
+
+		for (int i = 0; i < distance; i++)
+		{
+			
+			setPixel(vNom.x + i + offset.x ,vNom.y + offset.y,color);
+		}*/
+
+		bresehamLine(vNom.x + offset.x, vNom.y + offset.y, uNom.x + offset.x, uNom.y + offset.y, color);
+
+
+		uNom = uNom + (v1.position - v0.position).normalize();
+		vNom = vNom + (v2.position - v0.position).normalize();
+	}
+
+
+
+
+
+	
+
+}
+
 //   ******* ->
 //   ******* ->
 //   ******* ->

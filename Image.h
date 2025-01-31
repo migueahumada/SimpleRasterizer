@@ -68,6 +68,74 @@ enum RegionCode {
 	TOP = 8
 };
 
+struct Vector3 {
+	float x;
+	float y;
+	float z;
+
+	Vector3 operator+(const Vector3& v) const {
+		return { x + v.x, y + v.y, z + v.z };
+	}
+
+	Vector3 operator-(const Vector3& v) const {
+		return { x - v.x, y - v.y, z - v.z };
+	}
+
+	Vector3 operator*(float scalar) const {
+		return { x * scalar, y * scalar, z * scalar };
+	}
+
+	Vector3 operator/(float scalar) const {
+		return { x / scalar, y / scalar, z / scalar };
+	}
+
+	Vector3 operator-() const {
+		return { -x , -y , -z };
+	}
+
+	Vector3 cross(const Vector3& v) const {
+		return { y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x };
+	}
+
+	Vector3 operator^(const Vector3& v) const {
+		return cross(v);
+	}
+
+	float size() const {
+		return sqrt(x * x + y * y + z * z);
+	}
+
+	Vector3 normalize() const {
+		float invLength = 1.0f / size();
+		//float length = sqrt(x * x + y * y + z * z);
+		return{ x * invLength,
+				y * invLength,
+				z * invLength };
+	}
+
+	float dot(const Vector3& v) const {
+		return x * v.x + y * v.y + z * v.z;
+	}
+
+	float operator|(const Vector3& v) const {
+		return dot(v);
+	}
+
+};
+
+struct VERTEX
+{
+	//Screen coordinates
+	Vector3 position;
+
+};
+
+struct TRIANGLE {
+	VERTEX v0;
+	VERTEX v1;
+	VERTEX v2;
+};
+
 class Image
 {
 public:
@@ -126,6 +194,8 @@ public:
 	bool clipLine(int& x0, int& y0, int& x1, int& y1, const Color& color);
 
 	void lineRectangle(int x0, int y0, int width, int height, const Color& color);
+	
+	void fillTriangle(const VERTEX& v0, const VERTEX& v1, const VERTEX& v2, const Color& color);
 
 protected:
 	int m_width = 0;
