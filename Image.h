@@ -60,6 +60,14 @@ struct BitMapSaveHeader {
 	unsigned long	biClrImportant;
 };
 
+enum RegionCode {
+	INSIDE = 0,
+	LEFT = 1,
+	RIGHT = 2,
+	BOTTOM = 4,
+	TOP = 8
+};
+
 class Image
 {
 public:
@@ -113,6 +121,12 @@ public:
 
 	void line(int x0, int y0, int x1, int y1, const Color& color);
 	void bresehamLine(int x0, int y0, int x1, int y1, const Color& color);
+	
+	int computeRegionCode(int x, int y, int xMin, int yMin, int xMax, int yMax);
+	bool clipLine(int& x0, int& y0, int& x1, int& y1, const Color& color);
+
+	void lineRectangle(int x0, int y0, int width, int height, const Color& color);
+
 protected:
 	int m_width = 0;
 	int m_height = 0;

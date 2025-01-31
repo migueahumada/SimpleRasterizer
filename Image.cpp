@@ -275,6 +275,8 @@ void Image::bitBlit(Image& source, int x, int y, int srcInitX,
 
 void Image::line(int x0, int y0, int x1, int y1, const Color& color)
 {
+	clipLine(x0, y0,x1,y1,color);
+
 	float dx = x1 - x0; 
 	float dy = y1 - y0; 
 
@@ -298,7 +300,7 @@ void Image::line(int x0, int y0, int x1, int y1, const Color& color)
 
 void Image::bresehamLine(int x0, int y0, int x1, int y1, const Color& color)
 {
-	//clipLine(x0, y0, x1, y1, color);
+	clipLine(x0, y0, x1, y1, color);
 
 	int dx = abs(x1 - x0);
 	int dy = abs(y1 - y0);
@@ -325,3 +327,101 @@ void Image::bresehamLine(int x0, int y0, int x1, int y1, const Color& color)
 		}
 	}
 }
+
+int Image::computeRegionCode(int x, int y, int xMin, int yMin, int xMax, int yMax) {
+
+	int code = INSIDE; // Es 0000
+
+	if (x < xMin)					// punto a la izq de la pantalla en x?
+	{									// 0000
+		code |= LEFT;					// 0001	OR
+	}									// 0001 = 1 = LEFT
+	else if (x > xMax)				// punto la dcha de la pantalla en x?
+	{									// 0000
+		code |= RIGHT;					// 0010	OR
+	}									// 0010 = 2 = RIGHT
+
+	if (y < yMin)					// punto arriba de pantalla en y?
+	{									// 0010
+		code |= BOTTOM;					// 0100	OR
+	}									// 0110 = 6 = BOTTOM & RIGHT
+	else if (y > yMax)				// punto abajo de pantalla en y?
+	{									// 0001
+		code |= TOP;					// 1000	OR
+	}									// 1001 = 9 = TOP & LEFT
+
+	return code;
+
+}
+
+bool Image::clipLine(int& x0, int& y0, int& x1, int& y1, const Color& color)
+{
+	int xMin = 0;
+	int yMin = 0;
+	int xMax = m_width;
+	int yMax = m_height;
+
+	int code0 = computeRegionCode(x0, y0, xMin, yMin, xMax, yMax);	// 1001 TOP & LEFT
+	int code1 = computeRegionCode(x1, y1, xMin, yMin, xMax, yMax);	// 0110 BOTTOM & RIGHT
+
+	while (true)
+	{
+		if (!(code0 | code1))		// Ejemplo: puntos dentro de la pantalla
+		{								// 0000
+			return true;				// 0000
+		}								// 0000 -> Both lines are inside
+
+		else if (code0 & code1)		//Ejemplo: La línea está completamente fuera
+		{
+			return false;
+		}
+
+		else {
+			//Al menos un punto está fuera del rectángulo
+			int x, y;
+			int codeOut = code0 ? code0 : code1;
+
+			if (codeOut & TOP) {								// 1001 TOP & LEFT
+				// 1000 TOP
+				x = x0 + (x1 - x0) * (yMax - y0) / (y1 - y0);	// 1000 OK!
+				y = yMax;
+			}
+			else if (codeOut & BOTTOM) {						// 0101 BOT & LEFT
+				x = x0 + (x1 - x0) * (yMin - y0) / (y1 - y0);	// 0100 BOT
+				y = yMin;										// 0100 OK!
+			}
+			else if (codeOut & RIGHT) {
+				y = y0 + (y1 - y0) * (xMax - x0) / (x1 - x0);
+				x = xMax;
+			}
+			else if (codeOut & LEFT) {
+				y = y0 + (y1 - y0) * (xMin - x0) / (x1 - x0);
+				x = xMin;
+			}
+			if (codeOut == code0)
+			{
+				x0 = x;
+				y0 = y;
+				code0 = computeRegionCode(x0, y0, xMin, yMin, xMax, yMax);
+			}
+			else {
+				x1 = x;
+				y1 = y;
+				code1 = computeRegionCode(x1, y1, xMin, yMin, xMax, yMax);
+			}
+		}
+	}
+	return false;
+}
+
+void Image::lineRectangle(int x0, int y0, int width, int height, const Color& color)
+{
+	for (int i = 0; i < height - 1; i++)
+	{
+		bresehamLine(x0,y0 + i,x0 + width ,y0 + i, color);
+	}
+}
+//   ******* ->
+//   ******* ->
+//   ******* ->
+//   ******* ->
