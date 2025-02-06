@@ -378,7 +378,8 @@ bool Image::clipLine(int& x0, int& y0, int& x1, int& y1, const Color& color)
 
 		else {
 			//Al menos un punto está fuera del rectángulo
-			int x, y;
+			int x = 0;
+			int y = 0;
 			int codeOut = code0 ? code0 : code1;
 
 			if (codeOut & TOP) {								// 1001 TOP & LEFT
@@ -423,14 +424,6 @@ void Image::lineRectangle(int x0, int y0, int width, int height, const Color& co
 }
 
 void Image::fillTriangle(const VERTEX& v0, const VERTEX& v1, const VERTEX& v2, const Color& color) {
-	
-
-	/*bresehamLine(v0.position.x, v0.position.y, v1.position.x, v1.position.y, color);
-
-	bresehamLine(v1.position.x, v1.position.y, v2.position.x, v2.position.y, color);
-
-	bresehamLine(v2.position.x, v2.position.y, v0.position.x, v0.position.y, color);*/
-	
 
 	Vector3 uNom = (v1.position - v0.position).normalize();
 
@@ -441,14 +434,6 @@ void Image::fillTriangle(const VERTEX& v0, const VERTEX& v1, const VERTEX& v2, c
 	Vector3 offset = v0.position;
 
 	while (uNom.size() < maxSize && vNom.size() < maxSize) {
-		
-		/*int distance = std::abs(( vNom.x+ offset.x) - (uNom.x + offset.x));
-
-		for (int i = 0; i < distance; i++)
-		{
-			
-			setPixel(vNom.x + i + offset.x ,vNom.y + offset.y,color);
-		}*/
 
 		bresehamLine(vNom.x + offset.x, vNom.y + offset.y, uNom.x + offset.x, uNom.y + offset.y, color);
 
@@ -463,6 +448,165 @@ void Image::fillTriangle(const VERTEX& v0, const VERTEX& v1, const VERTEX& v2, c
 
 	
 
+}
+
+void Image::drawBottomTri(const Triangle& tri, const Color& color)
+{
+	Vertex v1 = tri.v1, v2 = tri.v2, v3 = tri.v3;
+	if (v3.x < v2.x) std::swap(v2, v3);
+
+	int height = v3.y - v1.y;
+	if (height <= 0) return;
+
+	float dx_left = static_cast<float>(v2.x - v1.x) / height;
+	float dx_right = static_cast<float>(v3.x - v1.x) / height;
+
+	float du_left = (v2.u - v1.u) / height;
+	float dv_left = (v2.u - v1.u) / height;
+	float du_right = (v3.u - v1.u) / height;
+	float dv_right = (v3.u - v1.u) / height;
+
+	float xs = v1.x, xe = v1.x;
+	float us = v1.u, vs = v1.v;
+	float ue = v1.u, ve = v1.v;
+
+	for (int y = v1.y; y <= v3.y; ++y)
+	{
+		int left = static_cast<int>(xs);
+		int right= static_cast<int>(xe);
+		if (left > right) std::swap(left, right);
+		
+		float u = us, v = vs;
+		float du = (ue - us) / (right - left + 1);
+		float dv = (ve - vs) / (right - left + 1);
+
+		for (int x = std::max(0, left); x <= std::min(m_width - 1, right); ++x)
+		{
+			setPixel(x,y,color);
+			u += du;
+			v += dv;
+		}
+
+		xs += dx_left;
+		xe += dx_right;
+		us += du_left;
+		vs += dv_left;
+		ue += du_right;
+		ve += dv_right;
+
+	}
+}
+
+void Image::drawTopTri(const Triangle& tri, const Color& color)
+{
+	Vertex v1 = tri.v1, v2 = tri.v2, v3 = tri.v3;
+	if (v2.x < v1.x) std::swap(v1, v2);
+
+	int height = v3.y - v1.y;
+	if (height <= 0) return;
+
+	float dx_left = static_cast<float>(v3.x - v1.x) / height;
+	float dx_right = static_cast<float>(v3.x - v2.x) / height;
+
+	float du_left = (v3.u - v1.u) / height;
+	float dv_left = (v3.u - v1.u) / height;
+	float du_right = (v3.u - v2.u) / height;
+	float dv_right = (v3.u - v2.u) / height;
+
+	float xs = v1.x, xe = v2.x;
+	float us = v1.u, vs = v1.v;
+	float ue = v2.u, ve = v2.v;
+
+	for (int y = v1.y; y <= v3.y; ++y)
+	{
+		int left = static_cast<int>(xs);
+		int right = static_cast<int>(xe);
+		if (left > right) std::swap(left, right);
+
+		float u = us, v = vs;
+		float du = (ue - us) / (right - left + 1);
+		float dv = (ve - vs) / (right - left + 1);
+
+		for (int x = std::max(0, left); x <= std::min(m_width - 1, right); ++x)
+		{
+			setPixel(x, y, color);
+			u += du;
+			v += dv;
+		}
+
+		xs += dx_left;
+		xe += dx_right;
+		us += du_left;
+		vs += dv_left;
+		ue += du_right;
+		ve += dv_right;
+
+	}
+}
+
+void Image::drawTriangle2D(const Triangle& tri, const Color& color)
+{
+	Vertex v1 = tri.v1, v2 = tri.v2, v3 = tri.v3;
+
+	if (v1.y > v2.y) std::swap(v1,v2);
+	if (v1.y > v3.y) std::swap(v1, v3);
+	if (v2.y > v3.y) std::swap(v2, v3);
+	
+	if (v2.y == v3.y)
+	{
+		drawBottomTri({ v1, v2, v3 }, color); // Triángulo con base abajo
+	}
+	else if (v1.y == v2.y)
+	{
+		drawTopTri({v1, v2, v3}, color); //Triángulo con base arriba
+	}
+	else {
+		//Fórmula de interpolación despejada en x -> x = x1 + ( (x2 - x1) * (y - y1) / (y2 - y1))
+		//El número 0.5 es para poder redondear el entero en vez de truncarlo.
+		int new_x = v1.x + (int)(0.5 + (float)(v2.y - v1.y) * (float)(v3.x - v1.x) / (float)(v3.y - v1.y));
+		float new_u = v1.u + ((v2.y - v1.y) * (v3.u - v1.u) / (v3.y - v1.y));
+		float new_v = v1.u + ((v2.y - v1.y) * (v3.u - v1.u) / (v3.y - v1.y));
+		Vertex new_vtx = { new_x, v2.y, new_u, new_v };
+
+		drawBottomTri({ v1, new_vtx, v2 }, color);
+		drawTopTri({ v2, new_vtx, v3 }, color);
+	}
+
+}
+
+void Image::bresehamCircle(int x0, int y0, int radius, const Color& color)
+{
+	int xMin = 0;
+	int yMin = 0;
+	int xMax = m_width;
+	int yMax = m_height;
+
+	int x = radius;
+	int y = 0;
+	int err = 0;
+
+	while (x >= y)
+	{
+		setPixel(x0 + x, y0 + y, color);
+		setPixel(x0 + y, y0 + x, color);
+		setPixel(x0 - y, y0 + x, color);
+		setPixel(x0 - x, y0 + y, color);
+		setPixel(x0 - x, y0 - y, color);
+		setPixel(x0 - y, y0 - x, color);
+		setPixel(x0 + y, y0 - x, color);
+		setPixel(x0 + x, y0 - y, color);
+		
+		if (err <= 0) 
+		{
+			y += 1;
+			err += 2 * y + 1;
+		}
+		if (err > 0) 
+		{
+			x -= 1;
+			err -= 2 * x + 1;
+		}
+	}
 }
 
 //   ******* ->

@@ -136,6 +136,15 @@ struct TRIANGLE {
 	VERTEX v2;
 };
 
+struct Vertex {
+	int x, y;
+	float u, v;
+};
+
+struct Triangle {
+	Vertex v1, v2, v3;
+};
+
 class Image
 {
 public:
@@ -197,6 +206,11 @@ public:
 	
 	void fillTriangle(const VERTEX& v0, const VERTEX& v1, const VERTEX& v2, const Color& color);
 
+	void drawBottomTri(const Triangle& tri, const Color& color);
+	void drawTopTri(const Triangle& tri, const Color& color);
+	void drawTriangle2D(const Triangle& tri, const Color& color);
+
+	void bresehamCircle(int x0, int y0, int radius, const Color& color);
 protected:
 	int m_width = 0;
 	int m_height = 0;

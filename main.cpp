@@ -70,10 +70,6 @@ int main() {
 	triangle.v1 = { 200,200,0 };
 	triangle.v2 = { 100,200,0 };
 
-	//triangle.v0 = { 150,100,0 };
-	//triangle.v1 = { 270,200,0 };
-	//triangle.v2 = { 100,270,0 };
-
 	Vector3 normal;
 
 	//Punta menos cola para sacar el vector
@@ -85,44 +81,24 @@ int main() {
 
 	Vector3 view = {0, 0, 1};
 
-	//float intensity = normal.dot(view);
 	float intensity = normal | view;
 
 	//Se compara el producto punto para ver is tienen la misma dirección o no
 	if (intensity > 0)
 	{
-		////1 u
-		//imgScreen.bresehamLine(triangle.v0.position.x, triangle.v0.position.y, triangle.v1.position.x, triangle.v1.position.y, { 255,0,255,255 });
-		////2
-		//imgScreen.bresehamLine(triangle.v1.position.x, triangle.v1.position.y, triangle.v2.position.x, triangle.v2.position.y, { 255,0,255,255 });
-		////3 v
-		//imgScreen.bresehamLine(triangle.v2.position.x, triangle.v2.position.y, triangle.v0.position.x, triangle.v0.position.y, { 255,0,255,255 });
-
-		Vector3 u = triangle.v1.position - triangle.v0.position;
-		Vector3 v = triangle.v2.position - triangle.v0.position;
-
-		Vector3 w1 = v * ( (u | v) / (v.size() * v.size()) );
-		Vector3 w2 = u - w1;
-
-		//Vector proyectado
-		/*imgScreen.bresehamLine(	triangle.v0.position.x,
-								triangle.v0.position.y,
-								w1.x + triangle.v0.position.x,
-								w1.y + triangle.v0.position.y,
-								{56,34,125,255});*/
-
-		//Vector ortogonal
-		/*imgScreen.bresehamLine(	w1.x + triangle.v0.position.x,
-								w1.y + triangle.v0.position.y,
-								triangle.v1.position.x,
-								triangle.v1.position.y,
-								{ 56,34,125,255 });*/
 
 		imgScreen.fillTriangle(triangle.v0,triangle.v1,triangle.v2, { 56,34,125,255 });
 
-		
-
 	}
+
+	Triangle tri;
+	tri.v1 = { 450,600,0 };
+	tri.v2 = { 200,700,0 };
+	tri.v3 = { 500,200,0 };
+
+	imgScreen.drawTriangle2D(tri, {32,56,135,255});
+	imgScreen.bresehamCircle(240, 400,120,{66,77,123,255});
+
 	imgScreen.encode("Screen.bmp");
 
 	return 0;
