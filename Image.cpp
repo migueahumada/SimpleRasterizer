@@ -423,7 +423,7 @@ void Image::lineRectangle(int x0, int y0, int width, int height, const Color& co
 	}
 }
 
-void Image::fillTriangle(const VERTEX& v0, const VERTEX& v1, const VERTEX& v2, const Color& color) {
+void Image::fillTriangle(const Vertex& v0, const Vertex& v1, const Vertex& v2, const Color& color) {
 
 	Vector3 uNom = (v1.position - v0.position).normalize();
 
@@ -450,27 +450,27 @@ void Image::fillTriangle(const VERTEX& v0, const VERTEX& v1, const VERTEX& v2, c
 
 }
 
-void Image::drawBottomTri(const Triangle& tri, const Color& color)
+void Image::drawBottomTri(const Triangle& tri)
 {
 	Vertex v1 = tri.v1, v2 = tri.v2, v3 = tri.v3;
-	if (v3.x < v2.x) std::swap(v2, v3);
+	if (v3.position.x < v2.position.x) std::swap(v2, v3);
 
-	int height = v3.y - v1.y;
+	int height = v3.position.y - v1.position.y;
 	if (height <= 0) return;
 
-	float dx_left = static_cast<float>(v2.x - v1.x) / height;
-	float dx_right = static_cast<float>(v3.x - v1.x) / height;
+	float dx_left = static_cast<float>(v2.position.x - v1.position.x) / height;
+	float dx_right = static_cast<float>(v3.position.x - v1.position.x) / height;
 
 	float du_left = (v2.u - v1.u) / height;
 	float dv_left = (v2.u - v1.u) / height;
 	float du_right = (v3.u - v1.u) / height;
 	float dv_right = (v3.u - v1.u) / height;
 
-	float xs = v1.x, xe = v1.x;
+	float xs = v1.position.x, xe = v1.position.x;
 	float us = v1.u, vs = v1.v;
 	float ue = v1.u, ve = v1.v;
 
-	for (int y = v1.y; y <= v3.y; ++y)
+	for (int y = v1.position.y; y <= v3.position.y; ++y)
 	{
 		int left = static_cast<int>(xs);
 		int right= static_cast<int>(xe);
@@ -497,27 +497,27 @@ void Image::drawBottomTri(const Triangle& tri, const Color& color)
 	}
 }
 
-void Image::drawTopTri(const Triangle& tri, const Color& color)
+void Image::drawTopTri(const Triangle& tri)
 {
 	Vertex v1 = tri.v1, v2 = tri.v2, v3 = tri.v3;
-	if (v2.x < v1.x) std::swap(v1, v2);
+	if (v2.position.x < v1.position.x) std::swap(v1, v2);
 
-	int height = v3.y - v1.y;
+	int height = v3.position.y - v1.position.y;
 	if (height <= 0) return;
 
-	float dx_left = static_cast<float>(v3.x - v1.x) / height;
-	float dx_right = static_cast<float>(v3.x - v2.x) / height;
+	float dx_left = static_cast<float>(v3.position.x - v1.position.x) / height;
+	float dx_right = static_cast<float>(v3.position.x - v2.position.x) / height;
 
 	float du_left = (v3.u - v1.u) / height;
 	float dv_left = (v3.u - v1.u) / height;
 	float du_right = (v3.u - v2.u) / height;
 	float dv_right = (v3.u - v2.u) / height;
 
-	float xs = v1.x, xe = v2.x;
+	float xs = v1.position.x, xe = v2.position.x;
 	float us = v1.u, vs = v1.v;
 	float ue = v2.u, ve = v2.v;
 
-	for (int y = v1.y; y <= v3.y; ++y)
+	for (int y = v1.position.y; y <= v3.position.y; ++y)
 	{
 		int left = static_cast<int>(xs);
 		int right = static_cast<int>(xe);
@@ -544,32 +544,56 @@ void Image::drawTopTri(const Triangle& tri, const Color& color)
 	}
 }
 
-void Image::drawTriangle2D(const Triangle& tri, const Color& color)
+void Image::drawTriangle2D(const Triangle& tri)
 {
 	Vertex v1 = tri.v1, v2 = tri.v2, v3 = tri.v3;
 
-	if (v1.y > v2.y) std::swap(v1,v2);
-	if (v1.y > v3.y) std::swap(v1, v3);
-	if (v2.y > v3.y) std::swap(v2, v3);
+	if (v1.position.y > v2.position.y) std::swap(v1, v2);
+	if (v1.position.y > v3.position.y) std::swap(v1, v3);
+	if (v2.position.y > v3.position.y) std::swap(v2, v3);
 	
-	if (v2.y == v3.y)
+	if (v2.position.y == v3.position.y)
 	{
-		drawBottomTri({ v1, v2, v3 }, color); // Triángulo con base abajo
+		drawBottomTri({ v1, v2, v3 }); // Triángulo con base abajo
 	}
-	else if (v1.y == v2.y)
+	else if (v1.position.y == v2.position.y)
 	{
-		drawTopTri({v1, v2, v3}, color); //Triángulo con base arriba
+		drawTopTri({ v1, v2, v3 }); //Triángulo con base arriba
 	}
-	else {
+	else 
+	{
+
 		//Fórmula de interpolación despejada en x -> x = x1 + ( (x2 - x1) * (y - y1) / (y2 - y1))
 		//El número 0.5 es para poder redondear el entero en vez de truncarlo.
-		int new_x = v1.x + (int)(0.5 + (float)(v2.y - v1.y) * (float)(v3.x - v1.x) / (float)(v3.y - v1.y));
-		float new_u = v1.u + ((v2.y - v1.y) * (v3.u - v1.u) / (v3.y - v1.y));
-		float new_v = v1.u + ((v2.y - v1.y) * (v3.u - v1.u) / (v3.y - v1.y));
-		Vertex new_vtx = { new_x, v2.y, new_u, new_v };
+		int new_x = v1.position.x + (int)(0.5 + (float)(v2.position.y - v1.position.y) * 
+												(float)(v3.position.x - v1.position.x) / 
+												(float)(v3.position.y - v1.position.y));
 
-		drawBottomTri({ v1, new_vtx, v2 }, color);
-		drawTopTri({ v2, new_vtx, v3 }, color);
+		FloatColor new_Color = FloatColor{	v1.color.r + ((v2.position.y - v1.position.y) * (v3.color.r - v1.color.r) / (v3.position.y - v1.position.y)),
+											v1.color.g + ((v2.position.y - v1.position.y) * (v3.color.g - v1.color.g) / (v3.position.y - v1.position.y)),
+											v1.color.b + ((v2.position.y - v1.position.y) * (v3.color.b - v1.color.b) / (v3.position.y - v1.position.y)),
+											v1.color.a + ((v2.position.y - v1.position.y) * (v3.color.a - v1.color.a) / (v3.position.y - v1.position.y)) };
+				};
+
+		Color new_color = Color{ static_cast<unsigned char>(v1.color.r + ((v2.position.y - v1.position.y) *
+																		(v3.color.r - v1.color.r) / 
+																		(v3.position.y - v1.position.y)),
+								static_cast<unsigned char>(v1.color.g + ((v2.position.y - v1.position.y) *
+																		(v3.color.g - v1.color.g) /
+																		(v3.position.y - v1.position.y)),
+								static_cast<unsigned char>(v1.color.b + ((v2.position.y - v1.position.y) *
+																		(v3.color.b - v1.color.b) /
+																		(v3.position.y - v1.position.y)),
+								static_cast<unsigned char>(v1.color.a + ((v2.position.y - v1.position.y) *
+																		(v3.color.a - v1.color.a) /
+																		(v3.position.y - v1.position.y)) };
+
+		float new_u = v1.u + ((v2.position.y - v1.position.y) * (v3.u - v1.u) / (v3.position.y - v1.position.y));
+		float new_v = v1.u + ((v2.position.y - v1.position.y) * (v3.u - v1.u) / (v3.position.y - v1.position.y));
+		Vertex new_vtx = { new_x, v2.position.y, new_u, new_v };
+
+		drawBottomTri({ v1, new_vtx, v2 });
+		drawTopTri({ v2, new_vtx, v3 });
 	}
 
 }

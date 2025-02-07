@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 
+#include "MathObjects.h"
 /*
 *	Necesitaremos:
 *	- Width
@@ -12,19 +13,7 @@
 *	- Decode -> para descodificar información
 */
 
-/*
-*	Para representar color necesitaremos una estructura que
-*	guarde lo que llevaría un color , o sea RGBA.
-*	Se guarda en char por que el tamaño es de 1 byte.
-*	Es unsigned para que tome valores de 0 a 255
-*/
 
-struct Color { // 4 bytes
-	unsigned char r; //1 byte
-	unsigned char g; //1 byte
-	unsigned char b; //1 byte
-	unsigned char a; //1 byte
-};
 
 /// <summary>
 /// Struct of the file header
@@ -68,82 +57,9 @@ enum RegionCode {
 	TOP = 8
 };
 
-struct Vector3 {
-	float x;
-	float y;
-	float z;
 
-	Vector3 operator+(const Vector3& v) const {
-		return { x + v.x, y + v.y, z + v.z };
-	}
 
-	Vector3 operator-(const Vector3& v) const {
-		return { x - v.x, y - v.y, z - v.z };
-	}
 
-	Vector3 operator*(float scalar) const {
-		return { x * scalar, y * scalar, z * scalar };
-	}
-
-	Vector3 operator/(float scalar) const {
-		return { x / scalar, y / scalar, z / scalar };
-	}
-
-	Vector3 operator-() const {
-		return { -x , -y , -z };
-	}
-
-	Vector3 cross(const Vector3& v) const {
-		return { y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x };
-	}
-
-	Vector3 operator^(const Vector3& v) const {
-		return cross(v);
-	}
-
-	float size() const {
-		return sqrt(x * x + y * y + z * z);
-	}
-
-	Vector3 normalize() const {
-		float invLength = 1.0f / size();
-		//float length = sqrt(x * x + y * y + z * z);
-		return{ x * invLength,
-				y * invLength,
-				z * invLength };
-	}
-
-	float dot(const Vector3& v) const {
-		return x * v.x + y * v.y + z * v.z;
-	}
-
-	float operator|(const Vector3& v) const {
-		return dot(v);
-	}
-
-};
-
-struct VERTEX
-{
-	//Screen coordinates
-	Vector3 position;
-
-};
-
-struct TRIANGLE {
-	VERTEX v0;
-	VERTEX v1;
-	VERTEX v2;
-};
-
-struct Vertex {
-	int x, y;
-	float u, v;
-};
-
-struct Triangle {
-	Vertex v1, v2, v3;
-};
 
 class Image
 {
@@ -204,11 +120,11 @@ public:
 
 	void lineRectangle(int x0, int y0, int width, int height, const Color& color);
 	
-	void fillTriangle(const VERTEX& v0, const VERTEX& v1, const VERTEX& v2, const Color& color);
+	void fillTriangle(const Vertex& v0, const Vertex& v1, const Vertex& v2, const Color& color);
 
-	void drawBottomTri(const Triangle& tri, const Color& color);
-	void drawTopTri(const Triangle& tri, const Color& color);
-	void drawTriangle2D(const Triangle& tri, const Color& color);
+	void drawBottomTri(const Triangle& tri);
+	void drawTopTri(const Triangle& tri);
+	void drawTriangle2D(const Triangle& tri);
 
 	void bresehamCircle(int x0, int y0, int radius, const Color& color);
 protected:

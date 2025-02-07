@@ -134,6 +134,7 @@
   <ItemGroup>
     <ClInclude Include="Common.h" />
     <ClInclude Include="Image.h" />
+    <ClInclude Include="MathObjects.h" />
     <ClInclude Include="Texture.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

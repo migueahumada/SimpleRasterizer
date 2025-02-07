@@ -64,20 +64,20 @@ int main() {
 	
 	//imgScreen.lineRectangle(600,600,400,400, Color{ 0,255,255,255 });
 
-	TRIANGLE triangle;
+	Triangle triangle;
 
-	triangle.v0 = { 150,100,0 };
-	triangle.v1 = { 200,200,0 };
-	triangle.v2 = { 100,200,0 };
+	triangle.v1 = { 150,100,0 };
+	triangle.v2 = { 200,200,0 };
+	triangle.v3 = { 100,200,0 };
 
 	Vector3 normal;
 
 	//Punta menos cola para sacar el vector
-	Vector3 v0v1 = triangle.v1.position - triangle.v0.position;
-	Vector3 v0v2 = triangle.v2.position - triangle.v0.position;
+	Vector3 v1v2 = triangle.v2.position - triangle.v1.position;
+	Vector3 v1v3 = triangle.v3.position - triangle.v1.position;
 
 	//normal = -v0v1.cross(v0v2).normalize();
-	normal = (v0v1 ^ v0v2).normalize();
+	normal = (v1v2 ^ v1v3).normalize();
 
 	Vector3 view = {0, 0, 1};
 
@@ -87,7 +87,7 @@ int main() {
 	if (intensity > 0)
 	{
 
-		imgScreen.fillTriangle(triangle.v0,triangle.v1,triangle.v2, { 56,34,125,255 });
+		imgScreen.fillTriangle(triangle.v1,triangle.v2,triangle.v3, { 56,34,125,255 });
 
 	}
 

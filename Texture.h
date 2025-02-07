@@ -1,5 +1,6 @@
 #pragma once
 #include "Image.h"
+#include "MathObjects.h"
 
 namespace TEXTURE_ADDRESS {
 	enum E {
@@ -25,50 +26,6 @@ namespace SAMPLER_FILTER {
 	};
 }
 
-struct FloatColor {
-	FloatColor() = default;
-	FloatColor(float _r, float _g, float _b, float _a) :
-		r(_r), g(_g), b(_b), a(_a) {}
-	FloatColor(const Color& color) :
-		r(color.r/255.0f), 
-		g(color.g/255.0f),
-		b(color.b / 255.0f), 
-		a(color.a / 255.0f) {}
-
-	Color toColor() {
-		
-		return Color{
-			static_cast<unsigned char>(r * 255.0f),
-			static_cast<unsigned char>(g * 255.0f),
-			static_cast<unsigned char>(b * 255.0f),
-			static_cast<unsigned char>(a * 255.0f)
-		};
-	}
-
-	FloatColor operator*(const FloatColor& color) {
-		return FloatColor(r * color.r, g * color.g, b * color.b, a * color.a);
-	}
-
-	FloatColor operator+(const FloatColor& color) {
-		return FloatColor(r + color.r, g + color.g, b + color.b, a + color.a);
-	}
-
-	FloatColor operator*(float escalar) {
-		return FloatColor(r * escalar, g * escalar, b * escalar, a * escalar);
-	}
-
-	void saturate() {
-		r = r > 1.0f ? 1.0f : r;
-		g = g > 1.0f ? 1.0f : g;
-		b = b > 1.0f ? 1.0f : b;
-		a = a > 1.0f ? 1.0f : a;
-	}
-
-	float r;
-	float g;
-	float b;
-	float a;
-};
 
 class Texture
 {
