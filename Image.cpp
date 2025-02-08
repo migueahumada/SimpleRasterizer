@@ -462,9 +462,9 @@ void Image::drawBottomTri(const Triangle& tri)
 	float dx_right = static_cast<float>(v3.position.x - v1.position.x) / height;
 
 	float du_left = (v2.u - v1.u) / height;
-	float dv_left = (v2.u - v1.u) / height;
+	float dv_left = (v2.v - v1.v) / height;
 	float du_right = (v3.u - v1.u) / height;
-	float dv_right = (v3.u - v1.u) / height;
+	float dv_right = (v3.v - v1.v) / height;
 
 	float xs = v1.position.x, xe = v1.position.x;
 	float us = v1.u, vs = v1.v;
@@ -482,7 +482,14 @@ void Image::drawBottomTri(const Triangle& tri)
 
 		for (int x = std::max(0, left); x <= std::min(m_width - 1, right); ++x)
 		{
-			setPixel(x,y,color);
+
+			FloatColor pixelColor2;
+			pixelColor2.r = u;
+			pixelColor2.g = v;
+			pixelColor2.b = 0.0f;
+			pixelColor2.a = 1.0f;
+
+			setPixel(x, y, pixelColor2.toColor());
 			u += du;
 			v += dv;
 		}
@@ -509,9 +516,9 @@ void Image::drawTopTri(const Triangle& tri)
 	float dx_right = static_cast<float>(v3.position.x - v2.position.x) / height;
 
 	float du_left = (v3.u - v1.u) / height;
-	float dv_left = (v3.u - v1.u) / height;
+	float dv_left = (v3.v - v1.v) / height;
 	float du_right = (v3.u - v2.u) / height;
-	float dv_right = (v3.u - v2.u) / height;
+	float dv_right = (v3.v - v2.v) / height;
 
 	float xs = v1.position.x, xe = v2.position.x;
 	float us = v1.u, vs = v1.v;
@@ -529,7 +536,14 @@ void Image::drawTopTri(const Triangle& tri)
 
 		for (int x = std::max(0, left); x <= std::min(m_width - 1, right); ++x)
 		{
-			setPixel(x, y, color);
+
+			FloatColor pixelColor2;
+			pixelColor2.r = u;
+			pixelColor2.g = v;
+			pixelColor2.b = 0.0f;
+			pixelColor2.a = 1.0f;
+
+			setPixel(x, y, pixelColor2.toColor());
 			u += du;
 			v += dv;
 		}
@@ -569,33 +583,23 @@ void Image::drawTriangle2D(const Triangle& tri)
 												(float)(v3.position.x - v1.position.x) / 
 												(float)(v3.position.y - v1.position.y));
 
-		FloatColor new_Color = FloatColor{	v1.color.r + ((v2.position.y - v1.position.y) * (v3.color.r - v1.color.r) / (v3.position.y - v1.position.y)),
-											v1.color.g + ((v2.position.y - v1.position.y) * (v3.color.g - v1.color.g) / (v3.position.y - v1.position.y)),
-											v1.color.b + ((v2.position.y - v1.position.y) * (v3.color.b - v1.color.b) / (v3.position.y - v1.position.y)),
-											v1.color.a + ((v2.position.y - v1.position.y) * (v3.color.a - v1.color.a) / (v3.position.y - v1.position.y)) };
-				};
-
-		Color new_color = Color{ static_cast<unsigned char>(v1.color.r + ((v2.position.y - v1.position.y) *
-																		(v3.color.r - v1.color.r) / 
-																		(v3.position.y - v1.position.y)),
-								static_cast<unsigned char>(v1.color.g + ((v2.position.y - v1.position.y) *
-																		(v3.color.g - v1.color.g) /
-																		(v3.position.y - v1.position.y)),
-								static_cast<unsigned char>(v1.color.b + ((v2.position.y - v1.position.y) *
-																		(v3.color.b - v1.color.b) /
-																		(v3.position.y - v1.position.y)),
-								static_cast<unsigned char>(v1.color.a + ((v2.position.y - v1.position.y) *
-																		(v3.color.a - v1.color.a) /
-																		(v3.position.y - v1.position.y)) };
-
-		float new_u = v1.u + ((v2.position.y - v1.position.y) * (v3.u - v1.u) / (v3.position.y - v1.position.y));
-		float new_v = v1.u + ((v2.position.y - v1.position.y) * (v3.u - v1.u) / (v3.position.y - v1.position.y));
-		Vertex new_vtx = { new_x, v2.position.y, new_u, new_v };
+		FloatColor c1(v1.color), c2(v2.color), c3(v3.color);
+		
+		FloatColor new_color = c1 +	(c3 - c1) * ((v2.position.y - v1.position.y) /
+									(v3.position.y - v1.position.y));
+										
+		float new_u = v1.u + ((v2.position.y - v1.position.y) * 
+							 (v3.u - v1.u) / (v3.position.y - v1.position.y));
+		
+		float new_v = v1.u + ((v2.position.y - v1.position.y) * 
+							 (v3.v - v1.v) / (v3.position.y - v1.position.y));
+		
+		Vertex new_vtx = { new_x, v2.position.y, 0.0f, new_color.toColor(), new_u, new_v };
 
 		drawBottomTri({ v1, new_vtx, v2 });
 		drawTopTri({ v2, new_vtx, v3 });
 	}
-
+	
 }
 
 void Image::bresehamCircle(int x0, int y0, int radius, const Color& color)

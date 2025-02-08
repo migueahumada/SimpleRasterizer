@@ -41,12 +41,24 @@ struct FloatColor {
 		return FloatColor(r * color.r, g * color.g, b * color.b, a * color.a);
 	}
 
+	FloatColor operator*(float escalar) {
+		return FloatColor(r * escalar, g * escalar, b * escalar, a * escalar);
+	}
+
 	FloatColor operator+(const FloatColor& color) {
 		return FloatColor(r + color.r, g + color.g, b + color.b, a + color.a);
 	}
 
-	FloatColor operator*(float escalar) {
-		return FloatColor(r * escalar, g * escalar, b * escalar, a * escalar);
+	FloatColor operator+(float escalar) {
+		return FloatColor(r + escalar, g + escalar, b + escalar, a + escalar);
+	}
+
+	FloatColor operator-(const FloatColor& color) {
+		return FloatColor(r - color.r, g - color.g, b - color.b, a - color.a);
+	}
+
+	FloatColor operator/(float escalar) {
+		return FloatColor(r / escalar, g / escalar, b / escalar, a / escalar);
 	}
 
 	void saturate() {

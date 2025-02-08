@@ -127,6 +127,7 @@ public:
 	void drawTriangle2D(const Triangle& tri);
 
 	void bresehamCircle(int x0, int y0, int radius, const Color& color);
+
 protected:
 	int m_width = 0;
 	int m_height = 0;

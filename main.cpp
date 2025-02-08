@@ -1,6 +1,7 @@
 #include <iostream>
 #include "Image.h"
 #include "Texture.h" //Added
+
 /*
 	Caso 1:
 		- Width: 776 px
@@ -66,9 +67,9 @@ int main() {
 
 	Triangle triangle;
 
-	triangle.v1 = { 150,100,0 };
-	triangle.v2 = { 200,200,0 };
-	triangle.v3 = { 100,200,0 };
+	triangle.v1 = { 150,100,0, Color{255, 255, 255, 255}, 0, 0 };
+	triangle.v2 = { 200,200,0, Color{255, 255, 255, 255}, 1, 1 };
+	triangle.v3 = { 100,200,0, Color{255, 255, 255, 255}, 0, 1 };
 
 	Vector3 normal;
 
@@ -92,12 +93,23 @@ int main() {
 	}
 
 	Triangle tri;
-	tri.v1 = { 450,600,0 };
-	tri.v2 = { 200,700,0 };
-	tri.v3 = { 500,200,0 };
+	tri.v1 = { 250,600,0, Color{255, 255, 255, 255}, 0, 0 };
+	tri.v2 = { 200,400,0, Color{255, 255, 255, 255}, 1, 1 };
+	tri.v3 = { 500,200,0, Color{255, 255, 255, 255}, 0, 1 };
 
-	imgScreen.drawTriangle2D(tri, {32,56,135,255});
-	imgScreen.bresehamCircle(240, 400,120,{66,77,123,255});
+	imgScreen.drawTriangle2D(tri);
+
+	tri.v1 = { 500,900,0, Color{0, 255, 255, 255}, 0, 0 };
+	tri.v2 = { 800,200,0, Color{255, 0, 255, 255}, 1, 1 };
+	tri.v3 = { 200,230,0, Color{255, 255, 0, 255}, 0, 1 };
+
+	tri.v1.position.x += 400;
+	tri.v2.position.x += 400;
+	tri.v3.position.x += 400;
+
+	imgScreen.drawTriangle2D(tri);
+
+	imgScreen.bresehamCircle(240, 400,120, Color{66,77,123,255});
 
 	imgScreen.encode("Screen.bmp");
 
