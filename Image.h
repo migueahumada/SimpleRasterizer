@@ -1,8 +1,13 @@
 #pragma once
 #include <iostream>
 #include <fstream>
-
+#include <functional>
 #include "MathObjects.h"
+
+using std::function;
+
+using PixelShader = function<Color(float, float)>;
+
 /*
 *	Necesitaremos:
 *	- Width
@@ -95,8 +100,12 @@ public:
 		return m_bpp / 8;
 	}
 
+	unsigned char* getPixels() {
+		return m_pixels;
+	}
+
 	Color getPixel(unsigned int x, unsigned int y) const;
-	void setPixel(unsigned int x, unsigned int y, const Color& color);
+	void setPixel(int x, int y, const Color& color);
 	void clearColor(const Color& color);
 
 	//Color getColor(float u, float v);
@@ -122,9 +131,11 @@ public:
 	
 	void fillTriangle(const Vertex& v0, const Vertex& v1, const Vertex& v2, const Color& color);
 
-	void drawBottomTri(const Triangle& tri);
-	void drawTopTri(const Triangle& tri);
-	void drawTriangle2D(const Triangle& tri);
+	void drawBottomTri(const Triangle& tri, const PixelShader& pixelShader);
+	void drawTopTri(const Triangle& tri, const PixelShader& pixelShader);
+
+	//Dibujar un triángulo con un callback
+	void drawTriangle2D(const Triangle& tri, const PixelShader& pixelShader);
 
 	void bresehamCircle(int x0, int y0, int radius, const Color& color);
 
