@@ -3,6 +3,13 @@
 
 using std::sqrtf;
 
+inline float clamp(float value, float min, float max) {
+	if (value < min) return min;
+	if (value > max) return max;
+	return value;
+}
+
+
 /*
 *	Para representar color necesitaremos una estructura que
 *	guarde lo que llevaría un color , o sea RGBA.
@@ -61,11 +68,17 @@ struct FloatColor {
 		return FloatColor(r / escalar, g / escalar, b / escalar, a / escalar);
 	}
 
-	void saturate() {
-		r = r > 1.0f ? 1.0f : r;
-		g = g > 1.0f ? 1.0f : g;
-		b = b > 1.0f ? 1.0f : b;
-		a = a > 1.0f ? 1.0f : a;
+	float toGrey() 
+	{
+		return (r * 0.299f) + (g * 0.587f) + (b * 0.114f);
+	}
+
+	FloatColor& saturate() {
+		r = clamp(r, 0.0f, 1.0f);
+		g = clamp(g, 0.0f, 1.0f);
+		b = clamp(b, 0.0f, 1.0f);
+		a = clamp(a, 0.0f, 1.0f);
+		return *this;
 	}
 
 	float r;

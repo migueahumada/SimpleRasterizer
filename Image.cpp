@@ -450,7 +450,7 @@ void Image::fillTriangle(const Vertex& v0, const Vertex& v1, const Vertex& v2, c
 
 }
 
-void Image::drawBottomTri(const Triangle& tri)
+void Image::drawBottomTri(const Triangle& tri, const PixelShader& pixelShader)
 {
 	Vertex v1 = tri.v1, v2 = tri.v2, v3 = tri.v3;
 	if (v3.position.x < v2.position.x) std::swap(v2, v3);
@@ -483,13 +483,9 @@ void Image::drawBottomTri(const Triangle& tri)
 		for (int x = std::max(0, left); x <= std::min(m_width - 1, right); ++x)
 		{
 
-			FloatColor pixelColor2;
-			pixelColor2.r = u;
-			pixelColor2.g = v;
-			pixelColor2.b = 0.0f;
-			pixelColor2.a = 1.0f;
+			Color pixelColor = pixelShader(u, v);
 
-			setPixel(x, y, pixelColor2.toColor());
+			setPixel(x, y, pixelColor);
 			u += du;
 			v += dv;
 		}
@@ -504,7 +500,7 @@ void Image::drawBottomTri(const Triangle& tri)
 	}
 }
 
-void Image::drawTopTri(const Triangle& tri)
+void Image::drawTopTri(const Triangle& tri, const PixelShader& pixelShader)
 {
 	Vertex v1 = tri.v1, v2 = tri.v2, v3 = tri.v3;
 	if (v2.position.x < v1.position.x) std::swap(v1, v2);
@@ -537,13 +533,9 @@ void Image::drawTopTri(const Triangle& tri)
 		for (int x = std::max(0, left); x <= std::min(m_width - 1, right); ++x)
 		{
 
-			FloatColor pixelColor2;
-			pixelColor2.r = u;
-			pixelColor2.g = v;
-			pixelColor2.b = 0.0f;
-			pixelColor2.a = 1.0f;
+			Color pixelColor = pixelShader(u,v);
 
-			setPixel(x, y, pixelColor2.toColor());
+			setPixel(x, y, pixelColor);
 			u += du;
 			v += dv;
 		}
@@ -558,7 +550,7 @@ void Image::drawTopTri(const Triangle& tri)
 	}
 }
 
-void Image::drawTriangle2D(const Triangle& tri)
+void Image::drawTriangle2D(const Triangle& tri, const PixelShader& pixelShader)
 {
 	Vertex v1 = tri.v1, v2 = tri.v2, v3 = tri.v3;
 
@@ -568,11 +560,11 @@ void Image::drawTriangle2D(const Triangle& tri)
 	
 	if (v2.position.y == v3.position.y)
 	{
-		drawBottomTri({ v1, v2, v3 }); // Triángulo con base abajo
+		drawBottomTri({ v1, v2, v3 }, pixelShader); // Triángulo con base abajo
 	}
 	else if (v1.position.y == v2.position.y)
 	{
-		drawTopTri({ v1, v2, v3 }); //Triángulo con base arriba
+		drawTopTri({ v1, v2, v3 }, pixelShader); //Triángulo con base arriba
 	}
 	else 
 	{
@@ -596,8 +588,8 @@ void Image::drawTriangle2D(const Triangle& tri)
 		
 		Vertex new_vtx = { new_x, v2.position.y, 0.0f, new_color.toColor(), new_u, new_v };
 
-		drawBottomTri({ v1, new_vtx, v2 });
-		drawTopTri({ v2, new_vtx, v3 });
+		drawBottomTri({ v1, new_vtx, v2 }, pixelShader);
+		drawTopTri({ v2, new_vtx, v3 }, pixelShader);
 	}
 	
 }
