@@ -120,6 +120,10 @@ Color Image::getPixel(unsigned int x, unsigned int y) const{
 		return Color{0,0,0,0};
 	}
 
+	if (x >= m_width || x < 0 || y >= m_height || y < 0) {
+		return Color{0,0,0,0};
+	}
+
 	Color color;
 	int pixelPos = (y * getPitch()) + (x * getBytesPP());
 
