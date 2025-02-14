@@ -151,4 +151,5 @@ struct Vertex {
 
 struct Triangle {
 	Vertex v1, v2, v3;
+	Vector3 normal;
 };

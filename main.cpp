@@ -2,199 +2,284 @@
 #include "Image.h"
 #include "Texture.h" //Added
 
-
-/*
-	Caso 1:
-		- Width: 776 px
-		- Height: 1096 px
-		- Bpp = 24 bits = 3 bytes
-		- Pitch = 776 * 3 = 2328 bytes
-		- Pixel[1,1] = (1 * 2328) + (1 * 3) = 2331
-		|     |     |.....|     | -> 2328 bytes
-		|     |     |.....|     |
-			  ^ -> 2331 bytes recorridos
-
-		|     |     |.....|     |
-	*/
-
-int main() {
-
-	//----------Imagen de la pantalla--------
-	Image imgScreen;
-	imgScreen.create(512, 512, 32);
-	//imgScreen.clearColor({ 255,0,255,255 });
-
-	//----------Generar Terreno--------
-	Image imgTerrain;
-	imgTerrain.decode("Terrain.bmp");
-	/*Texture terrainTexture;
-	terrainTexture.createImage(imgTerrain);*/
-
-	/*for (int y = 0; y < (imgScreen.getHeight() / imgTerrain.getHeight()) + 1; y++)
-		for (int x = 0; x < (imgScreen.getWidth() / imgTerrain.getWidth()) + 1; x++)
-			imgScreen.bitBlit(imgTerrain, imgTerrain.getWidth() * x, imgTerrain.getHeight() * y);*/
+#define SDL_MAIN_USE_CALLBACKS 1  /* use the callbacks instead of main() */
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 
 
-	//----------Imagen del player--------
-	Image imgPlayer;
-	imgPlayer.decode("Coin.bmp");
-	Texture playerTexture;
-	playerTexture.createImage(imgPlayer);
+#define _USE_MATH_DEFINES
+#include <math.h>
+
+static SDL_Window* g_window = nullptr;
+static SDL_Renderer* g_renderer = nullptr;
+static SDL_Texture* g_texture = nullptr;
+
+static Image g_imgScreen;
+static Image g_img;
+static Texture g_sampleTexture;
+
+static Triangle g_triangle;
+static int g_increment;
+
+namespace AXIS {
+	enum E {
+		X,
+		Y,
+		Z
+	};
+}
+
+
+static Vector3 rot(const Vector3& vec, float angle, AXIS::E axis) {
+
+	float angleRadians = angle * (M_PI / 180.0f);
+
+	switch (axis)
+	{
+	case AXIS::X:
+		return Vector3{ vec.x * 1 + vec.y * 0 + vec.z * 0,
+						vec.x * 0 + vec.y * cos(angleRadians) + vec.z * -sin(angleRadians),
+						vec.x * 0 + vec.y * sin(angleRadians) + vec.z * cos(angleRadians) };
+		break;
+	case AXIS::Y:
+		return Vector3{ vec.x * cos(angleRadians) + vec.y * 0 + vec.z * sin(angleRadians),
+						vec.x * 0 + vec.y * 1 + vec.z * 0,
+						vec.x * -sin(angleRadians) + vec.y * 0 + vec.z * cos(angleRadians) };
+		break;
+	case AXIS::Z:
+		return Vector3{ vec.x * cos(angleRadians) + vec.y * -sin(angleRadians) + vec.z * 0,
+						vec.x* sin(angleRadians) + vec.y * cos(angleRadians) + vec.z * 0,
+						vec.x * 0 + vec.y * 0 + vec.z * 1 };
+		break;
+	default:
+		break;
+	}
 
 	
-	//playerTexture.draw(imgScreen,0,0,150,150,500, 500,TEXTURE_ADDRESS::MIRROR, BLEND_MODE::ADDITIVE);
+}
 
-	//imgScreen.line(565, 788, 400, 230, Color{255,0,0,255});
+//Given in Degrees
+static void rotateX(Vector3& vec, float angle) {
 	
-	//imgScreen.bresehamLine(565, 788, 180, 890, Color{255,255,0,255});
+	float angleRadians = angle * (M_PI / 180.0f);
 
-	//imgScreen.bresehamLine(300, 300, 600, 300, Color{255,255,0,255});
-	
-	//imgScreen.lineRectangle(600,600,400,400, Color{ 0,255,255,255 });
+	vec.x = vec.x * 1 + vec.y * 0 + vec.z * 0;
+	vec.y = vec.x * 0 + vec.y * cos(angleRadians) + vec.z * -sin(angleRadians);
+	vec.z = vec.x * 0 + vec.y * sin(angleRadians) + vec.z * cos(angleRadians);
 
-	Triangle triangle;
+}
+//Given in Degrees
+static void rotateY(Vector3& vec, float angle) {
 
-	triangle.v1 = { 150,100,0, Color{255, 255, 255, 255}, 0, 0 };
-	triangle.v2 = { 200,200,0, Color{255, 255, 255, 255}, 1, 1 };
-	triangle.v3 = { 100,200,0, Color{255, 255, 255, 255}, 0, 1 };
+	float angleRadians = angle * (M_PI / 180.0f);
 
-	Vector3 normal;
+	vec.x = vec.x * cos(angleRadians) + vec.y * 0 + vec.z * sin(angleRadians);
+	vec.y = vec.x * 0 + vec.y * 1 + vec.z * 0;
+	vec.z = vec.x * -sin(angleRadians) + vec.y * 0 + vec.z * cos(angleRadians);
 
-	//Punta menos cola para sacar el vector
-	Vector3 v1v2 = triangle.v2.position - triangle.v1.position;
-	Vector3 v1v3 = triangle.v3.position - triangle.v1.position;
+}
 
-	//normal = -v0v1.cross(v0v2).normalize();
-	normal = (v1v2 ^ v1v3).normalize();
+static void rotateZ(Vector3& vec, float angle) {
 
-	Vector3 view = {0, 0, 1};
+	float angleRadians = angle * (M_PI / 180.0f);
 
-	float intensity = normal | view;
+	vec.x = vec.x * cos(angleRadians) + vec.y * -sin(angleRadians) + vec.z * 0;
+	vec.y = vec.x * sin(angleRadians) + vec.y * cos(angleRadians) + vec.z * 0;
+	vec.z = vec.x * 0 + vec.y * 0 + vec.z * 1;
 
-	//Se compara el producto punto para ver is tienen la misma dirección o no
+}
+
+static Color pixelShader(float u, float v)
+{
+	Color color = g_sampleTexture.sample(u, v, TEXTURE_ADDRESS::WRAP, SAMPLER_FILTER::LINEAR).toColor();
+	return color;
+}
+
+static Color greyPixelShader(float u, float v)
+{
+	FloatColor color = g_sampleTexture.sample(u, v, TEXTURE_ADDRESS::WRAP, SAMPLER_FILTER::LINEAR);
+	unsigned char rV = static_cast<unsigned char>(color.toGrey() * 255);
+	return Color{ rV,rV ,rV };
+}
+
+static Color kernelPixelShader(float u, float v)
+{
+	float kernelIdentity[] = {
+		0, 0, 0,
+		0, 1, 0,
+		0, 0, 0
+	};
+
+	float kernelEmboss[] = {
+		-2, -1,  0,
+		-1,  1,  1,
+			0,  1,  2
+	};
+
+	float kernelSharpen[] = {
+		0, -1,  0,
+		-1,  5, -1,
+			0, -1,  0
+	};
+
+	float kernelBlur[] = {
+		0.0625f, 0.125f, 0.0625f,
+		0.125f,  0.25f,  0.125f,
+		0.0625f, 0.125f, 0.0625f
+	};
+
+	float kernelSobelX[] = {
+		1,  0,  -1,
+		2,  0,  -2,
+		1,  0,  -1
+	};
+
+	float kernelSobelY[] = {
+			1,  2,   1,
+			0,  0,   0,
+		-1, -2,  -1
+	};
+
+	float du = 1.0f / g_sampleTexture.m_image.getWidth();
+	float dv = 1.0f / g_sampleTexture.m_image.getHeight();
+
+	auto c00 = g_sampleTexture.sample(u - du, v - dv, TEXTURE_ADDRESS::WRAP, SAMPLER_FILTER::LINEAR);
+	auto c01 = g_sampleTexture.sample(u - du, v, TEXTURE_ADDRESS::WRAP, SAMPLER_FILTER::LINEAR);
+	auto c02 = g_sampleTexture.sample(u - du, v + dv, TEXTURE_ADDRESS::WRAP, SAMPLER_FILTER::LINEAR);
+				   
+	auto c10 = g_sampleTexture.sample(u, v - dv, TEXTURE_ADDRESS::WRAP, SAMPLER_FILTER::LINEAR);
+	auto c11 = g_sampleTexture.sample(u, v, TEXTURE_ADDRESS::WRAP, SAMPLER_FILTER::LINEAR);
+	auto c12 = g_sampleTexture.sample(u, v + dv, TEXTURE_ADDRESS::WRAP, SAMPLER_FILTER::LINEAR);
+				   
+	auto c20 = g_sampleTexture.sample(u + du, v - dv, TEXTURE_ADDRESS::WRAP, SAMPLER_FILTER::LINEAR);
+	auto c21 = g_sampleTexture.sample(u + du, v, TEXTURE_ADDRESS::WRAP, SAMPLER_FILTER::LINEAR);
+	auto c22 = g_sampleTexture.sample(u + du, v + dv, TEXTURE_ADDRESS::WRAP, SAMPLER_FILTER::LINEAR);
+
+	float* kernel = kernelSobelX;
+	FloatColor finalValX = c00 * kernel[0] + c10 * kernel[1] + c20 * kernel[2] +
+		c01 * kernel[3] + c11 * kernel[4] + c21 * kernel[5] +
+		c02 * kernel[6] + c12 * kernel[7] + c22 * kernel[8];
+
+	kernel = kernelSobelY;
+	FloatColor finalValY = c00 * kernel[0] + c10 * kernel[1] + c20 * kernel[2] +
+		c01 * kernel[3] + c11 * kernel[4] + c21 * kernel[5] +
+		c02 * kernel[6] + c12 * kernel[7] + c22 * kernel[8];
+
+	//unsigned char grey = static_cast<unsigned char>(finalVal.saturate().toGrey() * 255);
+	unsigned char sx = static_cast<unsigned char>(finalValX.saturate().toGrey() * 255);
+	unsigned char sy = static_cast<unsigned char>(finalValX.saturate().toGrey() * 255);
+
+	Color normal = { sx, sy, 255, 255 };
+
+	return normal;
+}
+
+SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
+{
+
+	if (!SDL_Init(SDL_INIT_VIDEO)) {
+		SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
+		return SDL_APP_FAILURE;
+	}
+
+	if (!SDL_CreateWindowAndRenderer("Soft Rasterizer", 1280, 720, 0, &g_window, &g_renderer)) {
+		SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
+		return SDL_APP_FAILURE;
+	}
+
+	g_imgScreen.create(1280, 720, 32);
+	g_imgScreen.clearColor({0,0,0,255});
+
+	g_img.decode("Coin.bmp");
+	g_sampleTexture.createImage(g_img);
+
+	g_texture = SDL_CreateTexture(	g_renderer,
+									SDL_PIXELFORMAT_BGRA32,
+									SDL_TEXTUREACCESS_STREAMING,
+									g_imgScreen.getWidth(),
+									g_imgScreen.getHeight());
+	if (!g_texture)
+	{
+		SDL_Log("Couldn't create a streaming texture: %s", SDL_GetError());
+		return SDL_APP_FAILURE;
+	}
+
+	g_triangle.v1 = { 300, 300, 0, Color{0, 255, 255, 255}, 0, 0 };
+	g_triangle.v2 = { 600, 300, 0, Color{255, 0, 255, 255}, 1, 0 };
+	g_triangle.v3 = { 300, 600, 0, Color{255, 255, 0, 255}, 0, 1 };
+
+	return SDL_APP_CONTINUE;  
+}
+
+SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
+{
+	if (event->type == SDL_EVENT_QUIT) {
+		return SDL_APP_SUCCESS;  
+	}
+	return SDL_APP_CONTINUE;  
+}
+
+SDL_AppResult SDL_AppIterate(void* appstate)
+{
+	FloatColor color = { 0.0f, 0.0f, 0.0f, 0.0f };
+	SDL_SetRenderDrawColorFloat(g_renderer,color.r,color.g,color.b,color.a);
+	SDL_RenderClear(g_renderer);
+
+	//g_imgScreen.setPixel(rand() % g_imgScreen.getWidth(), rand() % g_imgScreen.getHeight(), Color{255,0,0,255 });
+
+	rotateX(g_triangle.v1.position, 3.0f);
+	rotateY(g_triangle.v1.position, 3.0f);
+	rotateZ(g_triangle.v1.position, 3.0f);
+
+	//g_triangle.v1.position = g_triangle.v1.position + rot(g_triangle.v1.position, 3.0f, AXIS::X);
+	//g_triangle.v1.position = g_triangle.v1.position + rot(g_triangle.v1.position, 3.0f, AXIS::Y);
+	//g_triangle.v1.position = g_triangle.v1.position + rot(g_triangle.v1.position, 3.0f, AXIS::Z);
+
+	//Get the normal vector of the triangle
+	Vector3 v1v2 = g_triangle.v2.position - g_triangle.v1.position;
+	Vector3 v1v3 = g_triangle.v3.position - g_triangle.v1.position;
+	g_triangle.normal = (v1v2 ^ v1v3).normalize();
+
+	Vector3 view = { 0, 0, 1 };
+
+	float intensity = g_triangle.normal | view;
+
 	if (intensity > 0)
 	{
 
-		//imgScreen.fillTriangle(triangle.v1,triangle.v2,triangle.v3, { 56,34,125,255 });
-
+		g_imgScreen.drawTriangle2D(g_triangle, pixelShader);
+		
 	}
 
-	// <----------------------PIXEL SHADER CALLBACK FUNCTIONS----------------------->
-	auto pixelShader = [&playerTexture](float u, float v) -> Color
+	SDL_Surface* surface = nullptr;
+
+	SDL_Surface* imgSurface = SDL_CreateSurfaceFrom(g_imgScreen.getWidth(),
+													g_imgScreen.getHeight(),
+													SDL_PIXELFORMAT_BGRA32,
+													g_imgScreen.getPixels(),
+													g_imgScreen.getPitch());
+
+	if (SDL_LockTextureToSurface(g_texture,nullptr,&surface))
 	{
-		Color color = playerTexture.sample(u,v,TEXTURE_ADDRESS::WRAP, SAMPLER_FILTER::LINEAR).toColor();
-		return color;
-	};
+		SDL_BlitSurface(imgSurface, nullptr, surface, nullptr);
 
-	auto greyPixelShader = [&playerTexture](float u, float v) -> Color
-	{
-		FloatColor color = playerTexture.sample(u, v, TEXTURE_ADDRESS::WRAP, SAMPLER_FILTER::LINEAR);
-		unsigned char rV = static_cast<unsigned char>(color.toGrey() * 255);
-		return Color{rV,rV ,rV };
-	};
+		SDL_UnlockTexture(g_texture);
+	}
 
-	auto kernelPixelShader = [&playerTexture](float u, float v) -> Color
-	{
-			float kernelIdentity[] = {
-				0, 0, 0,
-				0, 1, 0,
-				0, 0, 0
-			};
+	SDL_DestroySurface(imgSurface);
 
-			float kernelEmboss[] = {
-				-2, -1,  0,
-				-1,  1,  1,
-				 0,  1,  2
-			};
+	//Draw texture to screen
+	SDL_FRect dstRect = {0,0,g_imgScreen.getWidth(),g_imgScreen.getHeight()};
+	SDL_RenderTexture(g_renderer, g_texture, nullptr, &dstRect);
 
-			float kernelSharpen[] = {
-				0, -1,  0,
-				-1,  5, -1,
-				 0, -1,  0
-			};
+	//Show in screen
+	SDL_RenderPresent(g_renderer);
 
-			float kernelBlur[] = {
-				0.0625f, 0.125f, 0.0625f,
-				0.125f,  0.25f,  0.125f,
-				0.0625f, 0.125f, 0.0625f
-			};
+	return SDL_APP_CONTINUE;  
+}
 
-			float kernelSobelX[] = {
-				1,  0,  -1,
-				2,  0,  -2,
-				1,  0,  -1
-			};
-
-			float kernelSobelY[] = {
-				 1,  2,   1,
-				 0,  0,   0,
-				-1, -2,  -1
-			};
-
-			
-
-		float du = 1.0f / playerTexture.m_image.getWidth();
-		float dv = 1.0f / playerTexture.m_image.getHeight();
-
-		auto c00 = playerTexture.sample(u - du, v - dv, TEXTURE_ADDRESS::WRAP, SAMPLER_FILTER::LINEAR);
-		auto c01 = playerTexture.sample(u - du, v ,		TEXTURE_ADDRESS::WRAP, SAMPLER_FILTER::LINEAR);
-		auto c02 = playerTexture.sample(u - du, v + dv, TEXTURE_ADDRESS::WRAP, SAMPLER_FILTER::LINEAR);
-		
-		auto c10 = playerTexture.sample(u, v - dv,	TEXTURE_ADDRESS::WRAP, SAMPLER_FILTER::LINEAR);
-		auto c11 = playerTexture.sample(u, v,		TEXTURE_ADDRESS::WRAP, SAMPLER_FILTER::LINEAR);
-		auto c12 = playerTexture.sample(u, v + dv,	TEXTURE_ADDRESS::WRAP, SAMPLER_FILTER::LINEAR);
-		 
-		auto c20 = playerTexture.sample(u + du, v - dv, TEXTURE_ADDRESS::WRAP, SAMPLER_FILTER::LINEAR);
-		auto c21 = playerTexture.sample(u + du, v,		TEXTURE_ADDRESS::WRAP, SAMPLER_FILTER::LINEAR);
-		auto c22 = playerTexture.sample(u + du, v + dv, TEXTURE_ADDRESS::WRAP, SAMPLER_FILTER::LINEAR);
-		
-		float* kernel = kernelSobelX;
-		FloatColor finalValX =	c00 * kernel[0] + c10 * kernel[1] + c20 * kernel[2] +
-								c01 * kernel[3] + c11 * kernel[4] + c21 * kernel[5] +
-								c02 * kernel[6] + c12 * kernel[7] + c22 * kernel[8];
-
-		kernel = kernelSobelY;
-		FloatColor finalValY =	c00 * kernel[0] + c10 * kernel[1] + c20 * kernel[2] +
-								c01 * kernel[3] + c11 * kernel[4] + c21 * kernel[5] +
-								c02 * kernel[6] + c12 * kernel[7] + c22 * kernel[8];
-		
-
-
-		//unsigned char grey = static_cast<unsigned char>(finalVal.saturate().toGrey() * 255);
-		unsigned char sx = static_cast<unsigned char>(finalValX.saturate().toGrey() * 255);
-		unsigned char sy = static_cast<unsigned char>(finalValX.saturate().toGrey() * 255);
-
-		Color normal = { sx, sy, 255, 255 };
-
-
-		return normal;
-	};
-
-	Triangle tri;
-	/*tri.v1 = { 250,600,0, Color{255, 255, 255, 255}, 0, 0 };
-	tri.v2 = { 200,400,0, Color{255, 255, 255, 255}, 1, 1 };
-	tri.v3 = { 500,200,0, Color{255, 255, 255, 255}, 0, 1 };
-
-	imgScreen.drawTriangle2D(tri);*/
-
-	tri.v1 = { 0,0,0, Color{0, 255, 255, 255}, 0, 0 };
-	tri.v2 = { (float)imgScreen.getWidth(),0,0, Color{255, 0, 255, 255}, 1, 0};
-	tri.v3 = { 0,(float)imgScreen.getHeight(),0, Color{255, 255, 0, 255}, 0, 1};
+/* This function runs once at shutdown. */
+void SDL_AppQuit(void* appstate, SDL_AppResult result)
+{
 	
-
-	imgScreen.drawTriangle2D(tri, kernelPixelShader);
-
-	tri.v1 = { (float)imgScreen.getWidth(),0,0, Color{0, 255, 255, 255}, 1, 0};
-	tri.v2 = { 0,(float)imgScreen.getHeight(),0, Color{255, 0, 255, 255}, 0, 1};
-	tri.v3 = { (float)imgScreen.getWidth(),(float)imgScreen.getHeight(),0, Color{255, 255, 0, 255}, 1, 1};
-
-	imgScreen.drawTriangle2D(tri, kernelPixelShader);
-
-	//imgScreen.bresehamCircle(240, 400,120, Color{66,77,123,255});
-
-	imgScreen.encode("Screen.bmp");
-
-	return 0;
-
-
 }

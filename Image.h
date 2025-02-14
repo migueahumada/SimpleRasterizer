@@ -101,8 +101,12 @@ public:
 	}
 
 	Color getPixel(unsigned int x, unsigned int y) const;
-	void setPixel(unsigned int x, unsigned int y, const Color& color);
+	void setPixel(int x, int y, const Color& color);
 	void clearColor(const Color& color);
+
+	unsigned char* getPixels() const {
+		return m_pixels;
+	}
 
 	//Color getColor(float u, float v);
 	

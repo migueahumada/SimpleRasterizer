@@ -137,8 +137,11 @@ Color Image::getPixel(unsigned int x, unsigned int y) const{
 	return color;
 }
 
-void Image::setPixel(unsigned int x, unsigned int y, const Color& color)
+void Image::setPixel(int x, int y, const Color& color)
 {
+	if (x >= m_width || x < 0 || y >= m_height || y < 0) {
+		return;
+	}
 	int pixelPos = (y * getPitch()) + (x * getBytesPP());
 	
 	m_pixels[pixelPos + 2] = color.r;
