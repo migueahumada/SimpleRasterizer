@@ -100,7 +100,7 @@ public:
 		return m_bpp / 8;
 	}
 
-	Color getPixel(unsigned int x, unsigned int y) const;
+	Color getPixel(int x, int y) const;
 	void setPixel(int x, int y, const Color& color);
 	void clearColor(const Color& color);
 

@@ -21,7 +21,10 @@ namespace AXIS {
 	};
 }
 
+
+
 struct Face {
+	
 	Triangle tri1;
 	Triangle tri2;
 };
@@ -90,75 +93,75 @@ struct Cube {
 	Cube() = default;
 	~Cube() = default;
 
-	void initCube(float x, float y, float z, float width, float height, float depth, Color color) {
+	void initCube(float x, float y, float z, float width, float height, float depth, const Color& color) {
+		
+		//Front Face
 		faces[0].tri1.v1 = { x, y, z, color, 0, 0 };
-		faces[0].tri1.v2 = { x, y + height, z, color, 1, 0 };
-		faces[0].tri1.v3 = { x + width, y + height, z, color, 0, 1 };
+		faces[0].tri1.v2 = { x + width, y , z, color, 1, 0 };
+		faces[0].tri1.v3 = { x, y + height, z, color, 0, 1 };
 
-		faces[0].tri2.v1 = { x + width, y, z, color, 1, 1 };
-		faces[0].tri2.v2 = { x, y + height, z, color, 0, 1 };
-		faces[0].tri2.v3 = { x + width, y + height, z, color, 1, 0 };
+		faces[0].tri2.v1 = { x + width, y, z, color, 1, 0 };
+		faces[0].tri2.v2 = { x + width, y + height, z, color, 1, 1 };
+		faces[0].tri2.v3 = { x , y + height, z, color, 0, 1 };
 
+		// TODO: Cambiar estooo
 		// Back Face
 		faces[1].tri1.v1 = { x, y, z + depth, color, 0, 0 };
-		faces[1].tri1.v2 = { x + width, y + height, z + depth, color, 1, 1 };
-		faces[1].tri1.v3 = { x, y + height, z + depth, color, 0, 1 };
-
-		faces[1].tri2.v1 = { x, y, z + depth, color, 0, 0 };
-		faces[1].tri2.v2 = { x + width, y, z + depth, color, 1, 0 };
+		faces[1].tri1.v2 = { x, y + height, z + depth, color, 0, 1 };
+		faces[1].tri1.v3 = { x + width, y , z + depth, color, 1, 0 };
+			  
+		faces[1].tri2.v1 = { x + width, y, z + depth, color, 1, 0 };
+		faces[1].tri2.v2 = { x , y + height, z + depth, color, 0, 1 };
 		faces[1].tri2.v3 = { x + width, y + height, z + depth, color, 1, 1 };
 
 		// Left Face
-		faces[2].tri1.v1 = { x, y, z, color, 0, 0 };
-		faces[2].tri1.v2 = { x, y + height, z, color, 1, 0 };
+		faces[2].tri1.v1 = { x, y, z + depth, color, 0, 0 };
+		faces[2].tri1.v2 = { x, y , z, color, 1, 0 };
 		faces[2].tri1.v3 = { x, y + height, z + depth, color, 0, 1 };
 
-		faces[2].tri2.v1 = { x, y, z, color, 0, 0 };
-		faces[2].tri2.v2 = { x, y, z + depth, color, 1, 1 };
-		faces[2].tri2.v3 = { x, y + height, z + depth, color, 1, 0 };
+		faces[2].tri2.v1 = { x, y, z, color, 1, 0 };
+		faces[2].tri2.v2 = { x , y + height, z , color, 1, 1 };
+		faces[2].tri2.v3 = { x, y + height, z + depth, color, 0, 1 };
 
 		// Right Face
-		faces[3].tri1.v1 = { x + width, y, z, color, 0, 0 };
-		faces[3].tri1.v2 = { x + width, y + height, z + depth, color, 1, 1 };
-		faces[3].tri1.v3 = { x + width, y + height, z, color, 0, 1 };
-
-		faces[3].tri2.v1 = { x + width, y, z, color, 0, 0 };
-		faces[3].tri2.v2 = { x + width, y, z + depth, color, 1, 0 };
-		faces[3].tri2.v3 = { x + width, y + height, z + depth, color, 1, 1 };
+		faces[3].tri1.v1 = { x, y, z + depth, color, 0, 0 };
+		faces[3].tri1.v2 = { x, y + height, z + depth, color, 0, 1 };
+		faces[3].tri1.v3 = { x, y , z, color, 1, 0 };
+			  
+		faces[3].tri2.v1 = { x, y, z, color, 1, 0 };
+		faces[3].tri2.v2 = { x, y + height, z + depth, color, 0, 1 };
+		faces[3].tri2.v3 = { x , y + height, z , color, 1, 1 };
 
 		// Top Face
-		faces[4].tri1.v1 = { x, y + height, z, color, 0, 0 };
-		faces[4].tri1.v2 = { x, y + height, z + depth, color, 1, 0 };
-		faces[4].tri1.v3 = { x + width, y + height, z, color, 0, 1 };
+		faces[4].tri1.v1 = { x, y , z+ depth, color, 0, 0 };
+		faces[4].tri1.v2 = { x + width, y , z + depth, color, 1, 0 };
+		faces[4].tri1.v3 = { x , y , z, color, 0, 1 };
 
-		faces[4].tri2.v1 = { x + width, y + height, z, color, 0, 1 };
-		faces[4].tri2.v2 = { x, y + height, z + depth, color, 1, 0 };
-		faces[4].tri2.v3 = { x + width, y + height, z + depth, color, 1, 1 };
+		faces[4].tri2.v1 = { x + width, y , z + depth, color, 1, 0 };
+		faces[4].tri2.v2 = { x + width, y , z , color, 1, 1 };
+		faces[4].tri2.v3 = { x , y, z , color, 0, 1 };
 
 		// Bottom Face
-		faces[5].tri1.v1 = { x, y, z, color, 0, 0 };
-		faces[5].tri1.v2 = { x + width, y, z, color, 1, 0 };
-		faces[5].tri1.v3 = { x, y, z + depth, color, 0, 1 };
-
-		faces[5].tri2.v1 = { x + width, y, z, color, 1, 0 };
-		faces[5].tri2.v2 = { x + width, y, z + depth, color, 1, 1 };
-		faces[5].tri2.v3 = { x, y, z + depth, color, 0, 1 };
+		faces[5].tri1.v1 = { x, y + height, z , color, 0, 0 };
+		faces[5].tri1.v2 = { x + width , y + height , z, color, 1, 0 };
+		faces[5].tri1.v3 = { x , y + height, z + depth, color, 0, 1 };
+			  
+		faces[5].tri2.v1 = { x + width, y + height, z , color, 1, 0 };
+		faces[5].tri2.v2 = { x , y + height, z + depth, color, 0, 1 };
+		faces[5].tri2.v3 = { x + width, y + height, z + depth, color, 1, 1 };
 
 
 	}
 
-	void draw(Image imgScreen, PixelShader pixelShader, Vector3 screenCenter) {
+	void draw(Image& imgScreen, PixelShader pixelShader, const Vector3& screenCenter, const Vector3& view) {
 
-		for (int i = 0; i < MAX_FACES; i++)
-		{
-			imgScreen.drawTriangle2D(faces[i].tri1, pixelShader);
-			imgScreen.drawTriangle2D(faces[i].tri2, pixelShader);
-		}
+		static int count = 6;
 		
 		//Rotate
 
 		for (int i = 0; i < MAX_FACES; i++)
 		{
+			count--;
 			//g_triangle.v1.position = rot(g_triangle.v1.position - g_screenCenter, 5.0f, AXIS::Y) + g_screenCenter;
 			faces[i].tri1.v1.position = rot(faces[i].tri1.v1.position - screenCenter, 5.0f, AXIS::X) + screenCenter;
 			faces[i].tri1.v2.position = rot(faces[i].tri1.v2.position - screenCenter, 5.0f, AXIS::X) + screenCenter;
@@ -183,8 +186,69 @@ struct Cube {
 			faces[i].tri2.v1.position = rot(faces[i].tri2.v1.position - screenCenter, 5.0f, AXIS::Z) + screenCenter;
 			faces[i].tri2.v2.position = rot(faces[i].tri2.v2.position - screenCenter, 5.0f, AXIS::Z) + screenCenter;
 			faces[i].tri2.v3.position = rot(faces[i].tri2.v3.position - screenCenter, 5.0f, AXIS::Z) + screenCenter;
+		}
 
-			imgScreen.drawTriangle2D(faces[i].tri2, pixelShader);
+		for (int i = 0; i < MAX_FACES; i++)
+		{
+			float intensity1;
+			float intensity2;
+
+			//Triangulo 1
+			Vector3 tri1v1v2 = faces[i].tri1.v2.position - faces[i].tri1.v1.position;
+			Vector3 tri1v1v3 = faces[i].tri1.v3.position - faces[i].tri1.v1.position;
+
+			faces[i].tri1.normal = (tri1v1v2 ^ tri1v1v3).normalize();
+
+			intensity1 = faces[i].tri1.normal | view;
+
+			Vector3 tri2v1v2 = faces[i].tri2.v2.position - faces[i].tri2.v1.position;
+			Vector3 tri2v1v3 = faces[i].tri2.v3.position - faces[i].tri2.v1.position;
+
+			faces[i].tri2.normal = (tri2v1v2 ^ tri2v1v3).normalize();
+
+			intensity2 = faces[i].tri2.normal | view;
+
+			//if (intensity1 < 0 && intensity2 < 0)
+			{
+				imgScreen.drawTriangle2D(faces[i].tri1, pixelShader);
+				imgScreen.drawTriangle2D(faces[i].tri2, pixelShader);
+			}
+
+			//Triangulo 2
+			
+
+			/*if (intensity < 0)
+			{
+				imgScreen.drawTriangle2D(faces[i].tri2, pixelShader);
+			}*/
+
+			//Triangulo 2
+
+			//-------------------------------------------
+			//Get the normal vector of the triangle
+			/*
+
+			Vector3 v1v2 = g_triangle.v2.position - g_triangle.v1.position;
+			Vector3 v1v3 = g_triangle.v3.position - g_triangle.v1.position;
+			g_triangle.normal = (v1v2 ^ v1v3).normalize();
+
+			Vector3 view = Vector3{ 0, 0, 1 } + g_screenCenter;
+
+
+
+			float intensity = g_triangle.normal | view;
+
+			g_cube.draw(g_imgScreen, pixelShader, g_screenCenter);
+
+			if (intensity > 0)
+			{
+				//g_imgScreen.drawTriangle2D(g_triangle, pixelShader);
+			}
+
+			*/
+			//-----------------------------------------------
+			//imgScreen.drawTriangle2D(faces[i].tri1, pixelShader);
+			//imgScreen.drawTriangle2D(faces[i].tri2, pixelShader);
 		}
 
 	};
@@ -326,13 +390,13 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 		return SDL_APP_FAILURE;
 	}
 
-	g_triangle.v1 = { 0, 0, 0, Color{0, 255, 255, 255}, 0, 0 };
-	g_triangle.v2 = { 200, 0, 0, Color{255, 0, 255, 255}, 1, 0 };
-	g_triangle.v3 = { 0, 200, 0, Color{255, 255, 0, 255}, 0, 1 };
+	//g_triangle.v1 = { 0, 0, 0, Color{0, 255, 255, 255}, 0, 0 };
+	//g_triangle.v2 = { 200, 0, 0, Color{255, 0, 255, 255}, 1, 0 };
+	//g_triangle.v3 = { 0, 200, 0, Color{255, 255, 0, 255}, 0, 1 };
 
-	g_triangle.v1.position = g_triangle.v1.position + g_screenCenter;
-	g_triangle.v2.position = g_triangle.v2.position + g_screenCenter;
-	g_triangle.v3.position = g_triangle.v3.position + g_screenCenter;
+	//g_triangle.v1.position = g_triangle.v1.position + g_screenCenter;
+	//g_triangle.v2.position = g_triangle.v2.position + g_screenCenter;
+	//g_triangle.v3.position = g_triangle.v3.position + g_screenCenter;
 
 	g_cube.initCube(g_screenCenter.x, g_screenCenter.y, g_screenCenter.z, 200,200,200,Color{34,45,56,255});
 
@@ -349,50 +413,40 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 
 SDL_AppResult SDL_AppIterate(void* appstate)
 {
-	
 
 	FloatColor color = { 0.0f, 0.0f, 0.0f, 0.0f };
 	SDL_SetRenderDrawColorFloat(g_renderer,color.r,color.g,color.b,color.a);
 	SDL_RenderClear(g_renderer);
 	g_imgScreen.clearColor({ 0, 0, 0, 255 });
 
-	
-
 	//g_imgScreen.setPixel(rand() % g_imgScreen.getWidth(), rand() % g_imgScreen.getHeight(), Color{255,0,0,255 });
-
-
 
 	/*rotateY(g_triangle.v1.position, 3.0f);
 	rotateY(g_triangle.v2.position, 3.0f);
 	rotateY(g_triangle.v3.position, 3.0f);*/
 	
 
-	g_triangle.v1.position = rot(g_triangle.v1.position - g_screenCenter, 5.0f, AXIS::Y) + g_screenCenter;
-	g_triangle.v2.position = rot(g_triangle.v2.position - g_screenCenter, 5.0f, AXIS::Y) + g_screenCenter;
-	g_triangle.v3.position = rot(g_triangle.v3.position - g_screenCenter, 5.0f, AXIS::Y) + g_screenCenter;
+	//g_triangle.v1.position = rot(g_triangle.v1.position - g_screenCenter, 5.0f, AXIS::Y) + g_screenCenter;
+	//g_triangle.v2.position = rot(g_triangle.v2.position - g_screenCenter, 5.0f, AXIS::Y) + g_screenCenter;
+	//g_triangle.v3.position = rot(g_triangle.v3.position - g_screenCenter, 5.0f, AXIS::Y) + g_screenCenter;
 
+	////Get the normal vector of the triangle
+	//Vector3 v1v2 = g_triangle.v2.position - g_triangle.v1.position;
+	//Vector3 v1v3 = g_triangle.v3.position - g_triangle.v1.position;
+	//g_triangle.normal = (v1v2 ^ v1v3).normalize();
 
-	//Get the normal vector of the triangle
-	Vector3 v1v2 = g_triangle.v2.position - g_triangle.v1.position;
-	Vector3 v1v3 = g_triangle.v3.position - g_triangle.v1.position;
-	g_triangle.normal = (v1v2 ^ v1v3).normalize();
+	Vector3 view = Vector3{ 0, 0, 1 };
 
-	Vector3 view = Vector3{ 0, 0, 1 } + g_screenCenter;
-
-	
-
-	float intensity = g_triangle.normal | view;
+	//float intensity = g_triangle.normal | view;
 
 	
-	g_cube.draw(g_imgScreen, pixelShader, g_screenCenter);
+	g_cube.draw(g_imgScreen, pixelShader, g_screenCenter, view);
 	
-	if (intensity > 0)
-	{
-		
-		//g_imgScreen.drawTriangle2D(g_triangle, pixelShader);
-		
-		
-	}
+	//if (intensity > 0)
+	//{
+	//	//g_imgScreen.drawTriangle2D(g_triangle, pixelShader);
+	//	
+	//}
 
 	SDL_Surface* surface = nullptr;
 

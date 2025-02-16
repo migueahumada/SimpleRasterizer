@@ -113,7 +113,7 @@ void Image::decode(const char* filename)
 
 }
 
-Color Image::getPixel(unsigned int x, unsigned int y) const{
+Color Image::getPixel(int x, int y) const{
 
 	if (!m_pixels)
 	{
@@ -463,7 +463,8 @@ void Image::drawBottomTri(const Triangle& tri, const PixelShader& pixelShader)
 	if (v3.position.x < v2.position.x) std::swap(v2, v3);
 
 	int height = v3.position.y - v1.position.y;
-	if (height <= 0) return;
+	if (height <= 0) 
+		return;
 
 	float dx_left = static_cast<float>(v2.position.x - v1.position.x) / height;
 	float dx_right = static_cast<float>(v3.position.x - v1.position.x) / height;
@@ -513,7 +514,10 @@ void Image::drawTopTri(const Triangle& tri, const PixelShader& pixelShader)
 	if (v2.position.x < v1.position.x) std::swap(v1, v2);
 
 	int height = v3.position.y - v1.position.y;
-	if (height <= 0) return;
+	if (height <= 0) 
+		return;
+
+
 
 	float dx_left = static_cast<float>(v3.position.x - v1.position.x) / height;
 	float dx_right = static_cast<float>(v3.position.x - v2.position.x) / height;
@@ -590,7 +594,7 @@ void Image::drawTriangle2D(const Triangle& tri, const PixelShader& pixelShader)
 		float new_u = v1.u + ((v2.position.y - v1.position.y) * 
 							 (v3.u - v1.u) / (v3.position.y - v1.position.y));
 		
-		float new_v = v1.u + ((v2.position.y - v1.position.y) * 
+		float new_v = v1.v + ((v2.position.y - v1.position.y) * 
 							 (v3.v - v1.v) / (v3.position.y - v1.position.y));
 		
 		Vertex new_vtx = { new_x, v2.position.y, 0.0f, new_color.toColor(), new_u, new_v };
