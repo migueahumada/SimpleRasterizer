@@ -3,6 +3,11 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <vector>
+#include <cassert>
+
+#include <fstream>
+
+#include <d3dcompiler.h>
 
 
 template <typename T>
@@ -134,6 +139,8 @@ GraphicsAPI::GraphicsAPI(void* pWndHandle) : m_pWndHandl(pWndHandle)
 
 	m_pDeviceContext->RSSetViewports(1, &vp);
 
+	m_pVertexShader = CreateVertexShader(L"BasicVertexShader.hlsl","vertex_main","vs_5_0");
+	m_pPixelShader = CreatePixelShader(L"BasicPixelShader.hlsl", "pixel_main", "ps_5_0");
 }
 
 GraphicsAPI::~GraphicsAPI()
@@ -206,4 +213,53 @@ ID3D11Texture2D* GraphicsAPI::CreateTexture(int width,
 	}
 
 	return pTexture;
+}
+
+
+VertexShader* GraphicsAPI::CreateVertexShader(const Path& filePath, const String& entryFunction)
+{
+	VertexShader* pVertexShader = new VertexShader();
+	if(!pVertexShader->Compile(filePath, entryFunction, "vs_5_0"))
+	{
+		delete pVertexShader;
+		return nullptr;
+	}
+
+	HRESULT hr = m_pDevice->CreateVertexShader(	pVertexShader->GetBlob()->GetBufferPointer(),
+												pVertexShader->GetBlob()->GetBufferSize(),
+												nullptr,
+												&pVertexShader->m_pVertexShader);
+
+	if (FAILED(hr))
+	{
+		MessageBox(nullptr, L"Failed to create vertex shader", L"Error", MB_OK);
+		delete pVertexShader;
+		return nullptr;
+	}
+
+	return pVertexShader;
+}
+
+PixelShader* GraphicsAPI::CreatePixelShader(const Path& filePath, const String& entryFunction)
+{
+	PixelShader* pPixelShader = new PixelShader();
+	if (!pPixelShader->Compile(filePath, entryFunction, "vs_5_0"))
+	{
+		delete pPixelShader;
+		return nullptr;
+	}
+
+	HRESULT hr = m_pDevice->CreatePixelShader(pPixelShader->GetBlob()->GetBufferPointer(),
+		pPixelShader->GetBlob()->GetBufferSize(),
+		nullptr,
+		&pPixelShader->m_pPixelShader);
+
+	if (FAILED(hr))
+	{
+		MessageBox(nullptr, L"Failed to create vertex shader", L"Error", MB_OK);
+		delete pPixelShader;
+		return nullptr;
+	}
+
+	return pPixelShader;
 }

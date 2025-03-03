@@ -11,6 +11,7 @@
 #include "GraphicsAPI.h"
 
 SDL_Window* g_pWindow = nullptr;
+
 GraphicsAPI* g_pGraphicsAPI = nullptr;
 
 

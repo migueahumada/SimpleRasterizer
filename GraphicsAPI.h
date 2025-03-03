@@ -1,7 +1,17 @@
 #pragma once
+
 #include <d3d11_2.h> //Versión básica de D3D11
 #define SAFE_RELEASE(p) { if(p){p->Release(); p = nullptr;} }
-#include <cassert>
+
+#include <cstring>
+#include <fstream>
+#include "Shader.h"
+//This should be cstring
+
+using Path = std::wstring;
+using String = std::string;
+
+
 class GraphicsAPI
 {
 public:
@@ -20,6 +30,13 @@ public:
 									UINT cpuAccessFlags = 0,
 									UINT mipLevels = 1);
 
+
+	VertexShader* CreateVertexShader(	const Path& filePath,
+										const String& entryFunction);
+
+	PixelShader* CreatePixelShader(const Path& filePath,
+									const String& entryFunction);
+
 public:
 	void* m_pWndHandl = nullptr;
 
@@ -29,6 +46,14 @@ public:
 	IDXGISwapChain1* m_pSwapChain = nullptr;
 	ID3D11RenderTargetView* m_pBackBufferRTV = nullptr;
 	ID3D11DepthStencilView* m_pBackBufferDSV = nullptr;
+
+	// Programa que se va a ejecutar una vez por cada vértice
+	ID3D11VertexShader* m_pVertexShader = nullptr;
+
+	// Programa que se va a ejecutar una vez por cada pixel
+	ID3D11PixelShader* m_pPixelShader = nullptr;
+
+	ID3D11InputLayout* m_pInputLayout = nullptr;
 
 };
 
