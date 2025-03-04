@@ -12,8 +12,9 @@
 
 SDL_Window* g_pWindow = nullptr;
 
-GraphicsAPI* g_pGraphicsAPI = nullptr;
-
+UPtr <GraphicsAPI> g_pGraphicsAPI;
+UPtr<VertexShader> g_pVertexShader;
+UPtr<PixelShader> g_pPixelShader;
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
@@ -33,8 +34,25 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 											nullptr);
 	if (pWndHandle)
 	{
-		g_pGraphicsAPI = new GraphicsAPI(pWndHandle);
+		g_pGraphicsAPI = make_unique<GraphicsAPI>(pWndHandle);
+		if(!g_pGraphicsAPI)
+		{
+			return SDL_APP_FAILURE;
+		}
 	}
+
+	g_pVertexShader = g_pGraphicsAPI->CreateVertexShader(L"BasicShader.hlsl", "vertex_main");
+	if (!g_pVertexShader)
+	{
+		return SDL_APP_FAILURE;
+	}
+
+	g_pPixelShader = g_pGraphicsAPI->CreatePixelShader(L"BasicShader.hlsl", "pixel_main");
+	if(!g_pPixelShader)
+	{
+		return SDL_APP_FAILURE;
+	}
+
 		
 	return SDL_APP_CONTINUE;
 }
@@ -56,11 +74,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 /* This function runs once at shutdown. */
 void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
-	if (g_pGraphicsAPI)
-	{
-		delete g_pGraphicsAPI;
-		g_pGraphicsAPI = nullptr;
-	}
+
 	if (g_pWindow)
 	{
 		SDL_DestroyWindow(g_pWindow);

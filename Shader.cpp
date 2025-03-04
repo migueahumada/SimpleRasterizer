@@ -1,5 +1,7 @@
 #include "Shader.h"
 
+
+
 bool Shader::Compile(const Path& filePath, const String& entryFunction, const String& shaderModel)
 {
 

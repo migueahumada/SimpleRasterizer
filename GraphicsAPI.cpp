@@ -139,8 +139,7 @@ GraphicsAPI::GraphicsAPI(void* pWndHandle) : m_pWndHandl(pWndHandle)
 
 	m_pDeviceContext->RSSetViewports(1, &vp);
 
-	m_pVertexShader = CreateVertexShader(L"BasicVertexShader.hlsl","vertex_main","vs_5_0");
-	m_pPixelShader = CreatePixelShader(L"BasicPixelShader.hlsl", "pixel_main", "ps_5_0");
+	
 }
 
 GraphicsAPI::~GraphicsAPI()
@@ -216,12 +215,11 @@ ID3D11Texture2D* GraphicsAPI::CreateTexture(int width,
 }
 
 
-VertexShader* GraphicsAPI::CreateVertexShader(const Path& filePath, const String& entryFunction)
+UPtr<VertexShader> GraphicsAPI::CreateVertexShader(const Path& filePath, const String& entryFunction)
 {
-	VertexShader* pVertexShader = new VertexShader();
+	UPtr<VertexShader> pVertexShader = make_unique<VertexShader>();
 	if(!pVertexShader->Compile(filePath, entryFunction, "vs_5_0"))
 	{
-		delete pVertexShader;
 		return nullptr;
 	}
 
@@ -233,19 +231,17 @@ VertexShader* GraphicsAPI::CreateVertexShader(const Path& filePath, const String
 	if (FAILED(hr))
 	{
 		MessageBox(nullptr, L"Failed to create vertex shader", L"Error", MB_OK);
-		delete pVertexShader;
 		return nullptr;
 	}
 
 	return pVertexShader;
 }
 
-PixelShader* GraphicsAPI::CreatePixelShader(const Path& filePath, const String& entryFunction)
+UPtr<PixelShader> GraphicsAPI::CreatePixelShader(const Path& filePath, const String& entryFunction)
 {
-	PixelShader* pPixelShader = new PixelShader();
-	if (!pPixelShader->Compile(filePath, entryFunction, "vs_5_0"))
+	UPtr<PixelShader> pPixelShader = make_unique<PixelShader>();
+	if (!pPixelShader->Compile(filePath, entryFunction, "ps_5_0"))
 	{
-		delete pPixelShader;
 		return nullptr;
 	}
 
@@ -256,8 +252,7 @@ PixelShader* GraphicsAPI::CreatePixelShader(const Path& filePath, const String& 
 
 	if (FAILED(hr))
 	{
-		MessageBox(nullptr, L"Failed to create vertex shader", L"Error", MB_OK);
-		delete pPixelShader;
+		MessageBox(nullptr, L"Failed to create pixel shader", L"Error", MB_OK);
 		return nullptr;
 	}
 
