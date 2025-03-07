@@ -2,12 +2,9 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
-#include <vector>
 #include <cassert>
 
-#include <fstream>
-
-#include <d3dcompiler.h>
+#include "GraphicsBuffer.h"
 
 
 template <typename T>
@@ -257,4 +254,87 @@ UPtr<PixelShader> GraphicsAPI::CreatePixelShader(const Path& filePath, const Str
 	}
 
 	return pPixelShader;
+}
+
+ID3D11InputLayout* GraphicsAPI::CreateInputLayout(	Vector<D3D11_INPUT_ELEMENT_DESC> pInputElementDesc, 
+													const UPtr<VertexShader>& pVertexShader)
+{
+	ID3D11InputLayout* pInputLayout = nullptr;
+
+	if (pInputElementDesc.empty())
+	{
+		return nullptr;
+	}
+
+	HRESULT hr = m_pDevice->CreateInputLayout(	pInputElementDesc.data(),
+												pInputElementDesc.size(),
+												pVertexShader->GetBlob()->GetBufferPointer(),
+												pVertexShader->GetBlob()->GetBufferSize(),
+												&pInputLayout);
+	
+	if (FAILED(hr))
+	{
+		MessageBox(nullptr, L"Failed to create input layout", L"Error", MB_OK);
+		return nullptr;
+	}
+	
+	return pInputLayout;
+}
+
+UPtr<GraphicsBuffer> GraphicsAPI::CreateVertexBuffer(const Vector<char>& data)
+{
+	UPtr<GraphicsBuffer> pVertexBuffer = make_unique<GraphicsBuffer>();
+
+	D3D11_BUFFER_DESC desc;
+	memset(&desc, 0, sizeof(D3D11_BUFFER_DESC));
+
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.ByteWidth = data.size();
+	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	desc.CPUAccessFlags = 0;
+	desc.MiscFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA initData;
+	initData.pSysMem = data.data();
+	initData.SysMemPitch = 0;
+	initData.SysMemSlicePitch = 0;
+
+	HRESULT hr = m_pDevice->CreateBuffer(&desc, &initData, &pVertexBuffer->m_pBuffer);
+	if (FAILED(hr))
+	{
+		MessageBox(nullptr, L"Failed to create Vertex Buffer", L"Error", MB_OK);
+		return nullptr;
+	}
+
+
+	return pVertexBuffer;
+}
+
+UPtr<GraphicsBuffer> GraphicsAPI::CreateIndexBuffer(const Vector<char>& data)
+{
+	UPtr<GraphicsBuffer> pIndexBuffer = make_unique<GraphicsBuffer>();
+
+	D3D11_BUFFER_DESC desc;
+	memset(&desc, 0, sizeof(D3D11_BUFFER_DESC));
+
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.ByteWidth = data.size();
+	desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	desc.CPUAccessFlags = 0;
+	desc.MiscFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA initData;
+	initData.pSysMem = data.data();
+	initData.SysMemPitch = 0;
+	initData.SysMemSlicePitch = 0;
+
+	HRESULT hr = m_pDevice->CreateBuffer(&desc, &initData, &pIndexBuffer->m_pBuffer);
+	if (FAILED(hr))
+	{
+		MessageBox(nullptr, L"Failed to create Index Buffer", L"Error", MB_OK);
+		return nullptr;
+	}
+
+
+	return pIndexBuffer;
 }

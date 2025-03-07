@@ -88,10 +88,18 @@ struct FloatColor {
 };
 
 
-struct Vector3 {
+struct Vector3 
+{
 	float x;
 	float y;
 	float z;
+
+	Vector3() = default;
+	Vector3(float _x, float _y = 0.0f, float _z = 0.0f) : 
+		x(_x), 
+		y(_y), 
+		z(_z) 
+	{}
 
 	Vector3 operator+(const Vector3& v) const {
 		return { x + v.x, y + v.y, z + v.z };

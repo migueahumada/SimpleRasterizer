@@ -40,7 +40,7 @@ public:
 		SAFE_RELEASE(m_pVertexShader);
 	};
 
-protected:
+
 	friend class GraphicsAPI;
 	ID3D11VertexShader* m_pVertexShader = nullptr;
 };
@@ -52,7 +52,7 @@ public:
 	virtual ~PixelShader() {
 		SAFE_RELEASE(m_pPixelShader);
 	};
-protected:
+
 	friend class GraphicsAPI;
 	ID3D11PixelShader* m_pPixelShader = nullptr;
 };

@@ -138,6 +138,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="GraphicsAPI.cpp" />
+    <ClCompile Include="GraphicsBuffer.cpp" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="main.cpp.bak">
@@ -148,6 +149,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GraphicsAPI.h" />
+    <ClInclude Include="GraphicsBuffer.h" />
     <ClInclude Include="HelperMacros.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="MathObjects.h" />

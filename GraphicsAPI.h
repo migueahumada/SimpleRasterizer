@@ -5,6 +5,7 @@
 #include <fstream>
 #include "HelperMacros.h"
 #include "Shader.h"
+#include "GraphicsBuffer.h"
 
 //This should be cstring
 
@@ -32,10 +33,15 @@ public:
 
 
 	UPtr<VertexShader> CreateVertexShader(	const Path& filePath,
-										const String& entryFunction);
+											const String& entryFunction);
 
 	UPtr<PixelShader> CreatePixelShader(const Path& filePath,
-									const String& entryFunction);
+										const String& entryFunction);
+	ID3D11InputLayout* CreateInputLayout(	Vector<D3D11_INPUT_ELEMENT_DESC> pInputElementDesc,
+											const UPtr<VertexShader>& pVertexShader);
+
+	UPtr<GraphicsBuffer> CreateVertexBuffer(const Vector<char>& data);
+	UPtr<GraphicsBuffer> CreateIndexBuffer(const Vector<char>& data);
 
 public:
 	void* m_pWndHandl = nullptr;
@@ -46,6 +52,7 @@ public:
 	IDXGISwapChain1* m_pSwapChain = nullptr;
 	ID3D11RenderTargetView* m_pBackBufferRTV = nullptr;
 	ID3D11DepthStencilView* m_pBackBufferDSV = nullptr;
+	
 
 };
 

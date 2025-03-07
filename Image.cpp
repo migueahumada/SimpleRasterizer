@@ -597,7 +597,8 @@ void Image::drawTriangle2D(const Triangle& tri, const PixelShader& pixelShader)
 		float new_v = v1.v + ((v2.position.y - v1.position.y) * 
 							 (v3.v - v1.v) / (v3.position.y - v1.position.y));
 		
-		Vertex new_vtx = { new_x, v2.position.y, 0.0f, new_color.toColor(), new_u, new_v };
+		Vertex new_vtx = { Vector3(new_x, v2.position.y, 0.0f ), new_color.toColor(), new_u, new_v 
+	};
 
 		drawBottomTri({ v1, new_vtx, v2 }, pixelShader);
 		drawTopTri({ v2, new_vtx, v3 }, pixelShader);
