@@ -5,8 +5,8 @@
 #include <iostream>
 #include "MathObjects.h"
 
-#define WIDTH 640
-#define HEIGHT 480
+#define WIDTH 1280
+#define HEIGHT 720
 
 
 #include "GraphicsAPI.h"
@@ -15,6 +15,13 @@ struct MODEL_VERTEX
 {
 	Vector3 position;
 	Vector3 color;
+};
+
+struct MatrixCollection
+{
+	Matrix4 world;
+	Matrix4 view;
+	Matrix4 projection;
 };
 
 SDL_Window* g_pWindow = nullptr;
@@ -26,6 +33,14 @@ UPtr<PixelShader> g_pPixelShader;
 ID3D11InputLayout* g_pInputLayout = nullptr;
 UPtr<GraphicsBuffer> g_pVertexBuffer;
 UPtr<GraphicsBuffer> g_pIndexBuffer;
+ID3D11RasterizerState1* g_pRS_Default = nullptr;
+ID3D11RasterizerState1* g_pRS_Wireframe = nullptr;
+ID3D11RasterizerState1* g_pRS_No_Cull = nullptr;
+
+UPtr<GraphicsBuffer> g_pCB_WVP;
+MatrixCollection g_WVP;
+
+Camera g_Camera;
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
@@ -145,6 +160,38 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 		return SDL_APP_FAILURE;
 	}
 
+	g_Camera.SetLookAt(Vector3(5, -5, -5), Vector3(0, 0, 0), Vector3(0, 1, 0));
+	g_Camera.SetPerspective(3.141592653f/4.0f,WIDTH,HEIGHT,0.1f,100.0f);
+
+	g_WVP.world.Identity();
+	g_WVP.view = g_Camera.getViewMatrix();
+	g_WVP.projection = g_Camera.getProjectionMatrix();
+	
+	g_WVP.world.Transpose();
+	g_WVP.view.Transpose();
+	g_WVP.projection.Transpose();
+
+	Vector<char> matrix_data;
+	matrix_data.resize(sizeof(g_WVP));
+	memcpy(matrix_data.data(), &g_WVP, sizeof(g_WVP));
+	g_pCB_WVP = g_pGraphicsAPI->CreateConstantBuffer(matrix_data);
+
+	CD3D11_RASTERIZER_DESC1 descRD(D3D11_DEFAULT);
+	g_pGraphicsAPI->m_pDevice->CreateRasterizerState1(&descRD, &g_pRS_Default);
+
+	descRD.FillMode = D3D11_FILL_WIREFRAME;
+	g_pGraphicsAPI->m_pDevice->CreateRasterizerState1(&descRD, &g_pRS_Wireframe);
+
+	descRD.CullMode = D3D11_CULL_NONE;
+	g_pGraphicsAPI->m_pDevice->CreateRasterizerState1(&descRD, &g_pRS_No_Cull);
+
+	/*Matrix4 posMatrix;
+	posMatrix.Identity();
+	posMatrix.Translate(Vector3(5.0f,6.0f,7.0f));
+
+	Vector3 tempPos(0.0f);
+	Vector3 res = posMatrix.TansformPosition(tempPos);*/
+
 	return SDL_APP_CONTINUE;
 }
 
@@ -206,9 +253,64 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 		DXGI_FORMAT_R16_UINT,
 		0);
 
-	//g_pGraphicsAPI->m_pDeviceContext->Draw(3,0);
-	//Los dibujamos de manera indexada
-	g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(36,0,0);
+	static float rotationAngle = 0.0f;
+	rotationAngle += 0.001f;
+
+	Matrix4 translation;
+	translation.Identity();
+	translation.Translate(Vector3(2.5,0,0));
+
+	Matrix4 translation2;
+	translation2.Identity();
+	translation2.Translate(Vector3(-2.5, 0, 0));
+
+	Matrix4 translation3;
+	translation3.Identity();
+	translation3.Translate(Vector3(-2.5, 0, -5.5));
+
+	Matrix4 rotation;
+	rotation.RotateY(rotationAngle);
+
+	g_WVP.world =  rotation * translation;
+
+	//g_WVP.world.RotateY(rotationAngle);
+
+	//g_Camera.SetLookAt(Vector3(5,sinf(rotationAngle)* -5, -5),Vector3(0,0,0),Vector3(0,1,0));
+	//g_WVP.view = g_Camera.getViewMatrix();
+	
+	g_Camera.SetPerspective(3.141592653f / 4.0f, WIDTH, HEIGHT, 0.1f, 100.0f);
+	g_WVP.projection = g_Camera.getProjectionMatrix();
+
+
+	g_WVP.world.Transpose();
+	//g_WVP.view.Transpose();
+	g_WVP.projection.Transpose();
+
+	Vector<char> matrix_data;
+	matrix_data.resize(sizeof(g_WVP));
+	memcpy(matrix_data.data(), &g_WVP, sizeof(g_WVP));
+	
+	g_pGraphicsAPI->m_pDeviceContext->VSSetConstantBuffers(0, 1, &g_pCB_WVP->m_pBuffer);
+
+	g_pGraphicsAPI->m_pDeviceContext->RSSetState(g_pRS_Default);
+	g_pGraphicsAPI->writeToBuffer(g_pCB_WVP,matrix_data);
+	g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(36,0,0); //Los dibujamos de manera indexada
+
+	rotation.RotateY(-rotationAngle);
+	g_WVP.world = rotation * translation2;
+	g_WVP.world.Transpose();
+	memcpy(matrix_data.data(), &g_WVP, sizeof(g_WVP));
+	g_pGraphicsAPI->m_pDeviceContext->RSSetState(g_pRS_Wireframe);
+	g_pGraphicsAPI->writeToBuffer(g_pCB_WVP, matrix_data);
+	g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(36, 0, 0);
+
+	rotation.RotateY(-rotationAngle);
+	g_WVP.world = rotation * translation3;
+	g_WVP.world.Transpose();
+	memcpy(matrix_data.data(), &g_WVP, sizeof(g_WVP));
+	g_pGraphicsAPI->m_pDeviceContext->RSSetState(g_pRS_No_Cull);
+	g_pGraphicsAPI->writeToBuffer(g_pCB_WVP, matrix_data);
+	g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(36, 0, 0);
 
 	//Presenatmos
 	g_pGraphicsAPI->m_pSwapChain->Present(0,0);

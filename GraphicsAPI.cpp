@@ -338,3 +338,38 @@ UPtr<GraphicsBuffer> GraphicsAPI::CreateIndexBuffer(const Vector<char>& data)
 
 	return pIndexBuffer;
 }
+
+UPtr<GraphicsBuffer> GraphicsAPI::CreateConstantBuffer(const Vector<char>& data)
+{
+	UPtr<GraphicsBuffer> pConstantBuffer = make_unique<GraphicsBuffer>();
+
+	D3D11_BUFFER_DESC desc;
+	memset(&desc, 0, sizeof(D3D11_BUFFER_DESC));
+
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.ByteWidth = data.size();
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	desc.CPUAccessFlags = 0;
+	desc.MiscFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA initData;
+	initData.pSysMem = data.data();
+	initData.SysMemPitch = 0;
+	initData.SysMemSlicePitch = 0;
+
+	HRESULT hr = m_pDevice->CreateBuffer(&desc, &initData, &pConstantBuffer->m_pBuffer);
+	if (FAILED(hr))
+	{
+		MessageBox(nullptr, L"Failed to create constant Buffer", L"Error", MB_OK);
+		return nullptr;
+	}
+
+
+	return pConstantBuffer;
+}
+
+void GraphicsAPI::writeToBuffer(const UPtr<GraphicsBuffer>& pBuffer, const Vector<char>& data)
+{
+	
+	m_pDeviceContext->UpdateSubresource(pBuffer->m_pBuffer, 0, nullptr, data.data(), 0, 0);
+}
