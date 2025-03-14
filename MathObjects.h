@@ -151,6 +151,154 @@ struct Vector3
 
 };
 
+struct Matrix4
+{
+	Matrix4() = default;
+
+	void Identity() 
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			for (int j = 0; j < 4; ++j)
+			{
+				if (i == j)
+				{
+					m[i][j] = 1.0f;
+					continue;
+				}
+				
+				m[i][j] = 0.0f;
+				
+			}
+		}
+	}
+	//Es un sistema nuevo de coordenadas ltieralmente!!!
+	void LookAt(const Vector3& eyePos, const Vector3& targetPos, const Vector3& upDir) 
+	{
+		const Vector3 ZAxis = (eyePos - targetPos).normalize();
+		const Vector3 XAxis = upDir.cross(ZAxis).normalize();
+		const Vector3 YAxis = ZAxis.cross(XAxis);
+
+		m[0][0] = XAxis.x;
+		m[1][0] = XAxis.y;
+		m[2][0] = XAxis.z;
+
+		m[0][1] = YAxis.x;
+		m[1][1] = YAxis.y;
+		m[2][1] = YAxis.z;
+
+		m[0][2] = ZAxis.x;
+		m[1][2] = ZAxis.y;
+		m[2][2] = ZAxis.z;
+
+		m[0][3] = 0.0f;
+		m[1][3] = 0.0f;
+		m[2][3] = 0.0f;
+
+		Vector3 eyeNeg = -eyePos;
+
+		m[3][0] = eyePos | XAxis;
+		m[3][1] = eyePos | YAxis;
+		m[3][2] = eyePos | ZAxis;
+		m[3][3] = 1.0f;
+	}
+
+	//Proyección puede no ser una perspectiva
+	//Usamos dos matrices de proyección diferentes.
+	// Uno es usar matrices de perspectiva
+	// Uno es perspecttiva ortográfica -> Es cuadrada, donde no queremos que haya deformación.
+
+	//Se escala según la profundidad.
+	void Perspective(float halfFOV, float widthScreen, float heightScreen, float MinZ, float MaxZ) 
+	{
+		float plane0[4] = { 1.0f / tanf(halfFOV), 0.0f, 0.0f, 0.0f };
+		//Aspectratio-> dformación con respecto a la reosluciónd ela pantalla.
+		float plane1[4] = { 0.0f, widthScreen / tanf(halfFOV) / heightScreen, 0.0f							,0.0f};
+		float plane2[4] = { 0.0f, 0.0f										, MaxZ / (MaxZ - MinZ)			,1.0f };
+		float plane3[4] = { 0.0f, 0.0f										,-MinZ * MaxZ / (MaxZ - MinZ)	,0.0f };
+		
+		m[0][0] = plane0[0];
+		m[0][1] = plane0[1];
+		m[0][2] = plane0[2];
+		m[0][3] = plane0[3];
+		
+		m[1][0] = plane1[0];
+		m[1][1] = plane1[1];
+		m[1][2] = plane1[2];
+		m[1][3] = plane1[3];
+
+		m[2][0] = plane2[0];
+		m[2][1] = plane2[1];
+		m[2][2] = plane2[2];
+		m[2][3] = plane2[3];
+
+		m[3][0] = plane3[0];
+		m[3][1] = plane3[1];
+		m[3][2] = plane3[2];
+		m[3][3] = plane3[3];
+	
+	
+	}
+	void Transpose() 
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			for (int j = i + 1; j < 4; j++)
+			{
+				float temp = m[i][j];
+				m[i][j] = m[j][i];
+				m[j][i] = temp;
+			}
+		}
+	}
+	void Translate(const Vector3& translation) {
+		m[3][0] += translation.x;
+		m[3][1] += translation.y;
+		m[3][2] += translation.z;
+	}
+
+	Vector3 TansformPosition(const Vector3& v) const 
+	{
+		return Vector3{
+			v.x * m[0][0] + v.y * m[1][0] + v.x * m[2][0] + m[3][0] * 1.0f,
+			v.x * m[0][1] + v.y * m[1][1] + v.x * m[2][1] + m[3][1] * 1.0f,
+			v.x * m[0][2] + v.y * m[1][2] + v.x * m[2][2] + m[3][2] * 1.0f};
+	}
+
+	Vector3 TansformDirection(const Vector3& v) const
+	{
+		return Vector3{
+			v.x * m[0][0] + v.y * m[1][0] + v.x * m[2][0] + m[3][0] * 0.0f,
+			v.x * m[0][1] + v.y * m[1][1] + v.x * m[2][1] + m[3][1] * 0.0f,
+			v.x * m[0][2] + v.y * m[1][2] + v.x * m[2][2] + m[3][2] * 0.0f };
+	}
+
+	void RotateY(float angle) {
+		Identity();
+		m[0][0] =  cos(angle);
+		m[0][2] =  sin(angle);
+		m[2][0] = -sin(angle);
+		m[2][2] =  cos(angle);
+	}
+
+	Matrix4 operator*(const Matrix4& matrix) const {
+		Matrix4 result;
+		for (int i = 0; i < 4; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				result.m[i][j] = m[i][0] * matrix.m[0][j] +
+								 m[i][1] * matrix.m[1][j] +
+								 m[i][2] * matrix.m[2][j] +
+								 m[i][3] * matrix.m[3][j];
+			}
+		}
+		return result;
+	}
+
+	float m[4][4];
+};
+
 struct Vertex {
 	Vector3 position;
 	Color color;
@@ -160,4 +308,41 @@ struct Vertex {
 struct Triangle {
 	Vertex v1, v2, v3;
 	Vector3 normal;
+};
+
+struct Camera 
+{
+	void SetLookAt(const Vector3& eyePos, const Vector3& targetPos, const Vector3& upDir) 
+	{
+		position = eyePos;
+		target = targetPos;
+		up = upDir;
+		viewMatrix.LookAt(position, target, up);
+	}
+
+	void SetPerspective(float halfFOV, float widthScreen, float heightScreen, float MinZ, float MaxZ) {
+		fov = halfFOV;
+		width = widthScreen;
+		height = heightScreen;
+		minZ = MinZ;
+		maxZ = MaxZ;
+
+		projectionMatrix.Perspective(fov,width,height,minZ,maxZ);
+	}
+
+	Matrix4 getViewMatrix() const { return viewMatrix; }
+	Matrix4 getProjectionMatrix() const { return projectionMatrix; }
+
+private:
+	Vector3 position;
+	Vector3 target;
+	Vector3 up;
+
+	float fov;
+	float height;
+	float width;
+	float minZ;
+	float maxZ;
+	Matrix4 viewMatrix;
+	Matrix4 projectionMatrix;
 };

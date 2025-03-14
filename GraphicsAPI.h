@@ -42,6 +42,9 @@ public:
 
 	UPtr<GraphicsBuffer> CreateVertexBuffer(const Vector<char>& data);
 	UPtr<GraphicsBuffer> CreateIndexBuffer(const Vector<char>& data);
+	UPtr<GraphicsBuffer> CreateConstantBuffer(const Vector<char>& data);
+
+	void writeToBuffer(const UPtr<GraphicsBuffer>& pBuffer, const Vector<char>& data);
 
 public:
 	void* m_pWndHandl = nullptr;
