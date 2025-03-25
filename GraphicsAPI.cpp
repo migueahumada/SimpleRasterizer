@@ -182,7 +182,10 @@ ID3D11Texture2D* GraphicsAPI::CreateTexture(int width,
 											D3D11_USAGE usage, 
 											UINT bindFlags, 
 											UINT cpuAccessFlags, 
-											UINT mipLevels)
+											UINT mipLevels,
+											ID3D11ShaderResourceView** ppSRV,
+											ID3D11RenderTargetView** ppRTV,
+											ID3D11DepthStencilView** ppDSV)
 {
 	ID3D11Texture2D* pTexture = nullptr;
 
@@ -206,6 +209,46 @@ ID3D11Texture2D* GraphicsAPI::CreateTexture(int width,
 	if (FAILED(m_pDevice->CreateTexture2D(&desc, nullptr, &pTexture)))
 	{
 		return nullptr;
+	}
+
+	if (ppSRV != nullptr)
+	{
+		if (bindFlags & D3D11_BIND_SHADER_RESOURCE)
+		{
+			D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = CD3D11_SHADER_RESOURCE_VIEW_DESC();
+			srvDesc.Format = format;
+			srvDesc.Texture2D.MipLevels = mipLevels == 1 ? 1 : -1;
+			srvDesc.Texture2D.MostDetailedMip = 0;
+			srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+
+			m_pDevice->CreateShaderResourceView(pTexture, &srvDesc, ppSRV);
+		}
+	}
+
+	if (ppRTV != nullptr)
+	{
+		if (bindFlags & D3D11_BIND_RENDER_TARGET)
+		{
+			D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = CD3D11_RENDER_TARGET_VIEW_DESC();
+			rtvDesc.Format = format;
+			rtvDesc.Texture2D.MipSlice = 0;
+			rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+
+			m_pDevice->CreateRenderTargetView(pTexture, &rtvDesc, ppRTV);
+		}
+	}
+
+	if (ppDSV != nullptr)
+	{
+		if (bindFlags & D3D11_BIND_DEPTH_STENCIL)
+		{
+			D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = CD3D11_DEPTH_STENCIL_VIEW_DESC();
+			dsvDesc.Format = format;
+			dsvDesc.Texture2D.MipSlice = 0;
+			dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+
+			m_pDevice->CreateDepthStencilView(pTexture, &dsvDesc, ppDSV);
+		}
 	}
 
 	return pTexture;
@@ -371,5 +414,5 @@ UPtr<GraphicsBuffer> GraphicsAPI::CreateConstantBuffer(const Vector<char>& data)
 void GraphicsAPI::writeToBuffer(const UPtr<GraphicsBuffer>& pBuffer, const Vector<char>& data)
 {
 	
-	m_pDeviceContext->UpdateSubresource(pBuffer->m_pBuffer, 0, nullptr, data.data(), 0, 0);
+	m_pDeviceContext->UpdateSubresource1(pBuffer->m_pBuffer, 0, nullptr, data.data(), 0, 0, 0);
 }

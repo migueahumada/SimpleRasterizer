@@ -6,7 +6,7 @@
 
 using std::function;
 
-using PixelShader = function<Color(float, float)>;
+using PixelShaderSW = function<Color(float, float)>;
 
 /*
 *	Necesitaremos:
@@ -104,7 +104,7 @@ public:
 	void setPixel(int x, int y, const Color& color);
 	void clearColor(const Color& color);
 
-	unsigned char* getPixels() const {
+	const unsigned char* getPixels() const {
 		return m_pixels;
 	}
 
@@ -131,9 +131,9 @@ public:
 	
 	void fillTriangle(const Vertex& v0, const Vertex& v1, const Vertex& v2, const Color& color);
 
-	void drawBottomTri(const Triangle& tri, const PixelShader& pixelShader);
-	void drawTopTri(const Triangle& tri, const PixelShader& pixelShader);
-	void drawTriangle2D(const Triangle& tri, const PixelShader& pixelShader);
+	void drawBottomTri(const Triangle& tri, const PixelShaderSW& pixelShader);
+	void drawTopTri(const Triangle& tri, const PixelShaderSW& pixelShader);
+	void drawTriangle2D(const Triangle& tri, const PixelShaderSW& pixelShader);
 
 	void bresehamCircle(int x0, int y0, int radius, const Color& color);
 

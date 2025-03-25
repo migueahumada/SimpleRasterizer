@@ -1,0 +1,83 @@
+#pragma once
+#include "GraphicsBuffer.h"
+#include "HelperMacros.h"
+#include "MathObjects.h"
+#include <vector>
+
+class GraphicsAPI;
+
+template <typename T>
+using Vector = std::vector<T>;
+
+struct MODEL_VERTEX
+{
+	Vector3 position;
+	Vector3 color;
+	float u = 0.0; 
+	float v = 0.0;
+};
+
+struct float2 {
+	float u; float v;
+	bool operator==(const float2& rhs) const 
+	{ 
+		return u == rhs.u && v == rhs.v; 
+	}
+	bool operator!=(const float2& rhs) const 
+	{ 
+		return !(*this == rhs); 
+	}
+};
+
+struct FaceVertex {
+	int vertex_index;
+	int uv_index;
+
+	bool operator==(const FaceVertex& vertex) const 
+	{
+		return vertex_index == vertex.vertex_index &&
+			uv_index == vertex.uv_index;
+	}
+};
+
+namespace std {
+	template<>
+	struct hash<FaceVertex>
+	{
+		size_t operator()(const FaceVertex& vertex) const 
+{
+			return	hash<int>()(vertex.vertex_index) ^
+					hash<int>()(vertex.uv_index);
+		}
+	};
+}
+
+struct Mesh {
+
+	int topology;
+
+	int baseVertex;
+	int numVertices;
+
+	int baseIndex;
+	int numIndices;
+
+};
+
+/*Un modelo tiene un vertex buffer y un index buffer*/
+class Model
+{
+public:
+	Model() =default;
+	~Model() = default;
+
+	bool LoadFromFile(const char* filePath, const UPtr<GraphicsAPI>& pGraphicsAPI);
+
+	Vector<Mesh> m_meshes;
+
+	//Cuántos buffers voy a querer generar
+	UPtr<GraphicsBuffer> m_pVertexBuffer;
+	UPtr<GraphicsBuffer> m_pIndexBuffer;
+	
+};
+

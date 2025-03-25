@@ -25,11 +25,14 @@ public:
 	ID3D11Texture2D* CreateTexture(
 									int width,
 									int height,
-									DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM, // Formato de los pixeles
+									DXGI_FORMAT format = DXGI_FORMAT_B8G8R8A8_UNORM, // Formato de los pixeles
 									D3D11_USAGE usage = D3D11_USAGE_DEFAULT, // Si va a ser mutable o no mutable
 									UINT bindFlags = D3D11_BIND_SHADER_RESOURCE, // Cómo la voy a poder utilizar
 									UINT cpuAccessFlags = 0,
-									UINT mipLevels = 1);
+									UINT mipLevels = 1,
+									ID3D11ShaderResourceView** ppSRV = nullptr,
+									ID3D11RenderTargetView** ppRTV = nullptr,
+									ID3D11DepthStencilView** ppDSV = nullptr);
 
 
 	UPtr<VertexShader> CreateVertexShader(	const Path& filePath,

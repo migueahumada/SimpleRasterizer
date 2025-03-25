@@ -457,7 +457,7 @@ void Image::fillTriangle(const Vertex& v0, const Vertex& v1, const Vertex& v2, c
 
 }
 
-void Image::drawBottomTri(const Triangle& tri, const PixelShader& pixelShader)
+void Image::drawBottomTri(const Triangle& tri, const PixelShaderSW& pixelShader)
 {
 	Vertex v1 = tri.v1, v2 = tri.v2, v3 = tri.v3;
 	if (v3.position.x < v2.position.x) std::swap(v2, v3);
@@ -508,7 +508,7 @@ void Image::drawBottomTri(const Triangle& tri, const PixelShader& pixelShader)
 	}
 }
 
-void Image::drawTopTri(const Triangle& tri, const PixelShader& pixelShader)
+void Image::drawTopTri(const Triangle& tri, const PixelShaderSW& pixelShader)
 {
 	Vertex v1 = tri.v1, v2 = tri.v2, v3 = tri.v3;
 	if (v2.position.x < v1.position.x) std::swap(v1, v2);
@@ -561,7 +561,7 @@ void Image::drawTopTri(const Triangle& tri, const PixelShader& pixelShader)
 	}
 }
 
-void Image::drawTriangle2D(const Triangle& tri, const PixelShader& pixelShader)
+void Image::drawTriangle2D(const Triangle& tri, const PixelShaderSW& pixelShader)
 {
 	Vertex v1 = tri.v1, v2 = tri.v2, v3 = tri.v3;
 

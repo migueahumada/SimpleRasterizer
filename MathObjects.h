@@ -1,4 +1,6 @@
 #pragma once
+
+#define M_PI       3.14159265358979323846   // pi
 #include <cmath>
 
 using std::sqrtf;
@@ -23,6 +25,19 @@ struct Color { // 4 bytes
 	unsigned char b; //1 byte
 	unsigned char a; //1 byte
 };
+
+// dgrees = radians * 180/PI
+static float radiansToDegrees(float angleInRadians) 
+{
+	return angleInRadians * (180.0f / M_PI);
+}
+
+static float degreesToRadians(float angleInDegrees) 
+{
+	return (angleInDegrees * M_PI) / 180.0f;
+}
+
+
 
 struct FloatColor {
 	FloatColor() = default;
@@ -127,6 +142,14 @@ struct Vector3
 
 	Vector3 operator^(const Vector3& v) const {
 		return cross(v);
+	}
+
+	bool operator==(const Vector3& v) const {
+		return x == v.x && y == v.y && z == v.z;
+	}
+
+	bool operator !=(const Vector3& v) const {
+		return !(*this == v);
 	}
 
 	float size() const {
@@ -256,6 +279,11 @@ struct Matrix4
 		m[3][1] += translation.y;
 		m[3][2] += translation.z;
 	}
+	void Translate(const Vector3& translation, float deltaTime, float speed) {
+		m[3][0] += translation.x * deltaTime * speed;
+		m[3][1] += translation.y * deltaTime * speed;
+		m[3][2] += translation.z * deltaTime * speed;
+	}
 
 	Vector3 TansformPosition(const Vector3& v) const 
 	{
@@ -279,6 +307,38 @@ struct Matrix4
 		m[0][2] =  sin(angle);
 		m[2][0] = -sin(angle);
 		m[2][2] =  cos(angle);
+	}
+
+	void RotateX(float angle) {
+		Identity();
+		m[1][1] = cos(angle);
+		m[1][2] = sin(angle);
+		m[2][1] = -sin(angle);
+		m[2][2] = cos(angle);
+	}
+
+	void RotateZ(float angle) {
+		Identity();
+
+		m[0][0] = cos(angle);
+		m[1][0] = -sin(angle);
+		m[0][1] = sin(angle);
+		m[1][1] = cos(angle);
+		
+	}
+
+	void Scale(float scale) {
+		Identity();
+		m[0][0] = scale;
+		m[1][1] = scale;
+		m[2][2] = scale;
+	}
+
+	void Scale(float scaleX, float scaleY, float ScaleZ) {
+		Identity();
+		m[0][0] = scaleX;
+		m[1][1] = scaleY;
+		m[2][2] = ScaleZ;
 	}
 
 	Matrix4 operator*(const Matrix4& matrix) const {
@@ -329,6 +389,61 @@ struct Camera
 
 		projectionMatrix.Perspective(fov,width,height,minZ,maxZ);
 	}
+
+	Vector3 GetForwardVector() const{
+		return (position - target).normalize();
+	}
+
+	Vector3 GetRightVector() const{
+		return (up^ GetForwardVector()).normalize();
+	}
+
+	Vector3 GetUpVector() const {
+		return (GetForwardVector()^ GetRightVector()).normalize();
+	}
+
+
+	void Move(const Vector3& vector) {
+		viewMatrix.Translate(vector);
+	}
+
+	void Move(const Vector3& vector,float deltaTime, float speed) {
+		viewMatrix.Translate(vector,deltaTime,speed);
+	}
+
+	//Angle in degrees
+	void RotateX(float angle) {
+		
+		angle = degreesToRadians(angle);
+		
+		Matrix4 rotation;
+		rotation.RotateX(angle);
+
+		viewMatrix = rotation * viewMatrix;
+		
+	};
+
+	void RotateY(float angle) {
+
+		angle = degreesToRadians(angle);
+
+		Matrix4 rotation;
+		rotation.RotateY(angle);
+
+		viewMatrix = rotation * viewMatrix;
+
+	};
+
+	void RotateZ(float angle) {
+
+		angle = degreesToRadians(angle);
+
+		Matrix4 rotation;
+		rotation.RotateZ(angle);
+
+		viewMatrix = rotation * viewMatrix;
+
+	};
 
 	Matrix4 getViewMatrix() const { return viewMatrix; }
 	Matrix4 getProjectionMatrix() const { return projectionMatrix; }

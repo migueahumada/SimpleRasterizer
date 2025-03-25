@@ -1,7 +1,33 @@
 #include "Texture.h"
-
+#include "HelperMacros.h"
+#include <cmath>
+Texture::~Texture()
+{
+	SAFE_RELEASE(m_pTexture);
+	SAFE_RELEASE(m_pSRV);
+	SAFE_RELEASE(m_pRTV);
+	SAFE_RELEASE(m_pDSV);
+}
 void Texture::createImage(const Image& img) {
 	m_image = img;
+
+}
+
+void Texture::createImage(const Image& img, const UPtr<GraphicsAPI>& pGraphicsAPI, DXGI_FORMAT format)
+{
+	createImage(img);
+	m_pTexture = pGraphicsAPI->CreateTexture(	img.getWidth(),
+												img.getHeight(), 
+												format,
+												D3D11_USAGE_DEFAULT, 
+												D3D11_BIND_SHADER_RESOURCE,
+												0,1,&m_pSRV);
+	if (m_pTexture)
+	{
+		pGraphicsAPI->m_pDeviceContext->UpdateSubresource1(m_pTexture,0,nullptr,
+			reinterpret_cast<const void*>(img.getPixels()), img.getPitch(), 0,0);
+	}
+	
 }
 
 void Texture::adjustTextureAddress(TEXTURE_ADDRESS::E textureAddressMode, float& u, float& v)
@@ -100,8 +126,8 @@ FloatColor Texture::sample(float u, float v, TEXTURE_ADDRESS::E textureAddress, 
 
 		int x0 = static_cast<int>(x);
 		int y0 = static_cast<int>(y);
-		int x1 = std::min(x0 + 1, m_image.getWidth() - 1);
-		int y1 = std::min(y0 + 1, m_image.getHeight() - 1);
+		int x1 = min(x0 + 1, m_image.getWidth() - 1);
+		int y1 = min(y0 + 1, m_image.getHeight() - 1);
 
 		float dx = x - x0;
 		float dy = y - y0;

@@ -144,6 +144,7 @@
     <ClCompile Include="main.cpp.bak">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Model.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Texture.cpp" />
   </ItemGroup>
@@ -153,6 +154,7 @@
     <ClInclude Include="HelperMacros.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="MathObjects.h" />
+    <ClInclude Include="Model.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Texture.h" />
   </ItemGroup>

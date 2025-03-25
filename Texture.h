@@ -1,6 +1,8 @@
 #pragma once
 #include "Image.h"
 #include "MathObjects.h"
+#include "GraphicsAPI.h"
+#include <d3d11_2.h>
 
 namespace TEXTURE_ADDRESS {
 	enum E {
@@ -31,9 +33,11 @@ class Texture
 {
 public:
 	Texture() = default;
-	~Texture() = default;
+	~Texture();
 
 	void createImage(const Image& img);
+	void createImage(const Image& img, const UPtr<GraphicsAPI>& pGraphicsAPI, DXGI_FORMAT format = DXGI_FORMAT_B8G8R8A8_UNORM);
+
 	void adjustTextureAddress(TEXTURE_ADDRESS::E textureAddressMode, float& u, float& v);
 	FloatColor getColor(float u, float v, TEXTURE_ADDRESS::E textureAddress);
 	
@@ -52,6 +56,12 @@ public:
 				TEXTURE_ADDRESS::E textureAddressMode,
 				BLEND_MODE::E blendMode);
 	Image m_image;
+
+	ID3D11Texture2D* m_pTexture = nullptr;
+
+	ID3D11ShaderResourceView* m_pSRV = nullptr;
+	ID3D11RenderTargetView* m_pRTV = nullptr;
+	ID3D11DepthStencilView* m_pDSV = nullptr;
 
 };
 
