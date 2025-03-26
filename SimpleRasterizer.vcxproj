@@ -137,6 +137,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="GraphicsAPI.cpp" />
     <ClCompile Include="GraphicsBuffer.cpp" />
     <ClCompile Include="Image.cpp" />
@@ -149,6 +150,7 @@
     <ClCompile Include="Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="GraphicsAPI.h" />
     <ClInclude Include="GraphicsBuffer.h" />
     <ClInclude Include="HelperMacros.h" />

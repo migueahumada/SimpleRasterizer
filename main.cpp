@@ -10,14 +10,12 @@
 #include <iostream>
 #include "MathObjects.h"
 #include "Texture.h"
+#include "Camera.h"
 #include "GraphicsAPI.h"
+#include <SDL3/SDL_keyboard.h>
 
-struct MatrixCollection
-{
-	Matrix4 world;
-	Matrix4 view;
-	Matrix4 projection;
-};
+
+using std::function;
 
 SDL_Window* g_pWindow = nullptr;
 
@@ -53,21 +51,246 @@ MatrixCollection g_WVP;
 
 Camera g_Camera;
 
-static float cameraMovSpeed = 20.0f;
+static float cameraMovSpeed = 0.01f;
 static float cameraRotSpeed = 0.4f;
 
-Uint64 g_lastTick = 0;
-Uint64 g_currentTick = 0;
-Uint64 g_elapsedTick = 0;
-float g_deltaTime = 0.0f;
+void update(float deltaTime) 
+{
+	g_Camera.MoveCamera(g_WVP, cameraMovSpeed * deltaTime);
+}
+void render() {
+
+#pragma region VIEWPORT
+	D3D11_VIEWPORT vp;
+	vp.Width = WIDTH;
+	vp.Height = HEIGHT;
+	vp.MinDepth = 0.0f;
+	vp.MaxDepth = 1.0f;
+	vp.TopLeftX = 0;
+	vp.TopLeftY = 0;
+
+	g_pGraphicsAPI->m_pDeviceContext->RSSetViewports(1, &vp);
+#pragma endregion VIEWPORT
+
+#pragma region OUTPUT_MERGE_BACKBUFFER
+
+	//Se setea lo que se mostrará en el Output Merge State
+	g_pGraphicsAPI->m_pDeviceContext->OMSetRenderTargets(1, &g_pGraphicsAPI->m_pBackBufferRTV, g_pGraphicsAPI->m_pBackBufferDSV);
+
+#pragma endregion OUTPUT_MERGE_BACKBUFFER
+
+#pragma region CLEAN_RENDER_TARGET_DEPTH_STENCIL
+
+	FloatColor tempColor = Color{ 135, 206, 235, 255 };
+	float clearColor2[4] = { tempColor.r,tempColor.g , tempColor.b,tempColor.a };
+
+	g_pGraphicsAPI->m_pDeviceContext->ClearRenderTargetView(g_pGraphicsAPI->m_pBackBufferRTV, clearColor2);
+
+	//Limpiamos el depth stencil del backbuffer
+	g_pGraphicsAPI->m_pDeviceContext->ClearDepthStencilView(g_pGraphicsAPI->m_pBackBufferDSV,
+		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
+		1.0f,
+		0);
+#pragma endregion CLEAN_RENDER_TARGET_DEPTH_STENCIL	
+
+#pragma region SET_VERTEX_SHADER_N_PIXEL_SHADER
+
+	//Seteamos el vertex shader y el pixel shader
+	g_pGraphicsAPI->m_pDeviceContext->VSSetShader(g_pVertexShader->m_pVertexShader, nullptr, 0);
+	g_pGraphicsAPI->m_pDeviceContext->PSSetShader(g_pPixelShader->m_pPixelShader, nullptr, 0);
+
+#pragma endregion SET_VERTEX_SHADER_N_PIXEL_SHADER
+
+#pragma region INPUT_ASSEMBLER_LAYOUT
+
+	//Seteamos lo que necesitamos para el input assembler
+	//Seteamos el arreglo del input assembler y los valores que mandaremos al GPU
+	g_pGraphicsAPI->m_pDeviceContext->IASetInputLayout(g_pInputLayout);
+
+#pragma endregion INPUT_ASSEMBLER_LAYOUT
+
+#pragma region SET_SAMPLERS
+	g_pGraphicsAPI->m_pDeviceContext->PSSetSamplers(0, 1, &g_pSS_Point);
+	g_pGraphicsAPI->m_pDeviceContext->PSSetSamplers(1, 1, &g_pSS_Linear);
+	g_pGraphicsAPI->m_pDeviceContext->PSSetSamplers(2, 1, &g_pSS_Anisotropic);
+
+#pragma endregion SET_SAMPLERS
+
+
+	//------------FIRST MODEL--------------
+	g_pGraphicsAPI->m_pDeviceContext->IASetPrimitiveTopology(static_cast<D3D11_PRIMITIVE_TOPOLOGY>(g_myModel.m_meshes[0].topology));
+
+	UINT stride = sizeof(MODEL_VERTEX);
+	UINT offset = 0;
+	g_pGraphicsAPI->m_pDeviceContext->IASetVertexBuffers(0, 1, &g_myModel.m_pVertexBuffer->m_pBuffer, &stride, &offset);
+	g_pGraphicsAPI->m_pDeviceContext->IASetIndexBuffer(g_myModel.m_pIndexBuffer->m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
+	g_pGraphicsAPI->m_pDeviceContext->PSSetShaderResources(0, 1, &g_myTexture.m_pSRV);
+
+	Matrix4 translation2;
+	translation2.Identity();
+	translation2.Translate(Vector3(0.0, 0.0f, 0.0f));
+
+	g_WVP.world = translation2;
+	g_WVP.projection = g_Camera.getProjectionMatrix();
+	g_WVP.world.Transpose();
+	g_WVP.projection.Transpose();
+
+	Vector<char> matrix_data;
+	matrix_data.resize(sizeof(g_WVP));
+	memcpy(matrix_data.data(), &g_WVP, sizeof(g_WVP));
+
+	g_pGraphicsAPI->m_pDeviceContext->VSSetConstantBuffers(0, 1, &g_pCB_WVP->m_pBuffer);
+
+	g_pGraphicsAPI->writeToBuffer(g_pCB_WVP, matrix_data);
+
+	g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(g_myModel.m_meshes[0].numIndices,
+		g_myModel.m_meshes[0].baseIndex,
+		g_myModel.m_meshes[0].baseVertex);  //Los dibujamos de manera indexada
+
+	//------------SECOND MODEL--------------
+	UINT stride2 = sizeof(MODEL_VERTEX);
+	UINT offset2 = 0;
+	g_pGraphicsAPI->m_pDeviceContext->IASetPrimitiveTopology(static_cast<D3D11_PRIMITIVE_TOPOLOGY>(g_HumanModel.m_meshes[0].topology));
+	g_pGraphicsAPI->m_pDeviceContext->IASetVertexBuffers(0, 1, &g_HumanModel.m_pVertexBuffer->m_pBuffer, &stride2, &offset2);
+	g_pGraphicsAPI->m_pDeviceContext->IASetIndexBuffer(g_HumanModel.m_pIndexBuffer->m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
+	g_pGraphicsAPI->m_pDeviceContext->PSSetShaderResources(0, 1, &g_HumanTexture.m_pSRV);
+
+	Matrix4 translation1;
+	translation1.Identity();
+	translation1.Translate(Vector3(3.0f, 0.0f, 0.0f));
+
+	g_WVP.world = translation1;
+	g_WVP.projection = g_Camera.getProjectionMatrix();
+	g_WVP.world.Transpose();
+	g_WVP.projection.Transpose();
+
+	memcpy(matrix_data.data(), &g_WVP, sizeof(g_WVP));
+
+	g_pGraphicsAPI->m_pDeviceContext->VSSetConstantBuffers(0, 1, &g_pCB_WVP->m_pBuffer);
+
+	g_pGraphicsAPI->writeToBuffer(g_pCB_WVP, matrix_data);
+
+	g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(g_HumanModel.m_meshes[0].numIndices, g_HumanModel.m_meshes[0].baseIndex, g_HumanModel.m_meshes[0].baseVertex);
+
+
+
+
+	/*Matrix4 translation;
+	translation.Identity();
+	translation.Translate(Vector3(0.0f, 0.0f, 0.0f));
+
+	Matrix4 translation2;
+	translation2.Identity();
+	translation2.Translate(Vector3(1.5f, 0.0f, -2.5f));
+
+	Matrix4 translation3;
+	translation3.Identity();
+	translation3.Translate(Vector3(3.0f, 0.0f, 0.0f));
+
+	Matrix4 rotation;
+	rotation.RotateY(rotationAngle);
+
+	g_WVP.world = rotation * translation;
+
+	g_Camera.SetPerspective(3.141592653f / 4.0f, WIDTH, HEIGHT, 0.1f, 100.0f);
+
+	g_WVP.projection = g_Camera.getProjectionMatrix();
+	g_WVP.world.Transpose();
+	g_WVP.projection.Transpose();
+
+	Vector<char> matrix_data;
+	matrix_data.resize(sizeof(g_WVP));
+	memcpy(matrix_data.data(), &g_WVP, sizeof(g_WVP));
+
+	g_pGraphicsAPI->m_pDeviceContext->VSSetConstantBuffers(0, 1, &g_pCB_WVP->m_pBuffer);
+
+	g_pGraphicsAPI->m_pDeviceContext->RSSetState(g_pRS_Default);
+	g_pGraphicsAPI->writeToBuffer(g_pCB_WVP,matrix_data);
+	g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(	g_myModel.m_meshes[0].numIndices,
+		g_myModel.m_meshes[0].baseIndex, g_myModel.m_meshes[0].baseVertex);*/ //Los dibujamos de manera indexada
+
+		/*Matrix4 refScale;
+		refScale.RotateY(-rotationAngle);
+		g_WVP.world = refScale * rotation * translation3;
+		g_WVP.world.Transpose();
+		memcpy(matrix_data.data(), &g_WVP, sizeof(g_WVP));
+
+		g_pGraphicsAPI->writeToBuffer(g_pCB_WVP, matrix_data);
+
+		g_pGraphicsAPI->m_pDeviceContext->RSSetState(g_pRS_Default);
+		g_pGraphicsAPI->m_pDeviceContext->OMSetRenderTargets(1,
+															&g_rtReflection.m_pRTV,
+															g_dsReflection.m_pDSV);
+
+		g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(	g_myModel.m_meshes[0].numIndices,
+														g_myModel.m_meshes[0].baseIndex,
+														g_myModel.m_meshes[0].baseVertex);
+		*/
+
+		//------------THIRD MODEL--------------
+	g_pGraphicsAPI->m_pDeviceContext->IASetPrimitiveTopology(static_cast<D3D11_PRIMITIVE_TOPOLOGY>(g_FloorModel.m_meshes[0].topology));
+	g_pGraphicsAPI->m_pDeviceContext->IASetVertexBuffers(0,
+		1,
+		&g_FloorModel.m_pVertexBuffer->m_pBuffer,
+		&stride,
+		&offset);
+	g_pGraphicsAPI->m_pDeviceContext->IASetIndexBuffer(
+		g_FloorModel.m_pIndexBuffer->m_pBuffer,
+		DXGI_FORMAT_R16_UINT,
+		0);
+
+	Matrix4 floorScale;
+	floorScale.Scale(1.0f);
+
+	g_WVP.world = floorScale * translation2;
+	g_WVP.world.Transpose();
+	memcpy(matrix_data.data(), &g_WVP, sizeof(g_WVP));
+
+	g_pGraphicsAPI->m_pDeviceContext->RSSetState(g_pRS_Default);
+	g_pGraphicsAPI->writeToBuffer(g_pCB_WVP, matrix_data);
+
+
+	g_pGraphicsAPI->m_pDeviceContext->OMSetRenderTargets(1, &g_pGraphicsAPI->m_pBackBufferRTV, g_pGraphicsAPI->m_pBackBufferDSV);
+	g_pGraphicsAPI->m_pDeviceContext->PSSetShaderResources(0, 1, &g_FloorTexture.m_pSRV);
+	g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(g_FloorModel.m_meshes[0].numIndices,
+		g_FloorModel.m_meshes[0].baseIndex,
+		g_FloorModel.m_meshes[0].baseVertex);
+
+	//------------FOURTH MODEL--------------
+	UINT stride3 = sizeof(MODEL_VERTEX);
+	UINT offset3 = 0;
+	g_pGraphicsAPI->m_pDeviceContext->IASetPrimitiveTopology(static_cast<D3D11_PRIMITIVE_TOPOLOGY>(g_AmbulanceModel.m_meshes[0].topology));
+	g_pGraphicsAPI->m_pDeviceContext->IASetVertexBuffers(0, 1, &g_AmbulanceModel.m_pVertexBuffer->m_pBuffer, &stride3, &offset3);
+	g_pGraphicsAPI->m_pDeviceContext->IASetIndexBuffer(g_AmbulanceModel.m_pIndexBuffer->m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
+	g_pGraphicsAPI->m_pDeviceContext->PSSetShaderResources(0, 1, &g_AmbulanceTexture.m_pSRV);
+	//g_pGraphicsAPI->m_pDeviceContext->RSSetState(g_pRS_Wireframe);
+
+	Matrix4 translation3;
+	translation3.Identity();
+	translation3.Translate(Vector3(6.0f, 0.0f, 0.0f));
+
+	g_WVP.world = translation3;
+	g_WVP.projection = g_Camera.getProjectionMatrix();
+	g_WVP.world.Transpose();
+	g_WVP.projection.Transpose();
+
+	memcpy(matrix_data.data(), &g_WVP, sizeof(g_WVP));
+
+	g_pGraphicsAPI->m_pDeviceContext->VSSetConstantBuffers(0, 1, &g_pCB_WVP->m_pBuffer);
+
+	g_pGraphicsAPI->writeToBuffer(g_pCB_WVP, matrix_data);
+
+	g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(g_AmbulanceModel.m_meshes[0].numIndices, g_AmbulanceModel.m_meshes[0].baseIndex, g_AmbulanceModel.m_meshes[0].baseVertex);
+
+	g_pGraphicsAPI->m_pSwapChain->Present(0, 0);
+}
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
-	
 
 #pragma region SDL3_SETUP
 	//---------------SDL SET UP!!-----------------
-	if (!SDL_Init(SDL_INIT_VIDEO)) {
+	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
 		SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
 		return SDL_APP_FAILURE;
 	}
@@ -212,368 +435,141 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	return SDL_APP_CONTINUE;
 }
 
-SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event * event)
+SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 {
-	if (event->type == SDL_EVENT_QUIT) {
-		return SDL_APP_SUCCESS;
-	}
-#pragma region CAMERA_MOVEMENT
-	if (event->key.scancode == SDL_SCANCODE_W)
+	SDL_Keycode sym = event->key.key;
+	switch (event->type)
 	{
-		//g_Camera.Move(g_Camera.GetForward() * movSpeed);
-		g_Camera.Move(Vector3{ 0.0,0.0f,-1.0f });
+		case SDL_EVENT_QUIT:
+			return SDL_APP_SUCCESS;
+			break;
 
-		g_WVP.world.Identity();
-		g_WVP.view = g_Camera.getViewMatrix();
+		case SDL_EVENT_KEY_DOWN:
+			if (sym == SDLK_W) g_Camera.CheckMovement(CameraDirection::FORWARD);
+			if (sym == SDLK_A) g_Camera.CheckMovement(CameraDirection::LEFT);
+			if (sym == SDLK_S) g_Camera.CheckMovement(CameraDirection::BACKWARDS);
+			if (sym == SDLK_D) g_Camera.CheckMovement(CameraDirection::RIGHT);
+			if (sym == SDLK_Q) g_Camera.CheckMovement(CameraDirection::DOWN);
+			if (sym == SDLK_E) g_Camera.CheckMovement(CameraDirection::UP);
 
-		g_WVP.view.Transpose();
-		g_WVP.world.Transpose();
-	}
-	if (event->key.scancode == SDL_SCANCODE_S)
-	{	
-		g_Camera.Move(Vector3{ 0.0,0.0f,1.0f });
-
-		g_WVP.world.Identity();
-		g_WVP.view = g_Camera.getViewMatrix();
-
-		g_WVP.view.Transpose();
-		g_WVP.world.Transpose();
-	}
-	if (event->key.scancode == SDL_SCANCODE_A)
-	{
-		g_Camera.Move(Vector3{ 1.0,0.0f,0.0f });
-
-		g_WVP.world.Identity();
-		g_WVP.view = g_Camera.getViewMatrix();
-
-		g_WVP.view.Transpose();
-		g_WVP.world.Transpose();
-	}
-	if (event->key.scancode == SDL_SCANCODE_D)
-	{
-		g_Camera.Move(Vector3{ -1.0,0.0f,0.0f });
-
-		g_WVP.world.Identity();
-		g_WVP.view = g_Camera.getViewMatrix();
-
-		g_WVP.view.Transpose();
-		g_WVP.world.Transpose();
-	}
-	if (event->key.scancode == SDL_SCANCODE_Q)
-	{
-		g_Camera.Move(Vector3{ 0.0,1.0f,0.0f });
-
-		g_WVP.world.Identity();
-		g_WVP.view = g_Camera.getViewMatrix();
-
-		g_WVP.view.Transpose();
-		g_WVP.world.Transpose();
-	}
-	if (event->key.scancode == SDL_SCANCODE_E)
-	{
-		g_Camera.Move(Vector3{ 0.0,-1.0f,0.0f });
-
-		g_WVP.view = g_Camera.getViewMatrix();
+			if (sym == SDLK_UP) g_Camera.RotateX(cameraRotSpeed, g_WVP);
+			if (sym == SDLK_DOWN) g_Camera.RotateX(-cameraRotSpeed, g_WVP);
+			if (sym == SDLK_LEFT) g_Camera.RotateY(cameraRotSpeed, g_WVP);
+			if (sym == SDLK_RIGHT) g_Camera.RotateY(-cameraRotSpeed, g_WVP);
+			break;
 		
-		g_WVP.view.Transpose();
-		g_WVP.world.Transpose();
-	}
-
-#pragma endregion CAMERA_MOVEMENT
-
-#pragma region CAMER_ROTATION
-	if (event->key.scancode == SDL_SCANCODE_UP)
-	{
-
-		g_Camera.RotateX(cameraRotSpeed);
-		g_WVP.view = g_Camera.getViewMatrix();
-
-		g_WVP.view.Transpose();
-		g_WVP.world.Transpose();
-	}
-	if (event->key.scancode == SDL_SCANCODE_DOWN)
-	{
-
-		g_Camera.RotateX(-cameraRotSpeed);
-		g_WVP.view = g_Camera.getViewMatrix();
-
-		g_WVP.view.Transpose();
-		g_WVP.world.Transpose();
-	}
-	if (event->key.scancode == SDL_SCANCODE_LEFT)
-	{
-
-		g_Camera.RotateY(cameraRotSpeed);
-		g_WVP.view = g_Camera.getViewMatrix();
-
-		g_WVP.view.Transpose();
-		g_WVP.world.Transpose();
-	}
-	if (event->key.scancode == SDL_SCANCODE_RIGHT)
-	{
-
-		g_Camera.RotateY(-cameraRotSpeed);
-		g_WVP.view = g_Camera.getViewMatrix();
-
-		g_WVP.view.Transpose();
-		g_WVP.world.Transpose();
-	}
-
-#pragma endregion CAMER_ROTATION
-
-	if (event->type == SDL_EVENT_MOUSE_MOTION)
-	{
-		float x, y;
-		SDL_GetMouseState(&x,&y);
-
-		printf("Mouse x: %f", x);
-		printf("	Mouse y: %f\n", y);
+		case SDL_EVENT_KEY_UP:
+			if (sym == SDLK_W) g_Camera.ResetMovement(CameraDirection::FORWARD);
+			if (sym == SDLK_A) g_Camera.ResetMovement(CameraDirection::LEFT);
+			if (sym == SDLK_S) g_Camera.ResetMovement(CameraDirection::BACKWARDS);
+			if (sym == SDLK_D) g_Camera.ResetMovement(CameraDirection::RIGHT);
+			if (sym == SDLK_Q) g_Camera.ResetMovement(CameraDirection::DOWN);
+			if (sym == SDLK_E) g_Camera.ResetMovement(CameraDirection::UP);
+			break;
 
 	}
+
+	
+	
+		//if (event->type == SDL_EVENT_KEY_DOWN)
+		//{
+		//	switch (event->key.scancode) {
+
+		//		case SDL_SCANCODE_W:
+
+		//			g_Camera.MoveForwardVector(cameraMovSpeed, g_WVP);
+		//		
+		//			break;
+		//		case SDL_SCANCODE_A:
+		//			g_Camera.MoveRightVector(-cameraMovSpeed, g_WVP);
+
+		//			break;
+		//		case SDL_SCANCODE_S:
+		//			g_Camera.MoveForwardVector(-cameraMovSpeed, g_WVP);
+
+		//			break;
+		//		case SDL_SCANCODE_D:
+		//			g_Camera.MoveRightVector(cameraMovSpeed, g_WVP);
+
+		//			break;
+		//		case SDL_SCANCODE_Q:
+		//			g_Camera.MoveUpVector(-cameraMovSpeed, g_WVP);
+
+		//			break;
+		//		case SDL_SCANCODE_E:
+		//			g_Camera.MoveUpVector(cameraMovSpeed, g_WVP);
+
+		//			break;
+		//		case SDL_SCANCODE_UP:
+		//			g_Camera.RotateX(cameraRotSpeed, g_WVP);
+
+		//			break;
+		//		case SDL_SCANCODE_DOWN:
+		//			g_Camera.RotateX(-cameraRotSpeed, g_WVP);
+
+		//			break;
+		//		case SDL_SCANCODE_RIGHT:
+		//			g_Camera.RotateY(-cameraRotSpeed, g_WVP);
+
+		//			break;
+		//		case SDL_SCANCODE_LEFT:
+		//			g_Camera.RotateY(cameraRotSpeed, g_WVP);
+
+		//			break;
+		//		default: // maybe.?
+		//			break;
+		//	}
+		//}
+
+		//if (event->type == SDL_EVENT_QUIT) {
+
+		//	return SDL_APP_SUCCESS;
+		//}
+
+
+
+		//if (event->type == SDL_EVENT_MOUSE_MOTION)
+		//{
+
+		//	float x, y;
+		//	SDL_GetMouseState(&x, &y);
+
+		//}
+	
+	
+
+
+	
 	return SDL_APP_CONTINUE;
 }
 
 SDL_AppResult SDL_AppIterate(void* appstate)
 {
-	g_lastTick = g_currentTick;
-	g_currentTick = SDL_GetTicks();
+	static Uint64 accu = 0;
+	static Uint64 last = 0;
+	static Uint64 past = 0;
+	Uint64 now = SDL_GetTicksNS();
+	float dt = (now - past) / 999999999.0f * 1000.0f;
 	
-	g_deltaTime = (g_currentTick - g_lastTick);
-
-	g_lastTick += g_deltaTime;
-
-	g_elapsedTick += g_deltaTime;
-
+	printf("Delta Time: %f\n", dt);
 	
+	update(dt);
+	render();
 
-	printf("Delta Time: %f\n",g_deltaTime);
+	if (now - last > 999999999)
+	{
+		last = now;
+		
+		accu = 0;
+	}
 
-#pragma region VIEWPORT
-	D3D11_VIEWPORT vp;
-	vp.Width = WIDTH;
-	vp.Height = HEIGHT;
-	vp.MinDepth = 0.0f;
-	vp.MaxDepth = 1.0f;
-	vp.TopLeftX = 0;
-	vp.TopLeftY = 0;
-
-	g_pGraphicsAPI->m_pDeviceContext->RSSetViewports(1, &vp);
-#pragma endregion VIEWPORT
-
-#pragma region OUTPUT_MERGE_BACKBUFFER
+	past = now;
+	accu += 1;
 	
-	//Se setea lo que se mostrará en el Output Merge State
-	g_pGraphicsAPI->m_pDeviceContext->OMSetRenderTargets(1, &g_pGraphicsAPI->m_pBackBufferRTV, g_pGraphicsAPI->m_pBackBufferDSV);
-
-#pragma endregion OUTPUT_MERGE_BACKBUFFER
-
-#pragma region CLEAN_RENDER_TARGET_DEPTH_STENCIL
-
-	FloatColor tempColor = Color{ 135, 206, 235, 255 };
-	float clearColor2[4] = { tempColor.r,tempColor.g , tempColor.b,tempColor.a };
-	
-	g_pGraphicsAPI->m_pDeviceContext->ClearRenderTargetView(g_pGraphicsAPI->m_pBackBufferRTV, clearColor2);
-	
-	//Limpiamos el depth stencil del backbuffer
-	g_pGraphicsAPI->m_pDeviceContext->ClearDepthStencilView(g_pGraphicsAPI->m_pBackBufferDSV,
-															D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 
-															1.0f, 
-															0);
-#pragma endregion CLEAN_RENDER_TARGET_DEPTH_STENCIL	
-
-#pragma region SET_VERTEX_SHADER_N_PIXEL_SHADER
-	
-	//Seteamos el vertex shader y el pixel shader
-	g_pGraphicsAPI->m_pDeviceContext->VSSetShader(g_pVertexShader->m_pVertexShader, nullptr, 0);
-	g_pGraphicsAPI->m_pDeviceContext->PSSetShader(g_pPixelShader->m_pPixelShader, nullptr, 0);
-
-#pragma endregion SET_VERTEX_SHADER_N_PIXEL_SHADER
-
-#pragma region INPUT_ASSEMBLER_LAYOUT
-
-	//Seteamos lo que necesitamos para el input assembler
-	//Seteamos el arreglo del input assembler y los valores que mandaremos al GPU
-	g_pGraphicsAPI->m_pDeviceContext->IASetInputLayout(g_pInputLayout);
-
-#pragma endregion INPUT_ASSEMBLER_LAYOUT
-
-#pragma region SET_SAMPLERS
-	g_pGraphicsAPI->m_pDeviceContext->PSSetSamplers(0, 1, &g_pSS_Point);
-	g_pGraphicsAPI->m_pDeviceContext->PSSetSamplers(1, 1, &g_pSS_Linear);
-	g_pGraphicsAPI->m_pDeviceContext->PSSetSamplers(2, 1, &g_pSS_Anisotropic);
-
-#pragma endregion SET_SAMPLERS
-
-
-	//------------FIRST MODEL--------------
-	g_pGraphicsAPI->m_pDeviceContext->IASetPrimitiveTopology(static_cast<D3D11_PRIMITIVE_TOPOLOGY>(g_myModel.m_meshes[0].topology));
-	
-	
-
-	UINT stride = sizeof(MODEL_VERTEX);
-	UINT offset = 0;
-	g_pGraphicsAPI->m_pDeviceContext->IASetVertexBuffers(0, 1, &g_myModel.m_pVertexBuffer->m_pBuffer, &stride, &offset);
-	g_pGraphicsAPI->m_pDeviceContext->IASetIndexBuffer( g_myModel.m_pIndexBuffer->m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
-	g_pGraphicsAPI->m_pDeviceContext->PSSetShaderResources(0, 1, &g_myTexture.m_pSRV);
-
-	Matrix4 translation2;
-	translation2.Identity();
-	translation2.Translate(Vector3(0.0, 0.0f, 0.0f));
-
-	g_WVP.world = translation2;
-	g_WVP.projection = g_Camera.getProjectionMatrix();
-	g_WVP.world.Transpose();
-	g_WVP.projection.Transpose();
-
-	Vector<char> matrix_data;
-	matrix_data.resize(sizeof(g_WVP));
-	memcpy(matrix_data.data(), &g_WVP, sizeof(g_WVP));
-
-	g_pGraphicsAPI->m_pDeviceContext->VSSetConstantBuffers(0, 1, &g_pCB_WVP->m_pBuffer);
-
-	g_pGraphicsAPI->writeToBuffer(g_pCB_WVP, matrix_data);
-
-	g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(	g_myModel.m_meshes[0].numIndices, 
-													g_myModel.m_meshes[0].baseIndex, 
-													g_myModel.m_meshes[0].baseVertex);  //Los dibujamos de manera indexada
-
-	//------------SECOND MODEL--------------
-	UINT stride2 = sizeof(MODEL_VERTEX);
-	UINT offset2 = 0;
-	g_pGraphicsAPI->m_pDeviceContext->IASetPrimitiveTopology(static_cast<D3D11_PRIMITIVE_TOPOLOGY>(g_HumanModel.m_meshes[0].topology));
-	g_pGraphicsAPI->m_pDeviceContext->IASetVertexBuffers(0, 1, &g_HumanModel.m_pVertexBuffer->m_pBuffer,&stride2, &offset2);
-	g_pGraphicsAPI->m_pDeviceContext->IASetIndexBuffer(g_HumanModel.m_pIndexBuffer->m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
-	g_pGraphicsAPI->m_pDeviceContext->PSSetShaderResources(0, 1, &g_HumanTexture.m_pSRV);
-	//g_pGraphicsAPI->m_pDeviceContext->RSSetState(g_pRS_Wireframe);
-
-	Matrix4 translation1;
-	translation1.Identity();
-	translation1.Translate(Vector3(3.0f, 0.0f, 0.0f));
-
-	g_WVP.world = translation1;
-	g_WVP.projection = g_Camera.getProjectionMatrix();
-	g_WVP.world.Transpose();
-	g_WVP.projection.Transpose();
-
-	memcpy(matrix_data.data(), &g_WVP, sizeof(g_WVP));
-
-	g_pGraphicsAPI->m_pDeviceContext->VSSetConstantBuffers(0, 1, &g_pCB_WVP->m_pBuffer);
-
-	g_pGraphicsAPI->writeToBuffer(g_pCB_WVP, matrix_data);
-
-	g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(g_HumanModel.m_meshes[0].numIndices, g_HumanModel.m_meshes[0].baseIndex, g_HumanModel.m_meshes[0].baseVertex);
-
-
-
-	
-	/*Matrix4 translation;
-	translation.Identity();
-	translation.Translate(Vector3(0.0f, 0.0f, 0.0f));
-
-	Matrix4 translation2;
-	translation2.Identity();
-	translation2.Translate(Vector3(1.5f, 0.0f, -2.5f));
-
-	Matrix4 translation3;
-	translation3.Identity();
-	translation3.Translate(Vector3(3.0f, 0.0f, 0.0f));
-
-	Matrix4 rotation;
-	rotation.RotateY(rotationAngle);
-	
-	g_WVP.world = rotation * translation;
-	
-	g_Camera.SetPerspective(3.141592653f / 4.0f, WIDTH, HEIGHT, 0.1f, 100.0f);
-
-	g_WVP.projection = g_Camera.getProjectionMatrix();
-	g_WVP.world.Transpose();
-	g_WVP.projection.Transpose();
-
-	Vector<char> matrix_data;
-	matrix_data.resize(sizeof(g_WVP));
-	memcpy(matrix_data.data(), &g_WVP, sizeof(g_WVP));
-	
-	g_pGraphicsAPI->m_pDeviceContext->VSSetConstantBuffers(0, 1, &g_pCB_WVP->m_pBuffer);
-
-	g_pGraphicsAPI->m_pDeviceContext->RSSetState(g_pRS_Default);
-	g_pGraphicsAPI->writeToBuffer(g_pCB_WVP,matrix_data);
-	g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(	g_myModel.m_meshes[0].numIndices, 
-		g_myModel.m_meshes[0].baseIndex, g_myModel.m_meshes[0].baseVertex);*/ //Los dibujamos de manera indexada
-	
-	/*Matrix4 refScale;
-	refScale.RotateY(-rotationAngle);
-	g_WVP.world = refScale * rotation * translation3;
-	g_WVP.world.Transpose();
-	memcpy(matrix_data.data(), &g_WVP, sizeof(g_WVP));
-
-	g_pGraphicsAPI->writeToBuffer(g_pCB_WVP, matrix_data);
-
-	g_pGraphicsAPI->m_pDeviceContext->RSSetState(g_pRS_Default);
-	g_pGraphicsAPI->m_pDeviceContext->OMSetRenderTargets(1, 
-														&g_rtReflection.m_pRTV, 
-														g_dsReflection.m_pDSV);
-
-	g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(	g_myModel.m_meshes[0].numIndices,
-													g_myModel.m_meshes[0].baseIndex, 
-													g_myModel.m_meshes[0].baseVertex);
-	*/
-
-	//------------THIRD MODEL--------------
-	g_pGraphicsAPI->m_pDeviceContext->IASetPrimitiveTopology(static_cast<D3D11_PRIMITIVE_TOPOLOGY>(g_FloorModel.m_meshes[0].topology));
-	g_pGraphicsAPI->m_pDeviceContext->IASetVertexBuffers(0,
-		1,
-		&g_FloorModel.m_pVertexBuffer->m_pBuffer,
-		&stride,
-		&offset);
-	g_pGraphicsAPI->m_pDeviceContext->IASetIndexBuffer(
-		g_FloorModel.m_pIndexBuffer->m_pBuffer,
-		DXGI_FORMAT_R16_UINT,
-		0);
-
-	Matrix4 floorScale;
-	floorScale.Scale(1.0f);
-
-	g_WVP.world = floorScale * translation2;
-	g_WVP.world.Transpose();
-	memcpy(matrix_data.data(), &g_WVP, sizeof(g_WVP));
-
-	g_pGraphicsAPI->m_pDeviceContext->RSSetState(g_pRS_Default);
-	g_pGraphicsAPI->writeToBuffer(g_pCB_WVP, matrix_data);
-
-
-	g_pGraphicsAPI->m_pDeviceContext->OMSetRenderTargets(1, &g_pGraphicsAPI->m_pBackBufferRTV, g_pGraphicsAPI->m_pBackBufferDSV);
-	g_pGraphicsAPI->m_pDeviceContext->PSSetShaderResources(0, 1, &g_FloorTexture.m_pSRV);
-	g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(	g_FloorModel.m_meshes[0].numIndices,
-													g_FloorModel.m_meshes[0].baseIndex, 
-													g_FloorModel.m_meshes[0].baseVertex);
-
-	//------------FOURTH MODEL--------------
-	UINT stride3 = sizeof(MODEL_VERTEX);
-	UINT offset3 = 0;
-	g_pGraphicsAPI->m_pDeviceContext->IASetPrimitiveTopology(static_cast<D3D11_PRIMITIVE_TOPOLOGY>(g_AmbulanceModel.m_meshes[0].topology));
-	g_pGraphicsAPI->m_pDeviceContext->IASetVertexBuffers(0, 1, &g_AmbulanceModel.m_pVertexBuffer->m_pBuffer, &stride3, &offset3);
-	g_pGraphicsAPI->m_pDeviceContext->IASetIndexBuffer(g_AmbulanceModel.m_pIndexBuffer->m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
-	g_pGraphicsAPI->m_pDeviceContext->PSSetShaderResources(0, 1, &g_AmbulanceTexture.m_pSRV);
-	//g_pGraphicsAPI->m_pDeviceContext->RSSetState(g_pRS_Wireframe);
-
-	Matrix4 translation3;
-	translation3.Identity();
-	translation3.Translate(Vector3(6.0f, 0.0f, 0.0f));
-
-	g_WVP.world = translation3;
-	g_WVP.projection = g_Camera.getProjectionMatrix();
-	g_WVP.world.Transpose();
-	g_WVP.projection.Transpose();
-
-	memcpy(matrix_data.data(), &g_WVP, sizeof(g_WVP));
-
-	g_pGraphicsAPI->m_pDeviceContext->VSSetConstantBuffers(0, 1, &g_pCB_WVP->m_pBuffer);
-
-	g_pGraphicsAPI->writeToBuffer(g_pCB_WVP, matrix_data);
-
-	g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(g_AmbulanceModel.m_meshes[0].numIndices, g_AmbulanceModel.m_meshes[0].baseIndex, g_AmbulanceModel.m_meshes[0].baseVertex);
-
-	g_pGraphicsAPI->m_pSwapChain->Present(0,0);
+	Uint64 elapsed = SDL_GetTicksNS() - now;
+	if (elapsed < 999999) {
+		SDL_DelayNS(999999 - elapsed);
+	}
 
 	return SDL_APP_CONTINUE;
 }

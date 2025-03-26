@@ -279,10 +279,10 @@ struct Matrix4
 		m[3][1] += translation.y;
 		m[3][2] += translation.z;
 	}
-	void Translate(const Vector3& translation, float deltaTime, float speed) {
-		m[3][0] += translation.x * deltaTime * speed;
-		m[3][1] += translation.y * deltaTime * speed;
-		m[3][2] += translation.z * deltaTime * speed;
+	void Translate(const Vector3& translation,float speed) {
+		m[3][0] += translation.x * speed;
+		m[3][1] += translation.y * speed;
+		m[3][2] += translation.z * speed;
 	}
 
 	Vector3 TansformPosition(const Vector3& v) const 
@@ -370,94 +370,9 @@ struct Triangle {
 	Vector3 normal;
 };
 
-struct Camera 
+struct MatrixCollection
 {
-	void SetLookAt(const Vector3& eyePos, const Vector3& targetPos, const Vector3& upDir) 
-	{
-		position = eyePos;
-		target = targetPos;
-		up = upDir;
-		viewMatrix.LookAt(position, target, up);
-	}
-
-	void SetPerspective(float halfFOV, float widthScreen, float heightScreen, float MinZ, float MaxZ) {
-		fov = halfFOV;
-		width = widthScreen;
-		height = heightScreen;
-		minZ = MinZ;
-		maxZ = MaxZ;
-
-		projectionMatrix.Perspective(fov,width,height,minZ,maxZ);
-	}
-
-	Vector3 GetForwardVector() const{
-		return (position - target).normalize();
-	}
-
-	Vector3 GetRightVector() const{
-		return (up^ GetForwardVector()).normalize();
-	}
-
-	Vector3 GetUpVector() const {
-		return (GetForwardVector()^ GetRightVector()).normalize();
-	}
-
-
-	void Move(const Vector3& vector) {
-		viewMatrix.Translate(vector);
-	}
-
-	void Move(const Vector3& vector,float deltaTime, float speed) {
-		viewMatrix.Translate(vector,deltaTime,speed);
-	}
-
-	//Angle in degrees
-	void RotateX(float angle) {
-		
-		angle = degreesToRadians(angle);
-		
-		Matrix4 rotation;
-		rotation.RotateX(angle);
-
-		viewMatrix = rotation * viewMatrix;
-		
-	};
-
-	void RotateY(float angle) {
-
-		angle = degreesToRadians(angle);
-
-		Matrix4 rotation;
-		rotation.RotateY(angle);
-
-		viewMatrix = rotation * viewMatrix;
-
-	};
-
-	void RotateZ(float angle) {
-
-		angle = degreesToRadians(angle);
-
-		Matrix4 rotation;
-		rotation.RotateZ(angle);
-
-		viewMatrix = rotation * viewMatrix;
-
-	};
-
-	Matrix4 getViewMatrix() const { return viewMatrix; }
-	Matrix4 getProjectionMatrix() const { return projectionMatrix; }
-
-private:
-	Vector3 position;
-	Vector3 target;
-	Vector3 up;
-
-	float fov;
-	float height;
-	float width;
-	float minZ;
-	float maxZ;
-	Matrix4 viewMatrix;
-	Matrix4 projectionMatrix;
+	Matrix4 world;
+	Matrix4 view;
+	Matrix4 projection;
 };

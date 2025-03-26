@@ -64,6 +64,8 @@ struct Mesh {
 
 };
 
+//TODO: tener un vertexbuffer y un index buffer por modelo.
+
 /*Un modelo tiene un vertex buffer y un index buffer*/
 class Model
 {
