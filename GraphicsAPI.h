@@ -25,9 +25,9 @@ public:
 	ID3D11Texture2D* CreateTexture(
 									int width,
 									int height,
-									DXGI_FORMAT format = DXGI_FORMAT_B8G8R8A8_UNORM, // Formato de los pixeles
-									D3D11_USAGE usage = D3D11_USAGE_DEFAULT, // Si va a ser mutable o no mutable
-									UINT bindFlags = D3D11_BIND_SHADER_RESOURCE, // Cómo la voy a poder utilizar
+									DXGI_FORMAT format = DXGI_FORMAT_B8G8R8A8_UNORM,
+									D3D11_USAGE usage = D3D11_USAGE_DEFAULT,
+									UINT bindFlags = D3D11_BIND_SHADER_RESOURCE,
 									UINT cpuAccessFlags = 0,
 									UINT mipLevels = 1,
 									ID3D11ShaderResourceView** ppSRV = nullptr,
@@ -40,14 +40,19 @@ public:
 
 	UPtr<PixelShader> CreatePixelShader(const Path& filePath,
 										const String& entryFunction);
-	ID3D11InputLayout* CreateInputLayout(	Vector<D3D11_INPUT_ELEMENT_DESC> pInputElementDesc,
+	
+	ID3D11InputLayout* CreateInputLayout(	
+											Vector<D3D11_INPUT_ELEMENT_DESC> pInputElementDesc,
 											const UPtr<VertexShader>& pVertexShader);
 
 	UPtr<GraphicsBuffer> CreateVertexBuffer(const Vector<char>& data);
+	
 	UPtr<GraphicsBuffer> CreateIndexBuffer(const Vector<char>& data);
+	
 	UPtr<GraphicsBuffer> CreateConstantBuffer(const Vector<char>& data);
 
-	void writeToBuffer(const UPtr<GraphicsBuffer>& pBuffer, const Vector<char>& data);
+	void writeToBuffer(	const UPtr<GraphicsBuffer>& pBuffer, 
+											const Vector<char>& data);
 
 public:
 	void* m_pWndHandl = nullptr;

@@ -1,6 +1,11 @@
 #pragma once
 
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
 #include "MathObjects.h"
+#include <stdio.h>
+#include <x3daudio.h>
+#include <SDL3/SDL.h>
 
 namespace CameraDirection{
 	enum E {
@@ -79,37 +84,58 @@ public:
 
 	void RotateY(float angle);
 
-	void RotateY(float angle, MatrixCollection& WVP) {                                           
+	void RotateY(float angle, MatrixCollection& WVP);
 
-		angle = degreesToRadians(angle);
+	void RotateZ(float angle);
+	
+	void RotateZ(float angle, MatrixCollection& WVP);
 
-		Matrix4 rotation;
-		rotation.RotateY(angle);
+	inline float getYaw() const{
+		return atan2(GetForwardVector().x, GetForwardVector().z);
+	}
 
-		m_viewMatrix = rotation * m_viewMatrix;
+	inline float getPitch() const {
+		return asinf(GetForwardVector().y);
+	}
 
-		WVP.view = getViewMatrix();
+	inline float getRoll() const {
+		return atan2(GetRightVector().y,GetUpVector().y);
+	}
 
-		WVP.view.Transpose();
-		WVP.world.Transpose();
+	void RotateCamera(MatrixCollection& WVP, 
+										float angle, 
+										float yaw, 
+										float pitch);
 
-	};
+	inline Matrix4 getViewMatrix() const 
+	{ 
+		return m_viewMatrix; 
+	}
+	inline Matrix4 getProjectionMatrix() const 
+	{ 
+		return m_projectionMatrix; 
+	}
+	inline Vector3 getEyePosition() const
+	{ 
+		return m_position;
+	}
 
-	void RotateZ(float angle) {
+	inline float getVelocity() const
+	{
+		return m_speed;
+	}
 
-		angle = degreesToRadians(angle);
+	inline X3DAUDIO_LISTENER getCameraListener() const{
+		return m_cameraListener;
+	}
 
-		Matrix4 rotation;
-		rotation.RotateZ(angle);
+	inline void setCameraListener(X3DAUDIO_LISTENER& listener)
+	{
+		memcpy(&m_cameraListener, &listener, sizeof(X3DAUDIO_LISTENER));
+	}
 
-		m_viewMatrix = rotation * m_viewMatrix;
+	void Update(float dt);
 
-	};
-
-	void update(float deltaTime);
-
-	Matrix4 getViewMatrix() const { return m_viewMatrix; }
-	Matrix4 getProjectionMatrix() const { return m_projectionMatrix; }
 
 private:
 
@@ -127,6 +153,7 @@ private:
 	Matrix4 m_projectionMatrix;
 
 	float m_speed = 1.0f;
+	float m_rotSpeed = 1.0f;
 
 	bool m_dirUp			= false;
 	bool m_dirRight		= false;
@@ -134,5 +161,7 @@ private:
 	bool m_dirDown		= false;
 	bool m_dirForward	= false;
 	bool m_dirBack		= false;
+
+	X3DAUDIO_LISTENER m_cameraListener = {};
 };
 

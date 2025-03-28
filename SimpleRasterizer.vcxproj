@@ -114,7 +114,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\VisualC\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL3.lib;%(AdditionalDependencies);dxguid.lib;dxgi.lib;d3d11.lib;d3dcompiler.lib</AdditionalDependencies>
+      <AdditionalDependencies>SDL3.lib;%(AdditionalDependencies);dxguid.lib;dxgi.lib;d3d11.lib;d3dcompiler.lib;XAudio2.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -137,6 +137,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Audio.cpp" />
+    <ClCompile Include="AudioAPI.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="GraphicsAPI.cpp" />
     <ClCompile Include="GraphicsBuffer.cpp" />
@@ -146,10 +148,13 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Model.cpp" />
+    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Audio.h" />
+    <ClInclude Include="AudioAPI.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="GraphicsAPI.h" />
     <ClInclude Include="GraphicsBuffer.h" />
@@ -157,6 +162,7 @@
     <ClInclude Include="Image.h" />
     <ClInclude Include="MathObjects.h" />
     <ClInclude Include="Model.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Texture.h" />
   </ItemGroup>

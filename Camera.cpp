@@ -80,6 +80,8 @@ void Camera::MoveUpVector(float speed, MatrixCollection& WVP)
 	WVP.world.Transpose();
 }
 
+
+
 void Camera::MoveCamera(MatrixCollection& WVP, 
 												float speed)
 {
@@ -89,7 +91,6 @@ void Camera::MoveCamera(MatrixCollection& WVP,
 	if (m_dirRight)		MoveRightVector(m_speed * speed, WVP);
 	if (m_dirUp)			MoveUpVector(m_speed * speed, WVP);
 	if (m_dirDown)		MoveUpVector(-m_speed * speed, WVP);
-	
 }
 
 void Camera::CheckMovement(CameraDirection::E direction)
@@ -182,8 +183,70 @@ void Camera::RotateY(float angle)
 	m_viewMatrix = rotation * m_viewMatrix;
 }
 
-void Camera::update(float deltaTime)
+void Camera::RotateY(float angle, MatrixCollection& WVP)
+{
+	angle = degreesToRadians(angle);
+
+	Matrix4 rotation;
+	rotation.RotateY(angle);
+
+	m_viewMatrix = rotation * m_viewMatrix;
+
+	WVP.view = getViewMatrix();
+
+	WVP.view.Transpose();
+	WVP.world.Transpose();
+}
+
+void Camera::RotateZ(float angle)
+{
+	angle = degreesToRadians(angle);
+
+	Matrix4 rotation;
+	rotation.RotateZ(angle);
+
+	m_viewMatrix = rotation * m_viewMatrix;
+}
+
+void Camera::RotateZ(float angle, MatrixCollection& WVP)
+{
+	angle = degreesToRadians(angle);
+
+	Matrix4 rotation;
+	rotation.RotateZ(angle);
+
+	m_viewMatrix = rotation * m_viewMatrix;
+
+	WVP.view = getViewMatrix();
+
+	WVP.view.Transpose();
+	WVP.world.Transpose();
+
+}
+
+
+
+void Camera::RotateCamera(MatrixCollection& WVP, 
+													float angle, 
+													float yaw, 
+													float pitch)
 {
 
+	float anglePitch = radiansToDegrees(-angle);
+	float angleYaw = radiansToDegrees(angle);
+
+	//RotateZ(pitch * radiansToDegrees(0), WVP);
+	RotateY(pitch * anglePitch, WVP);
+	RotateX(yaw * angleYaw, WVP);
+	
 	
 }
+
+void Camera::Update(float dt)
+{
+
+}
+
+
+
+

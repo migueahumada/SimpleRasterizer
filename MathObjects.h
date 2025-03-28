@@ -301,14 +301,6 @@ struct Matrix4
 			v.x * m[0][2] + v.y * m[1][2] + v.x * m[2][2] + m[3][2] * 0.0f };
 	}
 
-	void RotateY(float angle) {
-		Identity();
-		m[0][0] =  cos(angle);
-		m[0][2] =  sin(angle);
-		m[2][0] = -sin(angle);
-		m[2][2] =  cos(angle);
-	}
-
 	void RotateX(float angle) {
 		Identity();
 		m[1][1] = cos(angle);
@@ -316,6 +308,15 @@ struct Matrix4
 		m[2][1] = -sin(angle);
 		m[2][2] = cos(angle);
 	}
+
+	void RotateY(float angle) {
+		Identity();
+		m[0][0] =  cos(angle);
+		m[0][2] = -sin(angle);
+		m[2][0] = sin(angle);
+		m[2][2] =  cos(angle);
+	}
+
 
 	void RotateZ(float angle) {
 		Identity();

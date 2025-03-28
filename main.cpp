@@ -12,12 +12,15 @@
 #include "Texture.h"
 #include "Camera.h"
 #include "GraphicsAPI.h"
+#include "AudioAPI.h"
 #include <SDL3/SDL_keyboard.h>
 
 
 using std::function;
 
 SDL_Window* g_pWindow = nullptr;
+SDL_Cursor* g_pCursor = nullptr; /* Make this variable visible in the point
+											 where you exit the program */
 
 UPtr<GraphicsAPI> g_pGraphicsAPI;
 UPtr<VertexShader> g_pVertexShader;
@@ -51,14 +54,25 @@ MatrixCollection g_WVP;
 
 Camera g_Camera;
 
-static float cameraMovSpeed = 0.01f;
-static float cameraRotSpeed = 0.4f;
+UPtr<AudioAPI> g_pAudioAPI;
+UPtr<Audio> g_pSound;
 
-void update(float deltaTime) 
+static float g_cameraMovSpeed = 0.01f;
+static float g_cameraRotSpeed = 0.0006f;
+
+void Update(float deltaTime) 
 {
-	g_Camera.MoveCamera(g_WVP, cameraMovSpeed * deltaTime);
+	g_Camera.MoveCamera(g_WVP, g_cameraMovSpeed * deltaTime);
+	g_pAudioAPI->SetCameraListener(g_Camera);
+
+	printf(	"\rCam Position: X:%f Y:%f Z:%f" ,
+					g_Camera.getViewMatrix().m[3][0],
+					g_Camera.getViewMatrix().m[3][1],
+					g_Camera.getViewMatrix().m[3][2]);
+	//printf("\n\n", g_Camera.getEyePosition());
+	
 }
-void render() {
+void Render() {
 
 #pragma region VIEWPORT
 	D3D11_VIEWPORT vp;
@@ -150,9 +164,15 @@ void render() {
 	//------------SECOND MODEL--------------
 	UINT stride2 = sizeof(MODEL_VERTEX);
 	UINT offset2 = 0;
-	g_pGraphicsAPI->m_pDeviceContext->IASetPrimitiveTopology(static_cast<D3D11_PRIMITIVE_TOPOLOGY>(g_HumanModel.m_meshes[0].topology));
-	g_pGraphicsAPI->m_pDeviceContext->IASetVertexBuffers(0, 1, &g_HumanModel.m_pVertexBuffer->m_pBuffer, &stride2, &offset2);
-	g_pGraphicsAPI->m_pDeviceContext->IASetIndexBuffer(g_HumanModel.m_pIndexBuffer->m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
+	g_pGraphicsAPI->m_pDeviceContext->IASetPrimitiveTopology(static_cast<D3D11_PRIMITIVE_TOPOLOGY>(
+		g_HumanModel.m_meshes[0].topology));
+	g_pGraphicsAPI->m_pDeviceContext->IASetVertexBuffers(	0, 
+																												1, &g_HumanModel.m_pVertexBuffer->m_pBuffer, 
+																												&stride2, 
+																												&offset2);
+	g_pGraphicsAPI->m_pDeviceContext->IASetIndexBuffer(	g_HumanModel.m_pIndexBuffer->m_pBuffer, 
+																											DXGI_FORMAT_R16_UINT, 
+																											0);
 	g_pGraphicsAPI->m_pDeviceContext->PSSetShaderResources(0, 1, &g_HumanTexture.m_pSRV);
 
 	Matrix4 translation1;
@@ -170,7 +190,9 @@ void render() {
 
 	g_pGraphicsAPI->writeToBuffer(g_pCB_WVP, matrix_data);
 
-	g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(g_HumanModel.m_meshes[0].numIndices, g_HumanModel.m_meshes[0].baseIndex, g_HumanModel.m_meshes[0].baseVertex);
+	g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(g_HumanModel.m_meshes[0].numIndices, 
+																								g_HumanModel.m_meshes[0].baseIndex, 
+																								g_HumanModel.m_meshes[0].baseVertex);
 
 
 
@@ -228,16 +250,18 @@ void render() {
 		*/
 
 		//------------THIRD MODEL--------------
-	g_pGraphicsAPI->m_pDeviceContext->IASetPrimitiveTopology(static_cast<D3D11_PRIMITIVE_TOPOLOGY>(g_FloorModel.m_meshes[0].topology));
+	g_pGraphicsAPI->m_pDeviceContext->IASetPrimitiveTopology(
+		static_cast<D3D11_PRIMITIVE_TOPOLOGY>(g_FloorModel.m_meshes[0].topology));
+
 	g_pGraphicsAPI->m_pDeviceContext->IASetVertexBuffers(0,
-		1,
-		&g_FloorModel.m_pVertexBuffer->m_pBuffer,
-		&stride,
-		&offset);
+																											 1,
+																											 &g_FloorModel.m_pVertexBuffer->m_pBuffer,
+																											 &stride,
+																											 &offset);
 	g_pGraphicsAPI->m_pDeviceContext->IASetIndexBuffer(
-		g_FloorModel.m_pIndexBuffer->m_pBuffer,
-		DXGI_FORMAT_R16_UINT,
-		0);
+																											g_FloorModel.m_pIndexBuffer->m_pBuffer,
+																											DXGI_FORMAT_R16_UINT,
+																											0);
 
 	Matrix4 floorScale;
 	floorScale.Scale(1.0f);
@@ -250,11 +274,17 @@ void render() {
 	g_pGraphicsAPI->writeToBuffer(g_pCB_WVP, matrix_data);
 
 
-	g_pGraphicsAPI->m_pDeviceContext->OMSetRenderTargets(1, &g_pGraphicsAPI->m_pBackBufferRTV, g_pGraphicsAPI->m_pBackBufferDSV);
-	g_pGraphicsAPI->m_pDeviceContext->PSSetShaderResources(0, 1, &g_FloorTexture.m_pSRV);
+	g_pGraphicsAPI->m_pDeviceContext->OMSetRenderTargets(	1, 
+																												&g_pGraphicsAPI->m_pBackBufferRTV, 
+																												g_pGraphicsAPI->m_pBackBufferDSV);
+
+	g_pGraphicsAPI->m_pDeviceContext->PSSetShaderResources(	0, 
+																													1, 
+																													&g_FloorTexture.m_pSRV);
+
 	g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(g_FloorModel.m_meshes[0].numIndices,
-		g_FloorModel.m_meshes[0].baseIndex,
-		g_FloorModel.m_meshes[0].baseVertex);
+																								g_FloorModel.m_meshes[0].baseIndex,
+																								g_FloorModel.m_meshes[0].baseVertex);
 
 	//------------FOURTH MODEL--------------
 	UINT stride3 = sizeof(MODEL_VERTEX);
@@ -432,6 +462,23 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
 #pragma endregion LOAD_MODELS
 
+	g_pAudioAPI = make_unique<AudioAPI>(pWndHandle);
+	if (!g_pAudioAPI)
+	{
+		return SDL_APP_FAILURE;
+	}
+	
+	g_pAudioAPI->Init();
+
+	g_pSound = g_pAudioAPI->CreateSoundEffect("Mark",
+																						"MX_Menu_Loop.wav");
+	g_pAudioAPI->Play(g_pSound, 0.01f);
+	
+	int32_t cursorData[2] = { 0, 0 };
+	g_pCursor = SDL_CreateCursor(	(Uint8*)cursorData, 
+																(Uint8*)cursorData, 
+																8, 8, 4, 4);
+	SDL_SetCursor(g_pCursor);
 	return SDL_APP_CONTINUE;
 }
 
@@ -452,10 +499,11 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 			if (sym == SDLK_Q) g_Camera.CheckMovement(CameraDirection::DOWN);
 			if (sym == SDLK_E) g_Camera.CheckMovement(CameraDirection::UP);
 
-			if (sym == SDLK_UP) g_Camera.RotateX(cameraRotSpeed, g_WVP);
-			if (sym == SDLK_DOWN) g_Camera.RotateX(-cameraRotSpeed, g_WVP);
-			if (sym == SDLK_LEFT) g_Camera.RotateY(cameraRotSpeed, g_WVP);
-			if (sym == SDLK_RIGHT) g_Camera.RotateY(-cameraRotSpeed, g_WVP);
+			if (sym == SDLK_UP)			g_Camera.RotateX(g_cameraRotSpeed, g_WVP);
+			if (sym == SDLK_DOWN)		g_Camera.RotateX(-g_cameraRotSpeed, g_WVP);
+			if (sym == SDLK_LEFT)		g_Camera.RotateY(g_cameraRotSpeed, g_WVP);
+			if (sym == SDLK_RIGHT)	g_Camera.RotateY(-g_cameraRotSpeed, g_WVP);
+
 			break;
 		
 		case SDL_EVENT_KEY_UP:
@@ -465,81 +513,18 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 			if (sym == SDLK_D) g_Camera.ResetMovement(CameraDirection::RIGHT);
 			if (sym == SDLK_Q) g_Camera.ResetMovement(CameraDirection::DOWN);
 			if (sym == SDLK_E) g_Camera.ResetMovement(CameraDirection::UP);
+
+			break;
+
+		case SDL_EVENT_MOUSE_MOTION:
+				g_Camera.RotateCamera(g_WVP, 
+															g_cameraRotSpeed, 
+															event->motion.yrel,
+															event->motion.xrel);
 			break;
 
 	}
 
-	
-	
-		//if (event->type == SDL_EVENT_KEY_DOWN)
-		//{
-		//	switch (event->key.scancode) {
-
-		//		case SDL_SCANCODE_W:
-
-		//			g_Camera.MoveForwardVector(cameraMovSpeed, g_WVP);
-		//		
-		//			break;
-		//		case SDL_SCANCODE_A:
-		//			g_Camera.MoveRightVector(-cameraMovSpeed, g_WVP);
-
-		//			break;
-		//		case SDL_SCANCODE_S:
-		//			g_Camera.MoveForwardVector(-cameraMovSpeed, g_WVP);
-
-		//			break;
-		//		case SDL_SCANCODE_D:
-		//			g_Camera.MoveRightVector(cameraMovSpeed, g_WVP);
-
-		//			break;
-		//		case SDL_SCANCODE_Q:
-		//			g_Camera.MoveUpVector(-cameraMovSpeed, g_WVP);
-
-		//			break;
-		//		case SDL_SCANCODE_E:
-		//			g_Camera.MoveUpVector(cameraMovSpeed, g_WVP);
-
-		//			break;
-		//		case SDL_SCANCODE_UP:
-		//			g_Camera.RotateX(cameraRotSpeed, g_WVP);
-
-		//			break;
-		//		case SDL_SCANCODE_DOWN:
-		//			g_Camera.RotateX(-cameraRotSpeed, g_WVP);
-
-		//			break;
-		//		case SDL_SCANCODE_RIGHT:
-		//			g_Camera.RotateY(-cameraRotSpeed, g_WVP);
-
-		//			break;
-		//		case SDL_SCANCODE_LEFT:
-		//			g_Camera.RotateY(cameraRotSpeed, g_WVP);
-
-		//			break;
-		//		default: // maybe.?
-		//			break;
-		//	}
-		//}
-
-		//if (event->type == SDL_EVENT_QUIT) {
-
-		//	return SDL_APP_SUCCESS;
-		//}
-
-
-
-		//if (event->type == SDL_EVENT_MOUSE_MOTION)
-		//{
-
-		//	float x, y;
-		//	SDL_GetMouseState(&x, &y);
-
-		//}
-	
-	
-
-
-	
 	return SDL_APP_CONTINUE;
 }
 
@@ -551,10 +536,10 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 	Uint64 now = SDL_GetTicksNS();
 	float dt = (now - past) / 999999999.0f * 1000.0f;
 	
-	printf("Delta Time: %f\n", dt);
+	//printf("Delta Time: %f\n", dt);
 	
-	update(dt);
-	render();
+	Update(dt);
+	Render();
 
 	if (now - last > 999999999)
 	{
@@ -583,6 +568,8 @@ void SDL_AppQuit(void* appstate, SDL_AppResult result)
 		SDL_DestroyWindow(g_pWindow);
 		g_pWindow = nullptr;
 	}
+
+	SDL_DestroyCursor(g_pCursor);
 	SDL_Quit();
 }
 
