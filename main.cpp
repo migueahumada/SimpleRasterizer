@@ -14,6 +14,7 @@
 #include "GraphicsAPI.h"
 #include "AudioAPI.h"
 #include <SDL3/SDL_keyboard.h>
+#include "Character.h"
 
 
 using std::function;
@@ -30,11 +31,13 @@ Model g_myModel;
 Model g_FloorModel;
 Model g_HumanModel;
 Model g_AmbulanceModel;
+Model g_YoyoModel;
 
 Texture g_myTexture;
 Texture g_FloorTexture;
 Texture g_HumanTexture;
 Texture g_AmbulanceTexture;
+Texture g_YoyoTexture;
 
 Texture g_dsReflection;
 Texture g_rtReflection;
@@ -60,6 +63,8 @@ UPtr<Audio> g_pSound;
 
 static float g_cameraMovSpeed = 0.001f;
 static float g_cameraRotSpeed = .0006f;
+
+UPtr<Character> g_pCharacter;
 
 
 void Update(float deltaTime) 
@@ -145,6 +150,9 @@ void Render() {
 
 #pragma endregion SET_SAMPLERS
 
+#pragma region MODELS_SETUP
+/*
+
 
 	//------------FIRST MODEL--------------
 	g_pGraphicsAPI->m_pDeviceContext->IASetPrimitiveTopology(static_cast<D3D11_PRIMITIVE_TOPOLOGY>(g_myModel.m_meshes[0].topology));
@@ -160,11 +168,11 @@ void Render() {
 	translation2.Translate(Vector3(0.0, 0.0f, 0.0f));
 
 	g_WVP.world = translation2;
-	g_WVP.projection = g_Camera.getProjectionMatrix();
 	g_WVP.view = g_Camera.getViewMatrix();
-
-	g_WVP.view.Transpose();
+	g_WVP.projection = g_Camera.getProjectionMatrix();
+	
 	g_WVP.world.Transpose();
+	g_WVP.view.Transpose();
 	g_WVP.projection.Transpose();
 
 	Vector<char> matrix_data;
@@ -211,61 +219,6 @@ void Render() {
 	g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(g_HumanModel.m_meshes[0].numIndices, 
 																								g_HumanModel.m_meshes[0].baseIndex, 
 																								g_HumanModel.m_meshes[0].baseVertex);
-
-
-
-
-	/*Matrix4 translation;
-	translation.Identity();
-	translation.Translate(Vector3(0.0f, 0.0f, 0.0f));
-
-	Matrix4 translation2;
-	translation2.Identity();
-	translation2.Translate(Vector3(1.5f, 0.0f, -2.5f));
-
-	Matrix4 translation3;
-	translation3.Identity();
-	translation3.Translate(Vector3(3.0f, 0.0f, 0.0f));
-
-	Matrix4 rotation;
-	rotation.RotateY(rotationAngle);
-
-	g_WVP.world = rotation * translation;
-
-	g_Camera.SetPerspective(3.141592653f / 4.0f, WIDTH, HEIGHT, 0.1f, 100.0f);
-
-	g_WVP.projection = g_Camera.getProjectionMatrix();
-	g_WVP.world.Transpose();
-	g_WVP.projection.Transpose();
-
-	Vector<char> matrix_data;
-	matrix_data.resize(sizeof(g_WVP));
-	memcpy(matrix_data.data(), &g_WVP, sizeof(g_WVP));
-
-	g_pGraphicsAPI->m_pDeviceContext->VSSetConstantBuffers(0, 1, &g_pCB_WVP->m_pBuffer);
-
-	g_pGraphicsAPI->m_pDeviceContext->RSSetState(g_pRS_Default);
-	g_pGraphicsAPI->writeToBuffer(g_pCB_WVP,matrix_data);
-	g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(	g_myModel.m_meshes[0].numIndices,
-		g_myModel.m_meshes[0].baseIndex, g_myModel.m_meshes[0].baseVertex);*/ //Los dibujamos de manera indexada
-
-		/*Matrix4 refScale;
-		refScale.RotateY(-rotationAngle);
-		g_WVP.world = refScale * rotation * translation3;
-		g_WVP.world.Transpose();
-		memcpy(matrix_data.data(), &g_WVP, sizeof(g_WVP));
-
-		g_pGraphicsAPI->writeToBuffer(g_pCB_WVP, matrix_data);
-
-		g_pGraphicsAPI->m_pDeviceContext->RSSetState(g_pRS_Default);
-		g_pGraphicsAPI->m_pDeviceContext->OMSetRenderTargets(1,
-															&g_rtReflection.m_pRTV,
-															g_dsReflection.m_pDSV);
-
-		g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(	g_myModel.m_meshes[0].numIndices,
-														g_myModel.m_meshes[0].baseIndex,
-														g_myModel.m_meshes[0].baseVertex);
-		*/
 
 		//------------THIRD MODEL--------------
 	g_pGraphicsAPI->m_pDeviceContext->IASetPrimitiveTopology(
@@ -319,6 +272,7 @@ void Render() {
 
 	g_WVP.world = translation3;
 	g_WVP.projection = g_Camera.getProjectionMatrix();
+
 	g_WVP.world.Transpose();
 	g_WVP.projection.Transpose();
 
@@ -329,6 +283,41 @@ void Render() {
 	g_pGraphicsAPI->writeToBuffer(g_pCB_WVP, matrix_data);
 
 	g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(g_AmbulanceModel.m_meshes[0].numIndices, g_AmbulanceModel.m_meshes[0].baseIndex, g_AmbulanceModel.m_meshes[0].baseVertex);
+
+	//------------FIFTH MODEL--------------
+	
+	UINT stride5 = sizeof(MODEL_VERTEX);
+	UINT offset5 = 0;
+	g_pGraphicsAPI->m_pDeviceContext->IASetPrimitiveTopology(static_cast<D3D11_PRIMITIVE_TOPOLOGY>(g_YoyoModel.m_meshes[0].topology));
+	g_pGraphicsAPI->m_pDeviceContext->IASetVertexBuffers(0, 1, &g_YoyoModel.m_pVertexBuffer->m_pBuffer, &stride5, &offset5);
+	g_pGraphicsAPI->m_pDeviceContext->IASetIndexBuffer(g_YoyoModel.m_pIndexBuffer->m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
+	g_pGraphicsAPI->m_pDeviceContext->PSSetShaderResources(0, 1, &g_YoyoTexture.m_pSRV);
+	g_pGraphicsAPI->m_pDeviceContext->RSSetState(g_pRS_Wireframe);
+
+	Matrix4 translation5;
+	translation5.Identity();
+	translation5.Translate(Vector3(6.0f, 0.0f, 8.0f));
+
+	g_WVP.world = translation5;
+	g_WVP.projection = g_Camera.getProjectionMatrix();
+	g_WVP.world.Transpose();
+	g_WVP.projection.Transpose();
+
+	memcpy(matrix_data.data(), &g_WVP, sizeof(g_WVP));
+
+	g_pGraphicsAPI->m_pDeviceContext->VSSetConstantBuffers(0, 1, &g_pCB_WVP->m_pBuffer);
+
+	g_pGraphicsAPI->writeToBuffer(g_pCB_WVP, matrix_data);
+
+	g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(g_YoyoModel.m_meshes[0].numIndices, 
+																								g_YoyoModel.m_meshes[0].baseIndex, 
+																								g_YoyoModel.m_meshes[0].baseVertex);
+
+
+
+
+*/
+#pragma endregion MODELS_SETUP
 
 	g_pGraphicsAPI->m_pSwapChain->Present(0, 0);
 }
@@ -442,6 +431,9 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	g_pGraphicsAPI->m_pDevice->CreateSamplerState(&descSS, &g_pSS_Anisotropic);
 #pragma endregion SAMPLER_FILTERS
 
+/*
+
+
 #pragma region LOAD_MODELS
 	//---------------LOAD DINOSAUR MODEL---------------
 	g_myModel.LoadFromFile("rex.obj", g_pGraphicsAPI);
@@ -475,10 +467,17 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	ambulanceModelImage.decode("colormap2.bmp");
 	g_AmbulanceTexture.createImage(ambulanceModelImage, g_pGraphicsAPI);
 
-	
-	
+	//---------------LOAD YOYO--------------------
+	g_YoyoModel.LoadFromFile("yoyoModel.obj",g_pGraphicsAPI);
+	Image yoyoModelImage;
+	yoyoModelImage.decode("yoyoTexture.bmp");
+	g_YoyoTexture.createImage(yoyoModelImage,g_pGraphicsAPI);
 
 #pragma endregion LOAD_MODELS
+
+*/
+
+	g_pCharacter = make_unique<Character>(g_pGraphicsAPI);
 
 	g_pAudioAPI = make_unique<AudioAPI>(pWndHandle);
 	if (!g_pAudioAPI)

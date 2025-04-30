@@ -1,15 +1,12 @@
 #pragma once
-#include "GraphicsBuffer.h"
+
 #include "HelperMacros.h"
 #include "MathObjects.h"
 #include <vector>
 #include <string>
-#include "Image.h"
-#include "Texture.h"
-#include "Camera.h"
 
 class GraphicsAPI;
-class Camera;
+class GraphicsBuffer;
 
 template <typename T>
 using Vector = std::vector<T>;
@@ -76,48 +73,16 @@ class Model
 {
 public:
 	Model() = default;
-	
-	/*Model(UPtr<GraphicsAPI>& pGraphicsAPI,
-				const char* modelPath, 
-				const char* texturePath,
-				MatrixCollection& WVP,
-				UPtr<GraphicsBuffer>& pGraphicsBuffer,
-				UPtr<Camera>& pCamera)
-				: m_pGraphicsAPI(pGraphicsAPI),
-					m_WVP(WVP),
-					m_pCB(pGraphicsBuffer),
-					m_pCamera(pCamera)
-	{
-
-
-	}*/
-
 	~Model() = default;
 
 	bool LoadFromFile(const char* filePath, 
 										const UPtr<GraphicsAPI>& pGraphicsAPI);
 
-
-	/*void Init();
-	void Update();
-	void Render();*/
-
 	Vector<Mesh> m_meshes;
 	
-
 	//Cuántos buffers voy a querer generar
 	UPtr<GraphicsBuffer> m_pVertexBuffer;
 	UPtr<GraphicsBuffer> m_pIndexBuffer;
 
-	/*UPtr<Image> m_pSrcImage;
-	UPtr<Texture> m_pTexture;
-	const char* m_modelPath;
-	const char* m_texturePath;
-
-	UPtr<GraphicsAPI>& m_pGraphicsAPI;
-	MatrixCollection& m_WVP;
-	UPtr<GraphicsBuffer>& m_pCB;
-	UPtr<Camera>& m_pCamera;*/
-	
 };
 

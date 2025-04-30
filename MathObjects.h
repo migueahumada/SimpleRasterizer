@@ -386,3 +386,32 @@ struct MatrixCollection
 	Matrix4 view;
 	Matrix4 projection;
 };
+
+struct Transform{
+  
+	Matrix4 transform;
+
+	Vector3 getPosition() const{
+		return Vector3{ transform.m[0][3],
+									  transform.m[1][3],
+									  transform.m[2][3]};
+	}
+
+	Vector3 getScale() const {
+		return Vector3{ transform.m[0][0],
+										transform.m[1][1],
+										transform.m[2][2]};
+	}
+};
+
+/*
+* A simple 4x4 matrix
+
+ X   Y   Z   W
+---------------
+[1] [0] [0]	[0],
+[0] [1] [0]	[0],
+[0] [0] [1]	[0],
+[0] [0] [0]	[1],
+
+*/
