@@ -36,7 +36,7 @@ public:
 	~Texture();
 
 	void createImage(const Image& img);
-	void createImage(const Image& img, const UPtr<GraphicsAPI>& pGraphicsAPI, DXGI_FORMAT format = DXGI_FORMAT_B8G8R8A8_UNORM);
+	void createImage(const Image& img, GraphicsAPI& pGraphicsAPI, DXGI_FORMAT format = DXGI_FORMAT_B8G8R8A8_UNORM);
 
 	void adjustTextureAddress(TEXTURE_ADDRESS::E textureAddressMode, float& u, float& v);
 	FloatColor getColor(float u, float v, TEXTURE_ADDRESS::E textureAddress);

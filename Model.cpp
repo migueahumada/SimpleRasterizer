@@ -7,7 +7,7 @@
 using std::fstream;
 using std::ios;
 
-bool Model::LoadFromFile(const char* filePath, const UPtr<GraphicsAPI>& pGraphicsAPI)
+bool Model::LoadFromFile(const char* filePath, GraphicsAPI& pGraphicsAPI)
 {
     fstream objFile(filePath, ios::in | ios::ate);
     
@@ -101,7 +101,7 @@ bool Model::LoadFromFile(const char* filePath, const UPtr<GraphicsAPI>& pGraphic
     vertex_data.resize(vertices.size() * sizeof(MODEL_VERTEX));
     memcpy(vertex_data.data(), vertices.data(), vertices.size() * sizeof(MODEL_VERTEX));
 
-    m_pVertexBuffer = pGraphicsAPI->CreateVertexBuffer(vertex_data);
+    m_pVertexBuffer = pGraphicsAPI.CreateVertexBuffer(vertex_data);
     if (!m_pVertexBuffer)
     {
         return false;
@@ -111,7 +111,7 @@ bool Model::LoadFromFile(const char* filePath, const UPtr<GraphicsAPI>& pGraphic
     index_data.resize(indices.size() * sizeof(unsigned short));
     memcpy(index_data.data(), indices.data(), indices.size() * sizeof(unsigned short));
 
-    m_pIndexBuffer = pGraphicsAPI->CreateIndexBuffer(index_data);
+    m_pIndexBuffer = pGraphicsAPI.CreateIndexBuffer(index_data);
     if (!m_pIndexBuffer)
     {
         return false;

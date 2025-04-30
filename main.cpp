@@ -150,6 +150,9 @@ void Render() {
 
 #pragma endregion SET_SAMPLERS
 
+
+
+
 #pragma region MODELS_SETUP
 /*
 
@@ -318,6 +321,8 @@ void Render() {
 
 */
 #pragma endregion MODELS_SETUP
+	
+	g_pCharacter->Render();
 
 	g_pGraphicsAPI->m_pSwapChain->Present(0, 0);
 }
@@ -477,7 +482,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
 */
 
-	g_pCharacter = make_unique<Character>(g_pGraphicsAPI);
+	g_pCharacter = make_unique<Character>(g_pGraphicsAPI.get(),&g_WVP, &g_Camera);
 
 	g_pAudioAPI = make_unique<AudioAPI>(pWndHandle);
 	if (!g_pAudioAPI)

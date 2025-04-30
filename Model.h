@@ -76,7 +76,7 @@ public:
 	~Model() = default;
 
 	bool LoadFromFile(const char* filePath, 
-										const UPtr<GraphicsAPI>& pGraphicsAPI);
+										GraphicsAPI& pGraphicsAPI);
 
 	Vector<Mesh> m_meshes;
 	

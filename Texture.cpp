@@ -13,10 +13,10 @@ void Texture::createImage(const Image& img) {
 
 }
 
-void Texture::createImage(const Image& img, const UPtr<GraphicsAPI>& pGraphicsAPI, DXGI_FORMAT format)
+void Texture::createImage(const Image& img, GraphicsAPI& pGraphicsAPI, DXGI_FORMAT format)
 {
 	createImage(img);
-	m_pTexture = pGraphicsAPI->CreateTexture(	img.getWidth(),
+	m_pTexture = pGraphicsAPI.CreateTexture(	img.getWidth(),
 												img.getHeight(), 
 												format,
 												D3D11_USAGE_DEFAULT, 
@@ -24,7 +24,7 @@ void Texture::createImage(const Image& img, const UPtr<GraphicsAPI>& pGraphicsAP
 												0,1,&m_pSRV);
 	if (m_pTexture)
 	{
-		pGraphicsAPI->m_pDeviceContext->UpdateSubresource1(m_pTexture,0,nullptr,
+		pGraphicsAPI.m_pDeviceContext->UpdateSubresource1(m_pTexture,0,nullptr,
 			reinterpret_cast<const void*>(img.getPixels()), img.getPitch(), 0,0);
 	}
 	
