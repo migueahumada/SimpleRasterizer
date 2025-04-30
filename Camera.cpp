@@ -26,126 +26,26 @@ void Camera::SetPerspective(float halfFOV,
 }
 
 
-void Camera::Move(const Vector3& vector)
+void Camera::Move(const Vector3& direction)
 {
-	m_viewMatrix.Translate(vector);
-}
+	m_position += direction * m_speed;
+	m_target += direction * m_speed;
 
-void Camera::Move(const Vector3& vector, float speed)
-{
-	m_viewMatrix.Translate(vector, speed);
-}
-
-void Camera::Move(const Vector3& vector, float speed, MatrixCollection& WVP)
-{
-	m_viewMatrix.Translate(vector, speed);
-
-	WVP.world.Identity();
-	WVP.view = getViewMatrix();
-
-	WVP.view.Transpose();
-	WVP.world.Transpose();
-}
-
-void Camera::MoveForwardVector(float speed, MatrixCollection& WVP)
-{
-	m_viewMatrix.Translate(GetForwardVector(), speed);
-
-	WVP.world.Identity();
-	WVP.view = getViewMatrix();
-
-	WVP.view.Transpose();
-	WVP.world.Transpose();
-}
-
-void Camera::MoveRightVector(float speed, MatrixCollection& WVP)
-{
-	m_viewMatrix.Translate(GetRightVector(), speed);
-
-	WVP.world.Identity();
-	WVP.view = getViewMatrix();
-
-	WVP.view.Transpose();
-	WVP.world.Transpose();
-}
-
-void Camera::MoveUpVector(float speed, MatrixCollection& WVP)
-{
-	m_viewMatrix.Translate(GetUpVector(), speed);
-
-	WVP.world.Identity();
-	WVP.view = getViewMatrix();
-
-	WVP.view.Transpose();
-	WVP.world.Transpose();
+	bIsDirty = true;
 }
 
 
 
-void Camera::MoveCamera(MatrixCollection& WVP, 
-												float speed)
-{
-	if (m_dirForward) MoveForwardVector(m_speed * speed, WVP);
-	if (m_dirBack)		MoveForwardVector(-m_speed * speed, WVP);
-	if (m_dirLeft)		MoveRightVector(-m_speed * speed, WVP);
-	if (m_dirRight)		MoveRightVector(m_speed * speed, WVP);
-	if (m_dirUp)			MoveUpVector(m_speed * speed, WVP);
-	if (m_dirDown)		MoveUpVector(-m_speed * speed, WVP);
-}
-
-void Camera::CheckMovement(CameraDirection::E direction)
-{
-	switch (direction)
-	{
-		case CameraDirection::UP:
-			m_dirUp = true;
-			break;
-		case CameraDirection::DOWN:
-			m_dirDown = true;
-			break;
-		case CameraDirection::RIGHT:
-			m_dirRight = true;
-			break;
-		case CameraDirection::LEFT:
-			m_dirLeft = true;
-			break;
-		case CameraDirection::FORWARD:
-			m_dirForward = true;
-			break;
-		case CameraDirection::BACKWARDS:
-			m_dirBack = true;
-			break;
-		default:
-			break;
-	}
-}
-
-void Camera::ResetMovement(CameraDirection::E direction)
-{
-	switch (direction)
-	{
-	case CameraDirection::UP:
-		m_dirUp = false;
-		break;
-	case CameraDirection::DOWN:
-		m_dirDown = false;
-		break;
-	case CameraDirection::RIGHT:
-		m_dirRight = false;
-		break;
-	case CameraDirection::LEFT:
-		m_dirLeft = false;
-		break;
-	case CameraDirection::FORWARD:
-		m_dirForward = false;
-		break;
-	case CameraDirection::BACKWARDS:
-		m_dirBack = false;
-		break;
-	default:
-		break;
-	}
-}
+//void Camera::Move(const Vector3& vector, float speed, MatrixCollection& WVP)
+//{
+//	m_viewMatrix.Translate(vector, speed);
+//
+//	WVP.world.Identity();
+//	WVP.view = getViewMatrix();
+//
+//	WVP.view.Transpose();
+//	WVP.world.Transpose();
+//}
 
 void Camera::RotateX(float angle)
 {
@@ -242,9 +142,23 @@ void Camera::RotateCamera(MatrixCollection& WVP,
 	
 }
 
-void Camera::Update(float dt)
+
+void Camera::Update()
 {
 
+	m_viewMatrix.LookAt(m_position, m_target, m_up);
+	m_projectionMatrix.Perspective(m_fov, m_width, m_height, m_minZ, m_maxZ);
+
+	bIsDirty = false;
+	/*if (bIsDirty)
+	{
+		if (m_dirForward) { Move(GetForwardVector() * dt);	};
+		if (m_dirBack)		{ Move(-GetForwardVector() * dt); bIsDirty = false; }
+		if (m_dirRight)		{ Move(GetRightVector() * dt);		bIsDirty = false; }
+		if (m_dirLeft)		{ Move(-GetRightVector() * dt);		bIsDirty = false; }
+		if (m_dirUp)			{ Move(GetUpVector() * dt);				bIsDirty = false; }
+		if (m_dirDown)		{ Move(-GetUpVector() * dt);			bIsDirty = false; }
+	}*/
 }
 
 

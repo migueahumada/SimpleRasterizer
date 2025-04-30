@@ -53,23 +53,38 @@ UPtr<GraphicsBuffer> g_pCB_WVP;
 MatrixCollection g_WVP;
 
 Camera g_Camera;
+Vector3 g_CameraMove = { 0.0f,0.0f,0.0f };
 
 UPtr<AudioAPI> g_pAudioAPI;
 UPtr<Audio> g_pSound;
 
-static float g_cameraMovSpeed = 0.01f;
-static float g_cameraRotSpeed = 0.0006f;
+static float g_cameraMovSpeed = 0.001f;
+static float g_cameraRotSpeed = .0006f;
+
 
 void Update(float deltaTime) 
 {
-	g_Camera.MoveCamera(g_WVP, g_cameraMovSpeed * deltaTime);
+	//g_Camera.MoveCamera(g_WVP, g_cameraMovSpeed * deltaTime);
 	g_pAudioAPI->SetCameraListener(g_Camera);
 
-	printf(	"\rCam Position: X:%f Y:%f Z:%f" ,
+	/*printf(	"\rCam Position: X:%f Y:%f Z:%f" ,
 					g_Camera.getViewMatrix().m[3][0],
 					g_Camera.getViewMatrix().m[3][1],
-					g_Camera.getViewMatrix().m[3][2]);
-	//printf("\n\n", g_Camera.getEyePosition());
+					g_Camera.getViewMatrix().m[3][2]);*/
+	
+
+	printf(	"\rPosition: X:%f Y:%f Z:%f", 
+					g_Camera.getEyePosition().x,
+					g_Camera.getEyePosition().y,
+					g_Camera.getEyePosition().z);
+
+	/*printf(	"\rPosition: X:%f Y:%f Z:%f",
+					g_Camera.getEyePosition().x,
+					g_Camera.getEyePosition().y,
+					g_Camera.getEyePosition().z);*/
+	g_Camera.Move(g_CameraMove * deltaTime);
+	g_Camera.Update();
+	
 	
 }
 void Render() {
@@ -146,6 +161,9 @@ void Render() {
 
 	g_WVP.world = translation2;
 	g_WVP.projection = g_Camera.getProjectionMatrix();
+	g_WVP.view = g_Camera.getViewMatrix();
+
+	g_WVP.view.Transpose();
 	g_WVP.world.Transpose();
 	g_WVP.projection.Transpose();
 
@@ -446,7 +464,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 		0, 1, nullptr, nullptr, &g_dsReflection.m_pDSV);
 
 	//---------------LOAD HUMAN--------------------
-	g_HumanModel.LoadFromFile("ManModel.obj",g_pGraphicsAPI);
+	g_HumanModel.LoadFromFile("CharacterBigger.obj",g_pGraphicsAPI);
 	Image humanModelImage;
 	humanModelImage.decode("manText.bmp");
 	g_HumanTexture.createImage(humanModelImage, g_pGraphicsAPI);
@@ -472,7 +490,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
 	g_pSound = g_pAudioAPI->CreateSoundEffect("Mark",
 																						"MX_Menu_Loop.wav");
-	g_pAudioAPI->Play(g_pSound, 0.01f);
+	g_pAudioAPI->Play(g_pSound, 0.2f);
 	
 	int32_t cursorData[2] = { 0, 0 };
 	g_pCursor = SDL_CreateCursor(	(Uint8*)cursorData, 
@@ -485,6 +503,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 {
 	SDL_Keycode sym = event->key.key;
+	
 	switch (event->type)
 	{
 		case SDL_EVENT_QUIT:
@@ -492,28 +511,28 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 			break;
 
 		case SDL_EVENT_KEY_DOWN:
-			if (sym == SDLK_W) g_Camera.CheckMovement(CameraDirection::FORWARD);
-			if (sym == SDLK_A) g_Camera.CheckMovement(CameraDirection::LEFT);
-			if (sym == SDLK_S) g_Camera.CheckMovement(CameraDirection::BACKWARDS);
-			if (sym == SDLK_D) g_Camera.CheckMovement(CameraDirection::RIGHT);
-			if (sym == SDLK_Q) g_Camera.CheckMovement(CameraDirection::DOWN);
-			if (sym == SDLK_E) g_Camera.CheckMovement(CameraDirection::UP);
+			if (sym == SDLK_W) g_CameraMove.z = g_cameraMovSpeed;
+			if (sym == SDLK_S) g_CameraMove.z = -g_cameraMovSpeed;
+			if (sym == SDLK_D) g_CameraMove.x = g_cameraMovSpeed;
+			if (sym == SDLK_A) g_CameraMove.x = -g_cameraMovSpeed;
+			if (sym == SDLK_Q) g_CameraMove.y = g_cameraMovSpeed;
+			if (sym == SDLK_E) g_CameraMove.y = -g_cameraMovSpeed;
+
 
 			if (sym == SDLK_UP)			g_Camera.RotateX(g_cameraRotSpeed, g_WVP);
 			if (sym == SDLK_DOWN)		g_Camera.RotateX(-g_cameraRotSpeed, g_WVP);
 			if (sym == SDLK_LEFT)		g_Camera.RotateY(g_cameraRotSpeed, g_WVP);
 			if (sym == SDLK_RIGHT)	g_Camera.RotateY(-g_cameraRotSpeed, g_WVP);
-
 			break;
 		
 		case SDL_EVENT_KEY_UP:
-			if (sym == SDLK_W) g_Camera.ResetMovement(CameraDirection::FORWARD);
-			if (sym == SDLK_A) g_Camera.ResetMovement(CameraDirection::LEFT);
-			if (sym == SDLK_S) g_Camera.ResetMovement(CameraDirection::BACKWARDS);
-			if (sym == SDLK_D) g_Camera.ResetMovement(CameraDirection::RIGHT);
-			if (sym == SDLK_Q) g_Camera.ResetMovement(CameraDirection::DOWN);
-			if (sym == SDLK_E) g_Camera.ResetMovement(CameraDirection::UP);
-
+			if (sym == SDLK_W) g_CameraMove.z = 0;
+			if (sym == SDLK_S) g_CameraMove.z = 0;
+			if (sym == SDLK_D) g_CameraMove.x = 0;
+			if (sym == SDLK_A) g_CameraMove.x = 0;
+			if (sym == SDLK_Q) g_CameraMove.y = 0;
+			if (sym == SDLK_E) g_CameraMove.y = 0;
+			
 			break;
 
 		case SDL_EVENT_MOUSE_MOTION:

@@ -120,6 +120,10 @@ struct Vector3
 		return { x + v.x, y + v.y, z + v.z };
 	}
 
+	Vector3 operator+=(const Vector3& v) {
+		return {x += v.x, y += v.y, z += v.z };
+	}
+
 	Vector3 operator-(const Vector3& v) const {
 		return { x - v.x, y - v.y, z - v.z };
 	}
@@ -198,9 +202,16 @@ struct Matrix4
 	//Es un sistema nuevo de coordenadas ltieralmente!!!
 	void LookAt(const Vector3& eyePos, const Vector3& targetPos, const Vector3& upDir) 
 	{
-		const Vector3 ZAxis = (eyePos - targetPos).normalize();
+		const Vector3 ZAxis = (targetPos - eyePos).normalize();
 		const Vector3 XAxis = upDir.cross(ZAxis).normalize();
 		const Vector3 YAxis = ZAxis.cross(XAxis);
+
+		/*
+			[xx][yx][zx][wx]
+			[yx][yy][yz][wy]
+			[zx][yz][zz][wz]
+			[0 ][0 ][0 ][1 ]
+		*/
 
 		m[0][0] = XAxis.x;
 		m[1][0] = XAxis.y;
@@ -220,9 +231,9 @@ struct Matrix4
 
 		Vector3 eyeNeg = -eyePos;
 
-		m[3][0] = eyePos | XAxis;
-		m[3][1] = eyePos | YAxis;
-		m[3][2] = eyePos | ZAxis;
+		m[3][0] = eyeNeg | XAxis;
+		m[3][1] = eyeNeg | YAxis;
+		m[3][2] = eyeNeg | ZAxis;
 		m[3][3] = 1.0f;
 	}
 
@@ -259,8 +270,6 @@ struct Matrix4
 		m[3][1] = plane3[1];
 		m[3][2] = plane3[2];
 		m[3][3] = plane3[3];
-	
-	
 	}
 	void Transpose() 
 	{
