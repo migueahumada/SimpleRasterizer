@@ -13,12 +13,12 @@ public:
 
   void Init();
 
-  UPtr<Audio> CreateSoundEffect(const String& name, 
+  SPtr<Audio> CreateSoundEffect(const String& name, 
                                 const String& filepath);
 
   void SetCameraListener(Camera& camera);
 
-  void Play(UPtr<Audio>& audio, float volume);
+  void Play(SPtr<Audio>& audio, float volume);
 
   void Update();
 

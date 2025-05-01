@@ -64,7 +64,7 @@ void AudioAPI::Init()
 
 }
 
-UPtr<Audio> AudioAPI::CreateSoundEffect(const String& name, const String& filepath)
+SPtr<Audio> AudioAPI::CreateSoundEffect(const String& name, const String& filepath)
 {
 
   UPtr<Audio> pSoundEffect = make_unique<Audio>(name, filepath);
@@ -113,7 +113,7 @@ void AudioAPI::SetCameraListener(Camera& camera)
   
 }
 
-void AudioAPI::Play(UPtr<Audio>& audio, float volume)
+void AudioAPI::Play(SPtr<Audio>& audio, float volume)
 {
   if (!audio)
   {

@@ -35,23 +35,23 @@ public:
 									ID3D11DepthStencilView** ppDSV = nullptr);
 
 
-	UPtr<VertexShader> CreateVertexShader(	const Path& filePath,
+	SPtr<VertexShader> CreateVertexShader(	const Path& filePath,
 											const String& entryFunction);
 
-	UPtr<PixelShader> CreatePixelShader(const Path& filePath,
+	SPtr<PixelShader> CreatePixelShader(const Path& filePath,
 										const String& entryFunction);
 	
 	ID3D11InputLayout* CreateInputLayout(	
 											Vector<D3D11_INPUT_ELEMENT_DESC> pInputElementDesc,
-											const UPtr<VertexShader>& pVertexShader);
+											const SPtr<VertexShader>& pVertexShader);
 
-	UPtr<GraphicsBuffer> CreateVertexBuffer(const Vector<char>& data);
+	SPtr<GraphicsBuffer> CreateVertexBuffer(const Vector<char>& data);
 	
-	UPtr<GraphicsBuffer> CreateIndexBuffer(const Vector<char>& data);
+	SPtr<GraphicsBuffer> CreateIndexBuffer(const Vector<char>& data);
 	
-	UPtr<GraphicsBuffer> CreateConstantBuffer(const Vector<char>& data);
+	SPtr<GraphicsBuffer> CreateConstantBuffer(const Vector<char>& data);
 
-	void writeToBuffer(	const UPtr<GraphicsBuffer>& pBuffer, 
+	void writeToBuffer(	const SPtr<GraphicsBuffer>& pBuffer,
 											const Vector<char>& data);
 
 public:

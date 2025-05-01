@@ -23,9 +23,9 @@ SDL_Window* g_pWindow = nullptr;
 SDL_Cursor* g_pCursor = nullptr; /* Make this variable visible in the point
 											 where you exit the program */
 
-UPtr<GraphicsAPI> g_pGraphicsAPI;
-UPtr<VertexShader> g_pVertexShader;
-UPtr<PixelShader> g_pPixelShader;
+SPtr<GraphicsAPI> g_pGraphicsAPI;
+SPtr<VertexShader> g_pVertexShader;
+SPtr<PixelShader> g_pPixelShader;
 
 Model g_myModel;
 Model g_FloorModel;
@@ -52,25 +52,26 @@ ID3D11SamplerState* g_pSS_Point = nullptr;
 ID3D11SamplerState* g_pSS_Linear = nullptr;
 ID3D11SamplerState* g_pSS_Anisotropic = nullptr;
 
-UPtr<GraphicsBuffer> g_pCB_WVP;
+SPtr<GraphicsBuffer> g_pCB_WVP;
 MatrixCollection g_WVP;
 
-Camera g_Camera;
+SPtr<Camera> g_pCamera;
 Vector3 g_CameraMove = { 0.0f,0.0f,0.0f };
 
-UPtr<AudioAPI> g_pAudioAPI;
-UPtr<Audio> g_pSound;
+SPtr<AudioAPI> g_pAudioAPI;
+SPtr<Audio> g_pSound;
 
 static float g_cameraMovSpeed = 0.001f;
 static float g_cameraRotSpeed = .0006f;
 
-UPtr<Character> g_pCharacter;
+SPtr<Character> g_pCharacter;
+SPtr<Character> g_pDinosaur;
 
 
 void Update(float deltaTime) 
 {
 	//g_Camera.MoveCamera(g_WVP, g_cameraMovSpeed * deltaTime);
-	g_pAudioAPI->SetCameraListener(g_Camera);
+	//g_pAudioAPI->SetCameraListener(g_pCamera);
 
 	/*printf(	"\rCam Position: X:%f Y:%f Z:%f" ,
 					g_Camera.getViewMatrix().m[3][0],
@@ -79,16 +80,16 @@ void Update(float deltaTime)
 	
 
 	printf(	"\rPosition: X:%f Y:%f Z:%f", 
-					g_Camera.getEyePosition().x,
-					g_Camera.getEyePosition().y,
-					g_Camera.getEyePosition().z);
+					g_pCamera->getEyePosition().x,
+					g_pCamera->getEyePosition().y,
+					g_pCamera->getEyePosition().z);
 
 	/*printf(	"\rPosition: X:%f Y:%f Z:%f",
 					g_Camera.getEyePosition().x,
 					g_Camera.getEyePosition().y,
 					g_Camera.getEyePosition().z);*/
-	g_Camera.Move(g_CameraMove * deltaTime);
-	g_Camera.Update();
+	g_pCamera->Move(g_CameraMove * deltaTime);
+	g_pCamera->Update();
 	
 	
 }
@@ -150,178 +151,7 @@ void Render() {
 
 #pragma endregion SET_SAMPLERS
 
-
-
-
-#pragma region MODELS_SETUP
-/*
-
-
-	//------------FIRST MODEL--------------
-	g_pGraphicsAPI->m_pDeviceContext->IASetPrimitiveTopology(static_cast<D3D11_PRIMITIVE_TOPOLOGY>(g_myModel.m_meshes[0].topology));
-
-	UINT stride = sizeof(MODEL_VERTEX);
-	UINT offset = 0;
-	g_pGraphicsAPI->m_pDeviceContext->IASetVertexBuffers(0, 1, &g_myModel.m_pVertexBuffer->m_pBuffer, &stride, &offset);
-	g_pGraphicsAPI->m_pDeviceContext->IASetIndexBuffer(g_myModel.m_pIndexBuffer->m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
-	g_pGraphicsAPI->m_pDeviceContext->PSSetShaderResources(0, 1, &g_myTexture.m_pSRV);
-
-	Matrix4 translation2;
-	translation2.Identity();
-	translation2.Translate(Vector3(0.0, 0.0f, 0.0f));
-
-	g_WVP.world = translation2;
-	g_WVP.view = g_Camera.getViewMatrix();
-	g_WVP.projection = g_Camera.getProjectionMatrix();
-	
-	g_WVP.world.Transpose();
-	g_WVP.view.Transpose();
-	g_WVP.projection.Transpose();
-
-	Vector<char> matrix_data;
-	matrix_data.resize(sizeof(g_WVP));
-	memcpy(matrix_data.data(), &g_WVP, sizeof(g_WVP));
-
-	g_pGraphicsAPI->m_pDeviceContext->VSSetConstantBuffers(0, 1, &g_pCB_WVP->m_pBuffer);
-
-	g_pGraphicsAPI->writeToBuffer(g_pCB_WVP, matrix_data);
-
-	g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(g_myModel.m_meshes[0].numIndices,
-		g_myModel.m_meshes[0].baseIndex,
-		g_myModel.m_meshes[0].baseVertex);  //Los dibujamos de manera indexada
-
-	//------------SECOND MODEL--------------
-	UINT stride2 = sizeof(MODEL_VERTEX);
-	UINT offset2 = 0;
-	g_pGraphicsAPI->m_pDeviceContext->IASetPrimitiveTopology(static_cast<D3D11_PRIMITIVE_TOPOLOGY>(
-		g_HumanModel.m_meshes[0].topology));
-	g_pGraphicsAPI->m_pDeviceContext->IASetVertexBuffers(	0, 
-																												1, &g_HumanModel.m_pVertexBuffer->m_pBuffer, 
-																												&stride2, 
-																												&offset2);
-	g_pGraphicsAPI->m_pDeviceContext->IASetIndexBuffer(	g_HumanModel.m_pIndexBuffer->m_pBuffer, 
-																											DXGI_FORMAT_R16_UINT, 
-																											0);
-	g_pGraphicsAPI->m_pDeviceContext->PSSetShaderResources(0, 1, &g_HumanTexture.m_pSRV);
-
-	Matrix4 translation1;
-	translation1.Identity();
-	translation1.Translate(Vector3(3.0f, 0.0f, 0.0f));
-
-	g_WVP.world = translation1;
-	g_WVP.projection = g_Camera.getProjectionMatrix();
-	g_WVP.world.Transpose();
-	g_WVP.projection.Transpose();
-
-	memcpy(matrix_data.data(), &g_WVP, sizeof(g_WVP));
-
-	g_pGraphicsAPI->m_pDeviceContext->VSSetConstantBuffers(0, 1, &g_pCB_WVP->m_pBuffer);
-
-	g_pGraphicsAPI->writeToBuffer(g_pCB_WVP, matrix_data);
-
-	g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(g_HumanModel.m_meshes[0].numIndices, 
-																								g_HumanModel.m_meshes[0].baseIndex, 
-																								g_HumanModel.m_meshes[0].baseVertex);
-
-		//------------THIRD MODEL--------------
-	g_pGraphicsAPI->m_pDeviceContext->IASetPrimitiveTopology(
-		static_cast<D3D11_PRIMITIVE_TOPOLOGY>(g_FloorModel.m_meshes[0].topology));
-
-	g_pGraphicsAPI->m_pDeviceContext->IASetVertexBuffers(0,
-																											 1,
-																											 &g_FloorModel.m_pVertexBuffer->m_pBuffer,
-																											 &stride,
-																											 &offset);
-	g_pGraphicsAPI->m_pDeviceContext->IASetIndexBuffer(
-																											g_FloorModel.m_pIndexBuffer->m_pBuffer,
-																											DXGI_FORMAT_R16_UINT,
-																											0);
-
-	Matrix4 floorScale;
-	floorScale.Scale(1.0f);
-
-	g_WVP.world = floorScale * translation2;
-	g_WVP.world.Transpose();
-	memcpy(matrix_data.data(), &g_WVP, sizeof(g_WVP));
-
-	g_pGraphicsAPI->m_pDeviceContext->RSSetState(g_pRS_Default);
-	g_pGraphicsAPI->writeToBuffer(g_pCB_WVP, matrix_data);
-
-
-	g_pGraphicsAPI->m_pDeviceContext->OMSetRenderTargets(	1, 
-																												&g_pGraphicsAPI->m_pBackBufferRTV, 
-																												g_pGraphicsAPI->m_pBackBufferDSV);
-
-	g_pGraphicsAPI->m_pDeviceContext->PSSetShaderResources(	0, 
-																													1, 
-																													&g_FloorTexture.m_pSRV);
-
-	g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(g_FloorModel.m_meshes[0].numIndices,
-																								g_FloorModel.m_meshes[0].baseIndex,
-																								g_FloorModel.m_meshes[0].baseVertex);
-
-	//------------FOURTH MODEL--------------
-	UINT stride3 = sizeof(MODEL_VERTEX);
-	UINT offset3 = 0;
-	g_pGraphicsAPI->m_pDeviceContext->IASetPrimitiveTopology(static_cast<D3D11_PRIMITIVE_TOPOLOGY>(g_AmbulanceModel.m_meshes[0].topology));
-	g_pGraphicsAPI->m_pDeviceContext->IASetVertexBuffers(0, 1, &g_AmbulanceModel.m_pVertexBuffer->m_pBuffer, &stride3, &offset3);
-	g_pGraphicsAPI->m_pDeviceContext->IASetIndexBuffer(g_AmbulanceModel.m_pIndexBuffer->m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
-	g_pGraphicsAPI->m_pDeviceContext->PSSetShaderResources(0, 1, &g_AmbulanceTexture.m_pSRV);
-	//g_pGraphicsAPI->m_pDeviceContext->RSSetState(g_pRS_Wireframe);
-
-	Matrix4 translation3;
-	translation3.Identity();
-	translation3.Translate(Vector3(6.0f, 0.0f, 0.0f));
-
-	g_WVP.world = translation3;
-	g_WVP.projection = g_Camera.getProjectionMatrix();
-
-	g_WVP.world.Transpose();
-	g_WVP.projection.Transpose();
-
-	memcpy(matrix_data.data(), &g_WVP, sizeof(g_WVP));
-
-	g_pGraphicsAPI->m_pDeviceContext->VSSetConstantBuffers(0, 1, &g_pCB_WVP->m_pBuffer);
-
-	g_pGraphicsAPI->writeToBuffer(g_pCB_WVP, matrix_data);
-
-	g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(g_AmbulanceModel.m_meshes[0].numIndices, g_AmbulanceModel.m_meshes[0].baseIndex, g_AmbulanceModel.m_meshes[0].baseVertex);
-
-	//------------FIFTH MODEL--------------
-	
-	UINT stride5 = sizeof(MODEL_VERTEX);
-	UINT offset5 = 0;
-	g_pGraphicsAPI->m_pDeviceContext->IASetPrimitiveTopology(static_cast<D3D11_PRIMITIVE_TOPOLOGY>(g_YoyoModel.m_meshes[0].topology));
-	g_pGraphicsAPI->m_pDeviceContext->IASetVertexBuffers(0, 1, &g_YoyoModel.m_pVertexBuffer->m_pBuffer, &stride5, &offset5);
-	g_pGraphicsAPI->m_pDeviceContext->IASetIndexBuffer(g_YoyoModel.m_pIndexBuffer->m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
-	g_pGraphicsAPI->m_pDeviceContext->PSSetShaderResources(0, 1, &g_YoyoTexture.m_pSRV);
-	g_pGraphicsAPI->m_pDeviceContext->RSSetState(g_pRS_Wireframe);
-
-	Matrix4 translation5;
-	translation5.Identity();
-	translation5.Translate(Vector3(6.0f, 0.0f, 8.0f));
-
-	g_WVP.world = translation5;
-	g_WVP.projection = g_Camera.getProjectionMatrix();
-	g_WVP.world.Transpose();
-	g_WVP.projection.Transpose();
-
-	memcpy(matrix_data.data(), &g_WVP, sizeof(g_WVP));
-
-	g_pGraphicsAPI->m_pDeviceContext->VSSetConstantBuffers(0, 1, &g_pCB_WVP->m_pBuffer);
-
-	g_pGraphicsAPI->writeToBuffer(g_pCB_WVP, matrix_data);
-
-	g_pGraphicsAPI->m_pDeviceContext->DrawIndexed(g_YoyoModel.m_meshes[0].numIndices, 
-																								g_YoyoModel.m_meshes[0].baseIndex, 
-																								g_YoyoModel.m_meshes[0].baseVertex);
-
-
-
-
-*/
-#pragma endregion MODELS_SETUP
-	
+	g_pDinosaur->Render();
 	g_pCharacter->Render();
 
 	g_pGraphicsAPI->m_pSwapChain->Present(0, 0);
@@ -347,7 +177,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 											nullptr);
 	if (pWndHandle)
 	{
-		g_pGraphicsAPI = make_unique<GraphicsAPI>(pWndHandle);
+		g_pGraphicsAPI = make_shared<GraphicsAPI>(pWndHandle);
 		if(!g_pGraphicsAPI)
 		{
 			return SDL_APP_FAILURE;
@@ -387,14 +217,16 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 		return SDL_APP_FAILURE;
 	}
 
+	g_pCamera = make_shared<Camera>();
+
 	//---------------CAMERA SET UP---------------
-	g_Camera.SetLookAt(Vector3(0, 0, -6.0f), Vector3(0, 0, 0), Vector3(0, 1, 0));		//Setea la matriz de la cámara
-	g_Camera.SetPerspective(3.141592653f/4.0f,WIDTH,HEIGHT,0.1f,100.0f);			//Sete la matriz de la perspectiva
+	g_pCamera->SetLookAt(Vector3(0, 0, -6.0f), Vector3(0, 0, 0), Vector3(0, 1, 0));		//Setea la matriz de la cámara
+	g_pCamera->SetPerspective(3.141592653f/4.0f,WIDTH,HEIGHT,0.1f,100.0f);			//Sete la matriz de la perspectiva
 
 	//---------------WORLD SETUP---------------
 	g_WVP.world.Identity();															//Matriz de mundo se hace identidad
-	g_WVP.view = g_Camera.getViewMatrix();											//Matriz de vista se obtiene de cámara
-	g_WVP.projection = g_Camera.getProjectionMatrix();								//Matriz de proyección se obtiene de cámara
+	g_WVP.view = g_pCamera->getViewMatrix();											//Matriz de vista se obtiene de cámara
+	g_WVP.projection = g_pCamera->getProjectionMatrix();								//Matriz de proyección se obtiene de cámara
 	
 	g_WVP.world.Transpose();														//Se transpone
 	g_WVP.view.Transpose();															//Se transpone
@@ -482,9 +314,13 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
 */
 
-	g_pCharacter = make_unique<Character>(g_pGraphicsAPI.get(),&g_WVP, &g_Camera);
+	g_pCharacter = make_shared<Character>(g_pGraphicsAPI,g_WVP, g_pCamera,g_pCB_WVP);
+	g_pDinosaur = make_shared<Character>(g_pGraphicsAPI, g_WVP, g_pCamera, g_pCB_WVP);
 
-	g_pAudioAPI = make_unique<AudioAPI>(pWndHandle);
+	g_pCharacter->Init();
+	g_pDinosaur->Init();
+
+	g_pAudioAPI = make_shared<AudioAPI>(pWndHandle);
 	if (!g_pAudioAPI)
 	{
 		return SDL_APP_FAILURE;
@@ -519,14 +355,14 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 			if (sym == SDLK_S) g_CameraMove.z = -g_cameraMovSpeed;
 			if (sym == SDLK_D) g_CameraMove.x = g_cameraMovSpeed;
 			if (sym == SDLK_A) g_CameraMove.x = -g_cameraMovSpeed;
-			if (sym == SDLK_Q) g_CameraMove.y = g_cameraMovSpeed;
-			if (sym == SDLK_E) g_CameraMove.y = -g_cameraMovSpeed;
+			if (sym == SDLK_Q) g_CameraMove.y = -g_cameraMovSpeed;
+			if (sym == SDLK_E) g_CameraMove.y = g_cameraMovSpeed;
 
 
-			if (sym == SDLK_UP)			g_Camera.RotateX(g_cameraRotSpeed, g_WVP);
-			if (sym == SDLK_DOWN)		g_Camera.RotateX(-g_cameraRotSpeed, g_WVP);
-			if (sym == SDLK_LEFT)		g_Camera.RotateY(g_cameraRotSpeed, g_WVP);
-			if (sym == SDLK_RIGHT)	g_Camera.RotateY(-g_cameraRotSpeed, g_WVP);
+			if (sym == SDLK_UP)			g_pCamera->RotateX(g_cameraRotSpeed, g_WVP);
+			if (sym == SDLK_DOWN)		g_pCamera->RotateX(-g_cameraRotSpeed, g_WVP);
+			if (sym == SDLK_LEFT)		g_pCamera->RotateY(g_cameraRotSpeed, g_WVP);
+			if (sym == SDLK_RIGHT)	g_pCamera->RotateY(-g_cameraRotSpeed, g_WVP);
 			break;
 		
 		case SDL_EVENT_KEY_UP:
@@ -540,7 +376,7 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 			break;
 
 		case SDL_EVENT_MOUSE_MOTION:
-				g_Camera.RotateCamera(g_WVP, 
+				g_pCamera->RotateCamera(g_WVP, 
 															g_cameraRotSpeed, 
 															event->motion.yrel,
 															event->motion.xrel);

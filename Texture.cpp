@@ -30,6 +30,25 @@ void Texture::createImage(const Image& img, GraphicsAPI& pGraphicsAPI, DXGI_FORM
 	
 }
 
+void Texture::createImage(const Image& img, WPtr<GraphicsAPI> pGraphicsAPI, DXGI_FORMAT format)
+{
+	
+	auto GAPI = pGraphicsAPI.lock();
+
+	createImage(img);
+	m_pTexture = GAPI->CreateTexture(img.getWidth(),
+		img.getHeight(),
+		format,
+		D3D11_USAGE_DEFAULT,
+		D3D11_BIND_SHADER_RESOURCE,
+		0, 1, &m_pSRV);
+	if (m_pTexture)
+	{
+			GAPI->m_pDeviceContext->UpdateSubresource1(m_pTexture, 0, nullptr,
+			reinterpret_cast<const void*>(img.getPixels()), img.getPitch(), 0, 0);
+	}
+}
+
 void Texture::adjustTextureAddress(TEXTURE_ADDRESS::E textureAddressMode, float& u, float& v)
 {
 	//TODO: Explicar todo lo que se hace en esta parte plsss

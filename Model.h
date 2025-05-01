@@ -76,13 +76,13 @@ public:
 	~Model() = default;
 
 	bool LoadFromFile(const char* filePath, 
-										GraphicsAPI& pGraphicsAPI);
-
+										WPtr<GraphicsAPI> pGraphicsAPI);
+	//TODO: Iterar sobre el vector de meshes y ahí estarán los buffer
 	Vector<Mesh> m_meshes;
 	
 	//Cuántos buffers voy a querer generar
-	UPtr<GraphicsBuffer> m_pVertexBuffer;
-	UPtr<GraphicsBuffer> m_pIndexBuffer;
+	SPtr<GraphicsBuffer> m_pVertexBuffer;
+	SPtr<GraphicsBuffer> m_pIndexBuffer;
 
 };
 

@@ -9,12 +9,16 @@ class Texture;
 class GraphicsAPI;
 class Camera;
 struct MatrixCollection;
+class GraphicsBuffer;
 
 
 class Character : public Actor
 {
 public:
-  Character(GraphicsAPI* pGraphicsAPI, MatrixCollection* WVP, Camera* camera);
+  Character(WPtr<GraphicsAPI> pGraphicsAPI, 
+            MatrixCollection& WVP, 
+            WPtr<Camera> camera,
+            WPtr<GraphicsBuffer> constBuffer);
   virtual ~Character() = default;
 
   virtual void Init() override;
@@ -22,20 +26,20 @@ public:
   virtual void Render() override;
 
 protected:
-  UPtr<Model> m_model;
-  UPtr<Image> m_image;
-  UPtr<Texture> m_texture;
-  //UPtr<GraphicsBuffer> g_pCB_WVP;
+  SPtr<Model> m_model;
+  SPtr<Image> m_image;
+  SPtr<Texture> m_texture;
 
-  Vector<char> m_matrixData;
-
-  GraphicsAPI* m_pGraphicsAPI = nullptr;
-  MatrixCollection* m_pWVP = nullptr;
-  Camera* m_pCamera = nullptr;
+  WPtr<GraphicsAPI> m_pGraphicsAPI;
+  MatrixCollection& m_WVP;
+  WPtr<Camera> m_pCamera;
+  WPtr<GraphicsBuffer> m_pCB;
 
   Matrix4 m_transform;
 
+  Vector<char> m_matrixData;
 
-  std::string m_modelName = "yoyoModel.obj";
+  std::string m_modelName = "ManModel.obj";
+  std::string m_textureName = "manText.bmp";
 };
 

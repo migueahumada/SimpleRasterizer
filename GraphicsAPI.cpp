@@ -255,9 +255,9 @@ ID3D11Texture2D* GraphicsAPI::CreateTexture(int width,
 }
 
 
-UPtr<VertexShader> GraphicsAPI::CreateVertexShader(const Path& filePath, const String& entryFunction)
+SPtr<VertexShader> GraphicsAPI::CreateVertexShader(const Path& filePath, const String& entryFunction)
 {
-	UPtr<VertexShader> pVertexShader = make_unique<VertexShader>();
+	SPtr<VertexShader> pVertexShader = make_shared<VertexShader>();
 	if(!pVertexShader->Compile(filePath, entryFunction, "vs_5_0"))
 	{
 		return nullptr;
@@ -277,9 +277,9 @@ UPtr<VertexShader> GraphicsAPI::CreateVertexShader(const Path& filePath, const S
 	return pVertexShader;
 }
 
-UPtr<PixelShader> GraphicsAPI::CreatePixelShader(const Path& filePath, const String& entryFunction)
+SPtr<PixelShader> GraphicsAPI::CreatePixelShader(const Path& filePath, const String& entryFunction)
 {
-	UPtr<PixelShader> pPixelShader = make_unique<PixelShader>();
+	SPtr<PixelShader> pPixelShader = make_shared<PixelShader>();
 	if (!pPixelShader->Compile(filePath, entryFunction, "ps_5_0"))
 	{
 		return nullptr;
@@ -300,7 +300,7 @@ UPtr<PixelShader> GraphicsAPI::CreatePixelShader(const Path& filePath, const Str
 }
 
 ID3D11InputLayout* GraphicsAPI::CreateInputLayout(	Vector<D3D11_INPUT_ELEMENT_DESC> pInputElementDesc, 
-													const UPtr<VertexShader>& pVertexShader)
+													const SPtr<VertexShader>& pVertexShader)
 {
 	ID3D11InputLayout* pInputLayout = nullptr;
 
@@ -324,9 +324,9 @@ ID3D11InputLayout* GraphicsAPI::CreateInputLayout(	Vector<D3D11_INPUT_ELEMENT_DE
 	return pInputLayout;
 }
 
-UPtr<GraphicsBuffer> GraphicsAPI::CreateVertexBuffer(const Vector<char>& data)
+SPtr<GraphicsBuffer> GraphicsAPI::CreateVertexBuffer(const Vector<char>& data)
 {
-	UPtr<GraphicsBuffer> pVertexBuffer = make_unique<GraphicsBuffer>();
+	SPtr<GraphicsBuffer> pVertexBuffer = make_shared<GraphicsBuffer>();
 
 	D3D11_BUFFER_DESC desc;
 	memset(&desc, 0, sizeof(D3D11_BUFFER_DESC));
@@ -353,9 +353,9 @@ UPtr<GraphicsBuffer> GraphicsAPI::CreateVertexBuffer(const Vector<char>& data)
 	return pVertexBuffer;
 }
 
-UPtr<GraphicsBuffer> GraphicsAPI::CreateIndexBuffer(const Vector<char>& data)
+SPtr<GraphicsBuffer> GraphicsAPI::CreateIndexBuffer(const Vector<char>& data)
 {
-	UPtr<GraphicsBuffer> pIndexBuffer = make_unique<GraphicsBuffer>();
+	SPtr<GraphicsBuffer> pIndexBuffer = make_shared<GraphicsBuffer>();
 
 	D3D11_BUFFER_DESC desc;
 	memset(&desc, 0, sizeof(D3D11_BUFFER_DESC));
@@ -382,9 +382,9 @@ UPtr<GraphicsBuffer> GraphicsAPI::CreateIndexBuffer(const Vector<char>& data)
 	return pIndexBuffer;
 }
 
-UPtr<GraphicsBuffer> GraphicsAPI::CreateConstantBuffer(const Vector<char>& data)
+SPtr<GraphicsBuffer> GraphicsAPI::CreateConstantBuffer(const Vector<char>& data)
 {
-	UPtr<GraphicsBuffer> pConstantBuffer = make_unique<GraphicsBuffer>();
+	SPtr<GraphicsBuffer> pConstantBuffer = make_shared<GraphicsBuffer>();
 
 	D3D11_BUFFER_DESC desc;
 	memset(&desc, 0, sizeof(D3D11_BUFFER_DESC));
@@ -411,7 +411,7 @@ UPtr<GraphicsBuffer> GraphicsAPI::CreateConstantBuffer(const Vector<char>& data)
 	return pConstantBuffer;
 }
 
-void GraphicsAPI::writeToBuffer(const UPtr<GraphicsBuffer>& pBuffer, const Vector<char>& data)
+void GraphicsAPI::writeToBuffer(const SPtr<GraphicsBuffer>& pBuffer, const Vector<char>& data)
 {
 	
 	m_pDeviceContext->UpdateSubresource1(pBuffer->m_pBuffer, 0, nullptr, data.data(), 0, 0, 0);
