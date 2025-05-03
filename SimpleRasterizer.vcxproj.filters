@@ -63,8 +63,14 @@
     <ClCompile Include="World.cpp">
       <Filter>Source Files\GameFramework</Filter>
     </ClCompile>
+    <ClCompile Include="Object.cpp">
+      <Filter>Source Files\GameFramework</Filter>
+    </ClCompile>
     <ClCompile Include="Character.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\GameFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneObject.cpp">
+      <Filter>Source Files\GameFramework</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -110,8 +116,14 @@
     <ClInclude Include="World.h">
       <Filter>Header Files\GameFramework</Filter>
     </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>Header Files\GameFramework</Filter>
+    </ClInclude>
     <ClInclude Include="Character.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\GameFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneObject.h">
+      <Filter>Header Files\GameFramework</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

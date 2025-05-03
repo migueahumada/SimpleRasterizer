@@ -5,6 +5,7 @@
 
 using std::sqrtf;
 
+
 inline float clamp(float value, float min, float max) {
 	if (value < min) return min;
 	if (value > max) return max;
@@ -29,12 +30,12 @@ struct Color { // 4 bytes
 // dgrees = radians * 180/PI
 static float radiansToDegrees(float angleInRadians) 
 {
-	return angleInRadians * (180.0f / M_PI);
+	return static_cast<float>(angleInRadians * (180.0f / M_PI));
 }
 
 static float degreesToRadians(float angleInDegrees) 
 {
-	return (angleInDegrees * M_PI) / 180.0f;
+	return static_cast<float>((angleInDegrees * M_PI) / 180.0f);
 }
 
 
@@ -110,53 +111,53 @@ struct Vector3
 	float z;
 
 	Vector3() = default;
-	Vector3(float _x, float _y = 0.0f, float _z = 0.0f) : 
+	Vector3(float _x , float _y = 0.0f, float _z = 0.0f) : 
 		x(_x), 
 		y(_y), 
 		z(_z) 
 	{}
 
-	Vector3 operator+(const Vector3& v) const {
+	inline Vector3 operator+(const Vector3& v) const {
 		return { x + v.x, y + v.y, z + v.z };
 	}
 
-	Vector3 operator+=(const Vector3& v) {
+	inline Vector3 operator+=(const Vector3& v) {
 		return {x += v.x, y += v.y, z += v.z };
 	}
 
-	Vector3 operator-(const Vector3& v) const {
+	inline Vector3 operator-(const Vector3& v) const {
 		return { x - v.x, y - v.y, z - v.z };
 	}
 
-	Vector3 operator*(float scalar) const {
+	inline Vector3 operator*(float scalar) const {
 		return { x * scalar, y * scalar, z * scalar };
 	}
 
-	Vector3 operator/(float scalar) const {
+	inline Vector3 operator/(float scalar) const {
 		return { x / scalar, y / scalar, z / scalar };
 	}
 
-	Vector3 operator-() const {
+	inline Vector3 operator-() const {
 		return { -x , -y , -z };
 	}
 
-	Vector3 cross(const Vector3& v) const {
+	inline Vector3 cross(const Vector3& v) const {
 		return { y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x };
 	}
 
-	Vector3 operator^(const Vector3& v) const {
+	inline Vector3 operator^(const Vector3& v) const {
 		return cross(v);
 	}
 
-	bool operator==(const Vector3& v) const {
+	inline bool operator==(const Vector3& v) const {
 		return x == v.x && y == v.y && z == v.z;
 	}
 
-	bool operator !=(const Vector3& v) const {
+	inline bool operator !=(const Vector3& v) const {
 		return !(*this == v);
 	}
 
-	float size() const {
+	inline float size() const {
 		return sqrtf(x * x + y * y + z * z);
 	}
 
@@ -168,19 +169,23 @@ struct Vector3
 				z * invLength };
 	}
 
-	float dot(const Vector3& v) const {
+	inline float dot(const Vector3& v) const {
 		return x * v.x + y * v.y + z * v.z;
 	}
 
-	float operator|(const Vector3& v) const {
+	inline float operator|(const Vector3& v) const {
 		return dot(v);
 	}
+
+	
 
 };
 
 struct Matrix4
 {
-	Matrix4() = default;
+	Matrix4() {
+		Identity();
+	}
 
 	void Identity() 
 	{
@@ -284,6 +289,7 @@ struct Matrix4
 		}
 	}
 	void Translate(const Vector3& translation) {
+		Identity();
 		m[3][0] += translation.x;
 		m[3][1] += translation.y;
 		m[3][2] += translation.z;
@@ -311,7 +317,7 @@ struct Matrix4
 	}
 
 	void RotateX(float angle) {
-		Identity();
+		
 		m[1][1] = cos(angle);
 		m[1][2] = sin(angle);
 		m[2][1] = -sin(angle);
@@ -319,7 +325,7 @@ struct Matrix4
 	}
 
 	void RotateY(float angle) {
-		Identity();
+		
 		m[0][0] =  cos(angle);
 		m[0][2] = -sin(angle);
 		m[2][0] = sin(angle);
@@ -328,8 +334,8 @@ struct Matrix4
 
 
 	void RotateZ(float angle) {
-		Identity();
-
+		
+		
 		m[0][0] = cos(angle);
 		m[1][0] = -sin(angle);
 		m[0][1] = sin(angle);
@@ -387,22 +393,162 @@ struct MatrixCollection
 	Matrix4 projection;
 };
 
-struct Transform{
-  
-	Matrix4 transform;
+struct Quaternion
+{
+  Quaternion(float _w = 0.0f, float _x = 1.0f, float _y = 1.0f, float _z = 1.0f)
+						: w (_w), v(Vector3{_x,_y,_z}) {}
+
+	Quaternion(float _w = 0.0f, const Vector3& _v = Vector3{1.0f,1.0f,1.0f}) 
+						: w(_w), v(_v) {}
+	
+	//ADDITION
+	inline Quaternion operator+(const Quaternion& q)
+	{
+		return Quaternion(w + q.w, Vector3{ v.x + q.v.x,
+																				v.y + q.v.y,
+																				v.z + q.v.z });
+	}
+
+	//SUBTRACTION
+	inline Quaternion operator-(const Quaternion& q)
+	{
+		return Quaternion(w - q.w, Vector3{ v.x - q.v.x,
+																				v.y - q.v.y,
+																				v.z - q.v.z });
+	}
+
+	//SCALING
+	inline Quaternion operator*(float scalar)
+	{
+		return Quaternion(w * scalar, v * scalar);
+	}
+	
+	//PRODUCT
+	inline Quaternion operator*(const Quaternion& q)
+	{
+		float re = (w * q.w) - (v|q.v);
+		Vector3 img = (q.v * w)+(v * q.w)+(v^q.v);
+
+		return Quaternion(re,img);
+	}
+
+	//MAGNITUDE
+	inline float size() const
+	{
+		return sqrtf(w*w + v.x*v.x + v.y*v.y + v.z*v.z);
+	}
+
+	//NORMALIZE
+	inline Quaternion normalize() const
+	{
+		float length = 1.0f/ size();
+		return Quaternion(w * length, v * length);
+	}
+
+	//DOT PRODUCT
+	inline float dot(const Quaternion& q) const
+	{
+		return w * q.w + v.x * q.v.x + v.y * q.v.y + v.z * q.v.z;
+	}
+
+	inline float operator|(const Quaternion& q) const
+	{
+		return dot(q);
+	}
+
+	//INVERSE
+	inline Quaternion inverse() const{
+		return Quaternion(w,-v);
+	}
+
+	//IDENTITY
+	inline Quaternion identity() const
+	{
+		return Quaternion(1.0f,v*0.0f);
+	}
+
+	Vector3 v;
+	float w;
+
+};
+
+class Transform {
+
+public:
+	Transform(Vector3 _position = Vector3{0.0f,0.0f,0.0f}, 
+						Vector3 _rotation = Vector3{ 0.0f,0.0f,0.0f }, 
+						Vector3 _scale = Vector3{ 1.0f,1.0f,1.0f })
+						: m_position(_position),m_rotation(_rotation), m_scale(_scale){}
+	~Transform() = default;
+	
+	Matrix4 getMatrix() const
+	{
+		Matrix4 matrix;
+
+		Matrix4 scale;
+		scale.Scale(m_scale.x, m_scale.y, m_scale.z);
+
+		Matrix4 rotationX;
+		rotationX.RotateX(degreesToRadians(m_rotation.x));
+
+		Matrix4 rotationY;
+		rotationY.RotateY(degreesToRadians(m_rotation.y));
+		
+		Matrix4 rotationZ;
+		rotationZ.RotateZ(degreesToRadians(m_rotation.z));
+		
+		Matrix4 translation;
+		translation.Translate(m_position);
+		
+		matrix = scale * rotationZ * rotationY * rotationX  * translation;
+		
+		return matrix;
+	}
 
 	Vector3 getPosition() const{
-		return Vector3{ transform.m[0][3],
-									  transform.m[1][3],
-									  transform.m[2][3]};
+		return m_position;
+	}
+
+	Vector3 getRotation() const {
+		return m_rotation;
 	}
 
 	Vector3 getScale() const {
-		return Vector3{ transform.m[0][0],
-										transform.m[1][1],
-										transform.m[2][2]};
+		return m_scale;
 	}
+
+	void setPosition(const Vector3& v)
+	{
+		m_position = v;
+	}
+
+	void setRotation(const Vector3& v)
+	{
+		m_rotation = v;
+	}
+
+	void setScale(const Vector3& v)
+	{
+		m_scale = v;
+	}
+
+
+private:
+	Vector3 m_position;
+	Vector3 m_rotation;
+	Vector3 m_scale;
 };
+
+//Formula for rotation -> qpq^-1
+//q = quaternion
+//p = vector or a point in space
+//q^-1 = inverse of the quaternion
+//TODO: COMPLETAR ESTE PEDO
+//Vector3 quatRotation(const Vector3& v, const Quaternion& q)
+//{
+//	q.normalize();
+//	Quaternion qConjugate = q.inverse();
+//}
 
 /*
 * A simple 4x4 matrix

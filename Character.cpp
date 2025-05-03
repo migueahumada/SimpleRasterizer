@@ -8,11 +8,17 @@
 Character::Character( WPtr<GraphicsAPI> pGraphicsAPI,
                       MatrixCollection& WVP,
                       WPtr<Camera> camera,
-                      WPtr<GraphicsBuffer> constBuffer) :
+                      WPtr<GraphicsBuffer> constBuffer,
+                      const String& modelName,
+                      const String& textureName,
+                      const Vector3& positionOffset) :
                       m_pGraphicsAPI(pGraphicsAPI), 
                       m_WVP(WVP), 
                       m_pCamera(camera),
-                      m_pCB(constBuffer)
+                      m_pCB(constBuffer),
+                      m_modelName(modelName),
+                      m_textureName(textureName),
+                      m_positionOffset(positionOffset)
 
 {
 
@@ -28,10 +34,9 @@ void Character::Init()
   m_model->LoadFromFile(m_modelName.c_str(), m_pGraphicsAPI);
   m_texture->createImage(*m_image, m_pGraphicsAPI);
 
-  m_transform.Identity();
-  m_transform.Translate(Vector3(0.0f, 0.0f, 6.0f));
-  m_transform.RotateY(3.3f);
-  
+  m_transform.setPosition(m_positionOffset);
+  m_transform.setRotation(Vector3(67.0f, 180.0f,12.0f));
+
 }
 
 void Character::Update(float deltaTime)
@@ -47,12 +52,11 @@ void Character::Render()
   auto camera = m_pCamera.lock();
   auto CB = m_pCB.lock();
 
-  if (!GAPI || !camera || !CB)
+  if (!GAPI && !camera && !CB)
   {
     return;
   }
 
-  //TODO: no hardcodear el como seteamos el mesh
   GAPI->m_pDeviceContext->IASetPrimitiveTopology(
     static_cast<D3D11_PRIMITIVE_TOPOLOGY>(m_model->m_meshes[0].topology));
   
@@ -63,14 +67,18 @@ void Character::Render()
     m_model->m_pIndexBuffer->m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
   GAPI->m_pDeviceContext->PSSetShaderResources(0,1,&m_texture->m_pSRV);
 
-  m_WVP.world = m_transform;
+  
+  m_WVP.world = m_transform.getMatrix();
   m_WVP.view = camera->getViewMatrix();
   m_WVP.projection = camera->getProjectionMatrix();
 
-  m_WVP.world.Transpose();
-  m_WVP.view.Transpose();
   m_WVP.projection.Transpose();
+  m_WVP.view.Transpose();
+  m_WVP.world.Transpose();
   
+
+  // TODO: Renderer tendría que obtener la info del character para mandarlo al shader.
+  // Renderer tendría que tener el Constant Buffer
   Vector<char> matrix_data;
   matrix_data.resize(sizeof(MatrixCollection));
   memcpy(matrix_data.data(), &m_WVP, sizeof(MatrixCollection));

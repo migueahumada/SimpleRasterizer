@@ -1,19 +1,27 @@
 #pragma once
 #include "HelperMacros.h"
 
+class Actor;
+
 class World
 {
 
 public:
-  World();
-  virtual ~World();
+  World() = default;
+  virtual ~World() = default;
 
-protected:
+  void AddActor(const SPtr<Actor>& actor);
+
+  void RemoveActor(const SPtr<Actor>& actor);
+
   virtual void Init();
-  virtual void Update();
+  virtual void Update(float deltaTime);
   virtual void Render();
 
+protected:
 
+ //Actors in thiiis world
+  Vector<SPtr<Actor>> m_actors;
 
 };
 

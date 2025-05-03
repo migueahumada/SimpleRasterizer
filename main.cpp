@@ -1,7 +1,5 @@
 #define SDL_MAIN_USE_CALLBACKS 1
-//#define WIDTH 1920
 #define WIDTH 1280
-//#define HEIGHT 1080
 #define HEIGHT 720
 
 #include <SDL3/SDL.h>
@@ -15,29 +13,16 @@
 #include "AudioAPI.h"
 #include <SDL3/SDL_keyboard.h>
 #include "Character.h"
-
+#include "World.h"
 
 using std::function;
 
 SDL_Window* g_pWindow = nullptr;
-SDL_Cursor* g_pCursor = nullptr; /* Make this variable visible in the point
-											 where you exit the program */
+SDL_Cursor* g_pCursor = nullptr;
 
 SPtr<GraphicsAPI> g_pGraphicsAPI;
 SPtr<VertexShader> g_pVertexShader;
 SPtr<PixelShader> g_pPixelShader;
-
-Model g_myModel;
-Model g_FloorModel;
-Model g_HumanModel;
-Model g_AmbulanceModel;
-Model g_YoyoModel;
-
-Texture g_myTexture;
-Texture g_FloorTexture;
-Texture g_HumanTexture;
-Texture g_AmbulanceTexture;
-Texture g_YoyoTexture;
 
 Texture g_dsReflection;
 Texture g_rtReflection;
@@ -63,6 +48,8 @@ SPtr<Audio> g_pSound;
 
 static float g_cameraMovSpeed = 0.001f;
 static float g_cameraRotSpeed = .0006f;
+
+SPtr<World> g_pWorld;
 
 SPtr<Character> g_pCharacter;
 SPtr<Character> g_pDinosaur;
@@ -91,7 +78,7 @@ void Update(float deltaTime)
 	g_pCamera->Move(g_CameraMove * deltaTime);
 	g_pCamera->Update();
 	
-	
+	g_pWorld->Update(deltaTime);
 }
 void Render() {
 
@@ -151,8 +138,7 @@ void Render() {
 
 #pragma endregion SET_SAMPLERS
 
-	g_pDinosaur->Render();
-	g_pCharacter->Render();
+	g_pWorld->Render();
 
 	g_pGraphicsAPI->m_pSwapChain->Present(0, 0);
 }
@@ -211,7 +197,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	};
 
 	//---------------INPUT LAYOUT!---------------
-	g_pInputLayout = g_pGraphicsAPI->CreateInputLayout(inputElementDesc, g_pVertexShader);
+	g_pInputLayout = g_pGraphicsAPI->CreateInputLayout(	inputElementDesc, 
+																											g_pVertexShader);
 	if (!g_pInputLayout)
 	{
 		return SDL_APP_FAILURE;
@@ -268,57 +255,30 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	g_pGraphicsAPI->m_pDevice->CreateSamplerState(&descSS, &g_pSS_Anisotropic);
 #pragma endregion SAMPLER_FILTERS
 
-/*
+	g_pWorld = make_shared<World>();
+	
+	g_pDinosaur = make_shared<Character>(	g_pGraphicsAPI,
+																				g_WVP,
+																				g_pCamera,
+																				g_pCB_WVP,
+																				"rex.obj",
+																				"Rex_C.bmp",
+																				Vector3(-6.0f, 0.0f, 8.0f));
+	
+	g_pCharacter = make_shared<Character>(g_pGraphicsAPI,
+																				g_WVP,
+																				g_pCamera,
+																				g_pCB_WVP,
+																				"ManModel.obj",
+																				"manText.bmp",
+																				Vector3(6.0f, 0.0f, 8.0f));
+	
 
 
-#pragma region LOAD_MODELS
-	//---------------LOAD DINOSAUR MODEL---------------
-	g_myModel.LoadFromFile("rex.obj", g_pGraphicsAPI);
-	Image srcImage;
-	srcImage.decode("Rex_C.bmp");
-	g_myTexture.createImage(srcImage, g_pGraphicsAPI);
-
-	g_rtReflection.m_pTexture = g_pGraphicsAPI->CreateTexture(WIDTH, HEIGHT, DXGI_FORMAT_B8G8R8A8_UNORM,
-		D3D11_USAGE_DEFAULT, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE,
-		0, 1, &g_rtReflection.m_pSRV, &g_rtReflection.m_pRTV);
-
-	//---------------LOAD FLOOR MODEL---------------
-	g_FloorModel.LoadFromFile("disc.obj", g_pGraphicsAPI);
-	Image srcImage2;
-	srcImage2.decode("Terrain1.bmp");
-	g_FloorTexture.createImage(srcImage2, g_pGraphicsAPI);
-
-	g_dsReflection.m_pTexture = g_pGraphicsAPI->CreateTexture(WIDTH, HEIGHT, DXGI_FORMAT_D24_UNORM_S8_UINT,
-		D3D11_USAGE_DEFAULT, D3D11_BIND_DEPTH_STENCIL,
-		0, 1, nullptr, nullptr, &g_dsReflection.m_pDSV);
-
-	//---------------LOAD HUMAN--------------------
-	g_HumanModel.LoadFromFile("CharacterBigger.obj",g_pGraphicsAPI);
-	Image humanModelImage;
-	humanModelImage.decode("manText.bmp");
-	g_HumanTexture.createImage(humanModelImage, g_pGraphicsAPI);
-
-	//---------------LOAD AMBULANCE--------------------
-	g_AmbulanceModel.LoadFromFile("ambulance2.obj",g_pGraphicsAPI);
-	Image ambulanceModelImage;
-	ambulanceModelImage.decode("colormap2.bmp");
-	g_AmbulanceTexture.createImage(ambulanceModelImage, g_pGraphicsAPI);
-
-	//---------------LOAD YOYO--------------------
-	g_YoyoModel.LoadFromFile("yoyoModel.obj",g_pGraphicsAPI);
-	Image yoyoModelImage;
-	yoyoModelImage.decode("yoyoTexture.bmp");
-	g_YoyoTexture.createImage(yoyoModelImage,g_pGraphicsAPI);
-
-#pragma endregion LOAD_MODELS
-
-*/
-
-	g_pCharacter = make_shared<Character>(g_pGraphicsAPI,g_WVP, g_pCamera,g_pCB_WVP);
-	g_pDinosaur = make_shared<Character>(g_pGraphicsAPI, g_WVP, g_pCamera, g_pCB_WVP);
-
-	g_pCharacter->Init();
-	g_pDinosaur->Init();
+	g_pWorld->AddActor(g_pDinosaur);
+	g_pWorld->AddActor(g_pCharacter);
+	
+	g_pWorld->Init();
 
 	g_pAudioAPI = make_shared<AudioAPI>(pWndHandle);
 	if (!g_pAudioAPI)
@@ -418,7 +378,6 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 	return SDL_APP_CONTINUE;
 }
 
-/* This function runs once at shutdown. */
 void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
 
