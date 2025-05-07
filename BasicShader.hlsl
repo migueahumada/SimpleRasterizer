@@ -34,6 +34,8 @@ PixelInput vertex_main(VertexInput Input)
     Output.position = mul(Output.position, View);
     Output.position = mul(Output.position, Projection);
     
+    //Output.position.x += sin(Input.position.y);
+    
     Output.color = Input.color;
     Output.texCoord = Input.texCoord;
     

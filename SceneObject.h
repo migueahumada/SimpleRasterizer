@@ -31,17 +31,19 @@ protected:
 
 public:
   template<typename T, typename ...Args>
-  inline std::shared_ptr<T> CreateSceneObject(Args&& ...args);
+  static SPtr<T> CreateSceneObject(Args&& ...args);
   
 };
 
-template<typename T, typename ...Args>
-inline std::shared_ptr<T> SceneObject::CreateSceneObject(Args&& ...args)
+/////////////////////////////////////////////
+
+template<typename T, typename ... Args>
+inline SPtr<T> SceneObject::CreateSceneObject(Args&& ...args)
 {
   static_assert(std::is_base_of<SceneObject, T>::value,
     "T must be derived from Scene Object");
 
-    auto node = SPtr<T>(make_shared<T>(std::forward<Args>(args)...));
+    auto node = make_shared<T>(std::forward<Args>(args)...);
     node->SetSelfPtr(node);
 
   return node;

@@ -9,7 +9,6 @@ class Image;
 class Texture;
 class GraphicsAPI;
 class Camera;
-struct MatrixCollection;
 class GraphicsBuffer;
 
 
@@ -28,22 +27,21 @@ public:
   virtual void Init() override;
   virtual void Update(float deltaTime) override;
   virtual void Render() override;
-
+private:
+ 
 protected:
   SPtr<Model> m_model;
   SPtr<Image> m_image;
   SPtr<Texture> m_texture;
-
-
 
   WPtr<GraphicsAPI> m_pGraphicsAPI;
   MatrixCollection& m_WVP;
   WPtr<Camera> m_pCamera;
   WPtr<GraphicsBuffer> m_pCB;
 
-  Vector3 m_positionOffset;
+  
 
-  Transform m_transform;
+  Vector3 m_positionOffset;
 
   Vector<char> m_matrixData;
 

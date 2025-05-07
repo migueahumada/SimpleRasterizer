@@ -14,6 +14,7 @@
 #include <SDL3/SDL_keyboard.h>
 #include "Character.h"
 #include "World.h"
+#include "Actor.h"
 
 using std::function;
 
@@ -53,7 +54,7 @@ SPtr<World> g_pWorld;
 
 SPtr<Character> g_pCharacter;
 SPtr<Character> g_pDinosaur;
-
+SPtr<Actor> g_pMainActor;
 
 void Update(float deltaTime) 
 {
@@ -256,29 +257,11 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 #pragma endregion SAMPLER_FILTERS
 
 	g_pWorld = make_shared<World>();
-	
-	g_pDinosaur = make_shared<Character>(	g_pGraphicsAPI,
-																				g_WVP,
-																				g_pCamera,
-																				g_pCB_WVP,
-																				"rex.obj",
-																				"Rex_C.bmp",
-																				Vector3(-6.0f, 0.0f, 8.0f));
-	
-	g_pCharacter = make_shared<Character>(g_pGraphicsAPI,
-																				g_WVP,
-																				g_pCamera,
-																				g_pCB_WVP,
-																				"ManModel.obj",
-																				"manText.bmp",
-																				Vector3(6.0f, 0.0f, 8.0f));
-	
-
-
-	g_pWorld->AddActor(g_pDinosaur);
-	g_pWorld->AddActor(g_pCharacter);
-	
 	g_pWorld->Init();
+
+	g_pMainActor = g_pWorld->SpawnActor<Character>(nullptr,g_pGraphicsAPI, g_WVP, g_pCamera, g_pCB_WVP, "ManModel.obj", "manText.bmp", Vector3(0.0f, 0.0f, 0.0f));
+
+	
 
 	g_pAudioAPI = make_shared<AudioAPI>(pWndHandle);
 	if (!g_pAudioAPI)

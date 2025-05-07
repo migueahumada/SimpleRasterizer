@@ -30,17 +30,20 @@ Character::Character( WPtr<GraphicsAPI> pGraphicsAPI,
 
 void Character::Init()
 {
+  Actor::Init();
   m_image->decode(m_textureName.c_str());
   m_model->LoadFromFile(m_modelName.c_str(), m_pGraphicsAPI);
   m_texture->createImage(*m_image, m_pGraphicsAPI);
 
-  m_transform.setPosition(m_positionOffset);
-  m_transform.setRotation(Vector3(67.0f, 180.0f,12.0f));
+  m_localTransform.setPosition(m_positionOffset);
+  m_localTransform.setRotation(Vector3(67.0f, 180.0f,12.0f));
 
 }
 
 void Character::Update(float deltaTime)
 {
+  Actor::Update(deltaTime);
+   
 }
 
 void Character::Render()
@@ -68,7 +71,7 @@ void Character::Render()
   GAPI->m_pDeviceContext->PSSetShaderResources(0,1,&m_texture->m_pSRV);
 
   
-  m_WVP.world = m_transform.getMatrix();
+  m_WVP.world = m_localTransform.getMatrix();
   m_WVP.view = camera->getViewMatrix();
   m_WVP.projection = camera->getProjectionMatrix();
 
@@ -92,3 +95,5 @@ void Character::Render()
                                       m_model->m_meshes[0].baseVertex);
 
 }
+
+

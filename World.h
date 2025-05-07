@@ -1,7 +1,6 @@
 #pragma once
 #include "HelperMacros.h"
-
-class Actor;
+#include "Actor.h"
 
 class World
 {
@@ -10,9 +9,8 @@ public:
   World() = default;
   virtual ~World() = default;
 
-  void AddActor(const SPtr<Actor>& actor);
-
-  void RemoveActor(const SPtr<Actor>& actor);
+  template<typename T, typename... Args>
+  SPtr<Actor> SpawnActor(const SPtr<SceneObject>& parent, Args&&... args);
 
   virtual void Init();
   virtual void Update(float deltaTime);
@@ -23,5 +21,29 @@ protected:
  //Actors in thiiis world
   Vector<SPtr<Actor>> m_actors;
 
+  SPtr<Actor> m_root;
+
 };
+
+template<typename T, typename... Args>
+inline SPtr<Actor> World::SpawnActor(const SPtr<SceneObject>& parent, Args&&... args)
+{
+  static_assert(std::is_base_of<Actor, T>::value, "T must be derived from Actor");
+
+  SPtr<T> pActor = SceneObject::CreateSceneObject<T>(std::forward<Args>(args)...);
+  pActor->Init();
+ 
+  m_actors.push_back(pActor);
+
+  if (parent)
+  {
+    parent->AddChild(pActor);
+  }
+  else
+  {
+    m_root->AddChild(pActor);
+  }
+
+  return pActor;
+}
 
