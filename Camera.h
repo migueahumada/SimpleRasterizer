@@ -50,15 +50,7 @@ public:
 	}
 
 	//THIS IS THE MOVE FUNCTION FOR UPDATE
-	void Move(const Vector3& vector);
-
-	//Moves one unit in the direction the vector is pointing to, 
-	//but with speed encapsulating the WVP
-	//void Move(const Vector3& vector, 
-	//					float speed, 
-	//					MatrixCollection& WVP);
-							
-
+	void Move(const Vector3& vector);						
 
 	//Angle in degrees
 	void RotateX(float angle);
@@ -147,12 +139,8 @@ private:
 	Matrix4 m_projectionMatrix;
 	Matrix4 m_cameraMatrix;
 
-
-
 	float m_speed = 10.0f;
 	float m_rotSpeed = 1.0f;
-
-
 
 	bool bIsDirty = false;
 

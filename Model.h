@@ -11,10 +11,23 @@ class GraphicsBuffer;
 template <typename T>
 using Vector = std::vector<T>;
 
+// Mandar bloques con alineación de 16 bytes
+//LA GPU funciona con registro de 128 bits de 16 bytes
+// Es mejor para uso de memoria cuando las cosas 
+// están en bloques de 4.
+
+// uN INTRÍNSECO E S UNA OPERACIÓN VECTORIAL DONDE 
+// LLENAS 4 FLOTANTES EN UN SOLO REGISTRO
+// UN DOT PRODUCT E SUNA MULTIPLICACIÓN -> EN DOS 
+// BLOQUES DE 128 SE PUEDE METER
+// EN DOS REGISTROS Y TENER UN RESULTADO EN 
+// OTRO REGISTRO.
+// 4 OPERACIONES EN COSTO DE UNA.
 struct MODEL_VERTEX
 {
 	Vector3 position;
 	Vector3 color;
+	//Vector3 normal;
 	float u = 0.0; 
 	float v = 0.0;
 };

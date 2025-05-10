@@ -46,6 +46,7 @@ Vector3 g_CameraMove = { 0.0f,0.0f,0.0f };
 
 SPtr<AudioAPI> g_pAudioAPI;
 SPtr<Audio> g_pSound;
+SPtr<Submix> g_pSubmix;
 
 static float g_cameraMovSpeed = 0.001f;
 static float g_cameraRotSpeed = .0006f;
@@ -270,10 +271,16 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	}
 	
 	g_pAudioAPI->Init();
-
+	g_pSubmix = g_pAudioAPI->CreateSubmix(1, 44100);
+	
 	g_pSound = g_pAudioAPI->CreateSoundEffect("Mark",
 																						"MX_Menu_Loop.wav");
+	
+	
+
 	g_pAudioAPI->Play(g_pSound, 0.2f);
+
+	
 	
 	int32_t cursorData[2] = { 0, 0 };
 	g_pCursor = SDL_CreateCursor(	(Uint8*)cursorData, 

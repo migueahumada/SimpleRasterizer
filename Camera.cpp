@@ -150,15 +150,7 @@ void Camera::Update()
 	m_projectionMatrix.Perspective(m_fov, m_width, m_height, m_minZ, m_maxZ);
 
 	bIsDirty = false;
-	/*if (bIsDirty)
-	{
-		if (m_dirForward) { Move(GetForwardVector() * dt);	};
-		if (m_dirBack)		{ Move(-GetForwardVector() * dt); bIsDirty = false; }
-		if (m_dirRight)		{ Move(GetRightVector() * dt);		bIsDirty = false; }
-		if (m_dirLeft)		{ Move(-GetRightVector() * dt);		bIsDirty = false; }
-		if (m_dirUp)			{ Move(GetUpVector() * dt);				bIsDirty = false; }
-		if (m_dirDown)		{ Move(-GetUpVector() * dt);			bIsDirty = false; }
-	}*/
+
 }
 
 

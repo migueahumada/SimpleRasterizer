@@ -1,7 +1,6 @@
 #include "Model.h"
 #include <cassert>
 #include <fstream>
-
 #include "GraphicsAPI.h"
 
 using std::fstream;
@@ -31,6 +30,8 @@ bool Model::LoadFromFile(const char* filePath, WPtr<GraphicsAPI> pGraphicsAPI)
 
     Vector<Vector3> temp_pos;
     Vector<float2> temp_tc;
+    Vector<Vector3> temp_norm;
+
     UnorderedMap<FaceVertex, unsigned short> uniqueVertices;
 
     for (const auto& line: lines)
