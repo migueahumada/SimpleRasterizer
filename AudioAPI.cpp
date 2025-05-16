@@ -2,7 +2,9 @@
 #include "AudioAPI.h"
 #include "Audio.h"
 #include "Submix.h"
+#include "Master.h"
 #include "Camera.h"
+#include "VoiceCallback.h"
 #include <assert.h>
 
 AudioAPI::AudioAPI(void* pHwnd) : m_pHwnd(reinterpret_cast<HWND>(m_pHwnd))
@@ -41,15 +43,9 @@ void AudioAPI::Init()
   }
 
 
-  hr = m_pXAudio2->CreateMasteringVoice(&m_XAudio2MasteringVoice);
-  if (FAILED(hr))
-  {
-    MessageBox(m_pHwnd, L"Couldn't start mastering voice", L"Error", MB_OK);
-    return;
-  }
 
   //TODO: ################################TERMINAR EL AUDIO 3D################################
-  DWORD dwChannelMask;
+  /*DWORD dwChannelMask;
   hr = m_XAudio2MasteringVoice->GetChannelMask(&dwChannelMask);
   if (FAILED(hr))
   {
@@ -63,14 +59,13 @@ void AudioAPI::Init()
   {
     MessageBox(m_pHwnd, L"Couldn't intialize 3DAudio", L"Error", MB_OK);
     return;
-  }
+  }*/
 
 }
 
 SPtr<Audio> AudioAPI::CreateSoundEffect(const String& name, 
                                         const String& filepath,
-                                        IXAudio2VoiceCallback* pCallback,
-                                        const SPtr<Submix> submix)
+                                        const SPtr<VoiceCallback>& pCallback)
 {
 
   SPtr<Audio> pSoundEffect = make_shared<Audio>(name, filepath);
@@ -80,27 +75,17 @@ SPtr<Audio> AudioAPI::CreateSoundEffect(const String& name,
     return nullptr;
   }
 
-  if (submix)
+  HRESULT hr = m_pXAudio2->CreateSourceVoice(&pSoundEffect->m_pSourceVoice,
+    (WAVEFORMATEX*)&pSoundEffect->m_waveFile, 0, XAUDIO2_DEFAULT_FREQ_RATIO,
+    pCallback.get(), &pSoundEffect->m_sends);
+
+  if (FAILED(hr))
   {
-
-    HRESULT hr = m_pXAudio2->CreateSourceVoice(&pSoundEffect->m_pSourceVoice,
-      (WAVEFORMATEX*)&pSoundEffect->m_waveFile,0,XAUDIO2_DEFAULT_FREQ_RATIO,
-      0,&submix->m_sends,&submix->m_fxs);
-
-  } 
-  else
-  {
-    HRESULT hr = m_pXAudio2->CreateSourceVoice(&pSoundEffect->m_pSourceVoice,
-      (WAVEFORMATEX*)&pSoundEffect->m_waveFile);
-
-    if (FAILED(hr))
-    {
-      MessageBox(nullptr, L"Failed to create Source Voice ", L"Error", MB_OK);
-      return nullptr;
-    }
-
-    pSoundEffect->m_pSourceVoice->SubmitSourceBuffer(&pSoundEffect->m_buffer);
+    MessageBox(nullptr, L"Failed to create Source Voice ", L"Error", MB_OK);
+    return nullptr;
   }
+
+  pSoundEffect->m_pSourceVoice->SubmitSourceBuffer(&pSoundEffect->m_buffer);
 
   return pSoundEffect;
 
@@ -121,6 +106,33 @@ SPtr<Submix> AudioAPI::CreateSubmix(unsigned int inputChannels,
       return nullptr;
   }
   return pSubmix;
+}
+
+SPtr<Master> AudioAPI::CreateMaster(unsigned int inChannels, 
+                                    unsigned int inSampleRate,
+                                    unsigned int flags)
+{
+
+  SPtr<Master> pMaster = make_shared<Master>();
+
+  HRESULT hr = m_pXAudio2->CreateMasteringVoice(&pMaster->m_pMasterVoice, 
+                                                inChannels, inSampleRate, 
+                                                flags);
+  if (FAILED(hr))
+  {
+    MessageBox(nullptr, L"Failed to create Master Voice", L"Error", MB_OK);
+    return nullptr;
+  }
+
+  hr = pMaster->getMasterVoice()->GetChannelMask(&pMaster->m_ChannelMask);
+  
+  if (FAILED(hr))
+  {
+    MessageBox(nullptr, L"Failed to get Channel Mask", L"Error", MB_OK);
+    return nullptr;
+  }
+
+  return pMaster;
 }
 
 void AudioAPI::SetCameraListener(Camera& camera)
@@ -146,15 +158,18 @@ void AudioAPI::SetCameraListener(Camera& camera)
   
 }
 
-void AudioAPI::Play(SPtr<Audio>& audio, float volume)
+void AudioAPI::Play(const WPtr<Audio>& audio, float volume)
 {
-  if (!audio)
+  if (audio.expired())
   {
     return;
   }
-
-  audio->m_pSourceVoice->Start(0);
-  audio->m_pSourceVoice->SetVolume(volume);
+  
+  auto AUDIO = audio.lock();
+ 
+  AUDIO->m_pSourceVoice->SetVolume(volume);
+  AUDIO->m_pSourceVoice->Start(0);
+  
 
 }
 

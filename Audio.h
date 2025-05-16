@@ -25,20 +25,23 @@
 using std::fstream;
 using String = std::string;
 
+class Submix;
+class VoiceCallback;
+
 class Audio
 {
 public:
   Audio() = default;
 	Audio(const String& name, const String& filePath);
-	~Audio() {
-		if (m_pDataBuffer)
-		{
-			delete[] m_pDataBuffer;
-			m_pDataBuffer = nullptr;
-		}
-	}
+	~Audio();
 
 	void load(const char* filename);
+
+	void RouteTo(const WPtr<Submix>& submix, unsigned int flags = 0);
+
+	IXAudio2SourceVoice* getSourceVoice() const{
+		return m_pSourceVoice;
+	}
 
 protected:
 	friend class AudioAPI;
@@ -49,5 +52,15 @@ protected:
 	String m_name;
 	unsigned char* m_pDataBuffer = nullptr;
 	IXAudio2SourceVoice* m_pSourceVoice = nullptr;
+
+
+
+	//Sends
+	XAUDIO2_VOICE_SENDS m_sends{0};
+	Vector<XAUDIO2_SEND_DESCRIPTOR> m_sendList{0};
+
+	//Effects
+	XAUDIO2_EFFECT_CHAIN m_effects{0};
+	Vector<XAUDIO2_EFFECT_DESCRIPTOR> m_effectList{0};
 };
 

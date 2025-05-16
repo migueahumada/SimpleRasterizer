@@ -36,7 +36,7 @@ void Character::Init()
   m_texture->createImage(*m_image, m_pGraphicsAPI);
 
   m_localTransform.setPosition(m_positionOffset);
-  m_localTransform.setRotation(Vector3(67.0f, 180.0f,12.0f));
+  m_localTransform.setRotation(Vector3(0.0f, 230.0f,0.0f));
 
 }
 

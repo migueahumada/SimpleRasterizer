@@ -143,6 +143,7 @@
     <ClCompile Include="Bus.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Character.cpp" />
+    <ClCompile Include="EngineCallback.cpp" />
     <ClCompile Include="GraphicsAPI.cpp" />
     <ClCompile Include="GraphicsBuffer.cpp" />
     <ClCompile Include="Image.cpp" />
@@ -150,13 +151,14 @@
     <ClCompile Include="main.cpp.bak">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Master.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Object.cpp" />
-    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneObject.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Submix.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="VoiceCallback.cpp" />
     <ClCompile Include="World.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -166,18 +168,20 @@
     <ClInclude Include="Bus.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Character.h" />
+    <ClInclude Include="EngineCallback.h" />
     <ClInclude Include="GraphicsAPI.h" />
     <ClInclude Include="GraphicsBuffer.h" />
     <ClInclude Include="HelperMacros.h" />
     <ClInclude Include="Image.h" />
+    <ClInclude Include="Master.h" />
     <ClInclude Include="MathObjects.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="Object.h" />
-    <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneObject.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Submix.h" />
     <ClInclude Include="Texture.h" />
+    <ClInclude Include="VoiceCallback.h" />
     <ClInclude Include="World.h" />
   </ItemGroup>
   <ItemGroup>

@@ -34,114 +34,23 @@ void Camera::Move(const Vector3& direction)
 	bIsDirty = true;
 }
 
-
-
-//void Camera::Move(const Vector3& vector, float speed, MatrixCollection& WVP)
-//{
-//	m_viewMatrix.Translate(vector, speed);
-//
-//	WVP.world.Identity();
-//	WVP.view = getViewMatrix();
-//
-//	WVP.view.Transpose();
-//	WVP.world.Transpose();
-//}
-
-void Camera::RotateX(float angle)
+void Camera::Rotate(float newYaw, float newPitch)
 {
-	angle = degreesToRadians(angle);
+	m_yaw += newYaw;
+	m_pitch += newPitch;
 
-	Matrix4 rotation;
-	rotation.RotateX(angle);
+	m_pitch = clamp(m_pitch, -89.0f, 89.0f);
 
-	m_viewMatrix = rotation * m_viewMatrix;
+	Vector3 direction;
+	direction.x = cosf(degreesToRadians(m_yaw)) * cosf(degreesToRadians(m_pitch));
+	direction.y = sinf(degreesToRadians(m_pitch));
+	direction.z = sinf(degreesToRadians(m_yaw)) * cosf(degreesToRadians(m_pitch));
 
+	m_target = direction.normalize();
+
+
+	//bIsDirty = true;
 }
-
-void Camera::RotateX(float angle, MatrixCollection& WVP)
-{
-	angle = degreesToRadians(angle);
-
-	Matrix4 rotation;
-	rotation.RotateX(angle);
-
-	m_viewMatrix = rotation * m_viewMatrix;
-
-	WVP.view = getViewMatrix();
-
-	WVP.view.Transpose();
-	WVP.world.Transpose();
-}
-
-void Camera::RotateY(float angle)
-{
-	angle = degreesToRadians(angle);
-
-	Matrix4 rotation;
-	rotation.RotateY(angle);
-
-	m_viewMatrix = rotation * m_viewMatrix;
-}
-
-void Camera::RotateY(float angle, MatrixCollection& WVP)
-{
-	angle = degreesToRadians(angle);
-
-	Matrix4 rotation;
-	rotation.RotateY(angle);
-
-	m_viewMatrix = rotation * m_viewMatrix;
-
-	WVP.view = getViewMatrix();
-
-	WVP.view.Transpose();
-	WVP.world.Transpose();
-}
-
-void Camera::RotateZ(float angle)
-{
-	angle = degreesToRadians(angle);
-
-	Matrix4 rotation;
-	rotation.RotateZ(angle);
-
-	m_viewMatrix = rotation * m_viewMatrix;
-}
-
-void Camera::RotateZ(float angle, MatrixCollection& WVP)
-{
-	angle = degreesToRadians(angle);
-
-	Matrix4 rotation;
-	rotation.RotateZ(angle);
-
-	m_viewMatrix = rotation * m_viewMatrix;
-
-	WVP.view = getViewMatrix();
-
-	WVP.view.Transpose();
-	WVP.world.Transpose();
-
-}
-
-
-
-void Camera::RotateCamera(MatrixCollection& WVP, 
-													float angle, 
-													float yaw, 
-													float pitch)
-{
-
-	float anglePitch = radiansToDegrees(-angle);
-	float angleYaw = radiansToDegrees(angle);
-
-	//RotateZ(pitch * radiansToDegrees(0), WVP);
-	RotateY(pitch * anglePitch, WVP);
-	RotateX(yaw * angleYaw, WVP);
-	
-	
-}
-
 
 void Camera::Update()
 {

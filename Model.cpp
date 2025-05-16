@@ -24,6 +24,8 @@ bool Model::LoadFromFile(const char* filePath, WPtr<GraphicsAPI> pGraphicsAPI)
     fileData.resize(fileSize);
     objFile.read(&fileData[0],fileSize);
 
+    //TODO: Ignorar comentarios
+
     Vector<String> lines = split(fileData, '\n');
     Vector<MODEL_VERTEX> vertices;
     Vector<unsigned short> indices;
@@ -56,6 +58,15 @@ bool Model::LoadFromFile(const char* filePath, WPtr<GraphicsAPI> pGraphicsAPI)
             uv.v = std::stof(tokens[2]);
             temp_tc.push_back(uv);
         }
+        else if (tokens[0] == "vn")
+        {
+          Vector3 norm;
+          norm.x = std::stof(tokens[1]);
+          norm.y = std::stof(tokens[2]);
+          norm.z = std::stof(tokens[3]);
+          temp_norm.push_back(norm);
+
+        }
         else if (tokens[0] == "f")
         {
             Vector<unsigned short> faceIndex;
@@ -67,7 +78,8 @@ bool Model::LoadFromFile(const char* filePath, WPtr<GraphicsAPI> pGraphicsAPI)
 
                 FaceVertex fv;
                 fv.vertex_index = std::stoi(fi[0]) - 1;
-                fv.uv_index = std::stoi(fi[1]) - 1;    
+                fv.uv_index = std::stoi(fi[1]) - 1;
+                fv.normal_index = std::stoi(fi[2]) - 1;
 
                 if (uniqueVertices.find(fv) == uniqueVertices.end())
                 {
@@ -76,6 +88,7 @@ bool Model::LoadFromFile(const char* filePath, WPtr<GraphicsAPI> pGraphicsAPI)
                     MODEL_VERTEX mvertex;
                     mvertex.position = temp_pos[fv.vertex_index];
                     mvertex.color = Vector3(1.0f, 1.0f, 1.0f);
+                    mvertex.normal = temp_norm[fv.normal_index];
                     mvertex.u = temp_tc[fv.uv_index].u;
                     mvertex.v = 1.0 - temp_tc[fv.uv_index].v;
                     vertices.push_back(mvertex);
@@ -87,6 +100,7 @@ bool Model::LoadFromFile(const char* filePath, WPtr<GraphicsAPI> pGraphicsAPI)
             indices.push_back(faceIndex[0]);
             indices.push_back(faceIndex[1]);
             indices.push_back(faceIndex[2]);
+            //indices.push_back(faceIndex[3]);
         }
     }
 

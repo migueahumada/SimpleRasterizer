@@ -27,7 +27,7 @@ struct MODEL_VERTEX
 {
 	Vector3 position;
 	Vector3 color;
-	//Vector3 normal;
+	Vector3 normal;
 	float u = 0.0; 
 	float v = 0.0;
 };
@@ -45,13 +45,15 @@ struct float2 {
 };
 
 struct FaceVertex {
-	int vertex_index;
-	int uv_index;
+	int vertex_index = -1;
+	int uv_index = -1;
+	int normal_index = -1;
 
 	bool operator==(const FaceVertex& vertex) const 
 	{
 		return vertex_index == vertex.vertex_index &&
-			uv_index == vertex.uv_index;
+					 uv_index == vertex.uv_index &&
+					 normal_index == vertex.normal_index;
 	}
 };
 

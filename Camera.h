@@ -18,6 +18,7 @@ namespace CameraDirection{
 	};
 }
 
+
 class Camera
 {
 	
@@ -52,35 +53,9 @@ public:
 	//THIS IS THE MOVE FUNCTION FOR UPDATE
 	void Move(const Vector3& vector);						
 
-	//Angle in degrees
-	void RotateX(float angle);
 
-	void RotateX(float angle, MatrixCollection& WVP);
+	void Rotate(float yaw, float pitch);
 
-	void RotateY(float angle);
-
-	void RotateY(float angle, MatrixCollection& WVP);
-
-	void RotateZ(float angle);
-	
-	void RotateZ(float angle, MatrixCollection& WVP);
-
-	inline float getYaw() const{
-		return atan2(GetForwardVector().x, GetForwardVector().z);
-	}
-
-	inline float getPitch() const {
-		return asinf(GetForwardVector().y);
-	}
-
-	inline float getRoll() const {
-		return atan2(GetRightVector().y,GetUpVector().y);
-	}
-
-	void RotateCamera(MatrixCollection& WVP, 
-										float angle, 
-										float yaw, 
-										float pitch);
 
 	inline Matrix4 getViewMatrix() 
 	{ 
@@ -98,6 +73,7 @@ public:
 		}
 		return m_projectionMatrix; 
 	}
+
 	inline Vector3 getEyePosition() const
 	{ 
 		return m_position;
@@ -108,6 +84,10 @@ public:
 		return m_speed;
 	}
 
+	inline float getRotSpeed() const
+	{
+		return m_rotSpeed;
+	}
 	inline X3DAUDIO_LISTENER getCameraListener() const{
 		return m_cameraListener;
 	}
@@ -137,10 +117,12 @@ private:
 	
 	Matrix4 m_viewMatrix;
 	Matrix4 m_projectionMatrix;
-	Matrix4 m_cameraMatrix;
 
 	float m_speed = 10.0f;
-	float m_rotSpeed = 1.0f;
+	float m_rotSpeed = 0.1f;
+
+	float m_yaw;
+	float m_pitch;
 
 	bool bIsDirty = false;
 
