@@ -55,7 +55,7 @@ void Character::Render()
   auto camera = m_pCamera.lock();
   auto CB = m_pCB.lock();
 
-  if (!GAPI && !camera && !CB)
+  if (!GAPI || !camera || !CB)
   {
     return;
   }
@@ -74,6 +74,7 @@ void Character::Render()
   m_WVP.world = m_localTransform.getMatrix();
   m_WVP.view = camera->getViewMatrix();
   m_WVP.projection = camera->getProjectionMatrix();
+  m_WVP.viewDir = camera->GetViewDir();
 
   m_WVP.projection.Transpose();
   m_WVP.view.Transpose();
@@ -83,10 +84,11 @@ void Character::Render()
   // TODO: Renderer tendría que obtener la info del character para mandarlo al shader.
   // Renderer tendría que tener el Constant Buffer
   Vector<char> matrix_data;
-  matrix_data.resize(sizeof(MatrixCollection));
-  memcpy(matrix_data.data(), &m_WVP, sizeof(MatrixCollection));
+  matrix_data.resize(sizeof(m_WVP));
+  memcpy(matrix_data.data(), &m_WVP, sizeof(m_WVP));
 
   GAPI->m_pDeviceContext->VSSetConstantBuffers(0, 1, &CB->m_pBuffer);
+  GAPI->m_pDeviceContext->PSSetConstantBuffers(0, 1, &CB->m_pBuffer);
 
   GAPI->writeToBuffer(CB, matrix_data);
 

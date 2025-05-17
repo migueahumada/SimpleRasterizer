@@ -391,6 +391,9 @@ struct MatrixCollection
 	Matrix4 world;
 	Matrix4 view;
 	Matrix4 projection;
+
+	Vector3 viewDir;
+	//float time;
 };
 
 struct Quaternion

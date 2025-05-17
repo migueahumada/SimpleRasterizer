@@ -136,11 +136,26 @@ GraphicsAPI::GraphicsAPI(void* pWndHandle) : m_pWndHandl(pWndHandle)
 
 	m_pDeviceContext->RSSetViewports(1, &vp);
 
-	
+	//Clean vAdapters
+
+	for (auto& vAdapter : vAdapters)
+	{
+		SAFE_RELEASE(pAdapter);
+	}
+
+	SAFE_RELEASE(pDXGIDevice);
+	SAFE_RELEASE(pDXGIAdapter);
+	SAFE_RELEASE(pFactory2);
+
 }
 
 GraphicsAPI::~GraphicsAPI()
 {
+	SAFE_RELEASE(m_pBackBufferRTV);
+	SAFE_RELEASE(m_pBackBufferDSV);
+	SAFE_RELEASE(m_pSwapChain);
+	SAFE_RELEASE(m_pDeviceContext);
+	SAFE_RELEASE(m_pDevice);
 }
 
 void GraphicsAPI::QueryInterfaces(int width, int height)
@@ -300,7 +315,7 @@ SPtr<PixelShader> GraphicsAPI::CreatePixelShader(const Path& filePath, const Str
 }
 
 ID3D11InputLayout* GraphicsAPI::CreateInputLayout(	Vector<D3D11_INPUT_ELEMENT_DESC> pInputElementDesc, 
-													const SPtr<VertexShader>& pVertexShader)
+													const WPtr<VertexShader>& pVertexShader)
 {
 	ID3D11InputLayout* pInputLayout = nullptr;
 
@@ -309,10 +324,12 @@ ID3D11InputLayout* GraphicsAPI::CreateInputLayout(	Vector<D3D11_INPUT_ELEMENT_DE
 		return nullptr;
 	}
 
+	auto VS = pVertexShader.lock();
+
 	HRESULT hr = m_pDevice->CreateInputLayout(	pInputElementDesc.data(),
 												pInputElementDesc.size(),
-												pVertexShader->GetBlob()->GetBufferPointer(),
-												pVertexShader->GetBlob()->GetBufferSize(),
+												VS->GetBlob()->GetBufferPointer(),
+												VS->GetBlob()->GetBufferSize(),
 												&pInputLayout);
 	
 	if (FAILED(hr))
@@ -390,7 +407,8 @@ SPtr<GraphicsBuffer> GraphicsAPI::CreateConstantBuffer(const Vector<char>& data)
 	memset(&desc, 0, sizeof(D3D11_BUFFER_DESC));
 
 	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.ByteWidth = data.size();
+	desc.ByteWidth = ((data.size() + 15) / 16) * 16;
+	//desc.ByteWidth = data.size();
 	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	desc.CPUAccessFlags = 0;
 	desc.MiscFlags = 0;
@@ -411,8 +429,8 @@ SPtr<GraphicsBuffer> GraphicsAPI::CreateConstantBuffer(const Vector<char>& data)
 	return pConstantBuffer;
 }
 
-void GraphicsAPI::writeToBuffer(const SPtr<GraphicsBuffer>& pBuffer, const Vector<char>& data)
+void GraphicsAPI::writeToBuffer(const WPtr<GraphicsBuffer>& pBuffer, const Vector<char>& data)
 {
-	
-	m_pDeviceContext->UpdateSubresource1(pBuffer->m_pBuffer, 0, nullptr, data.data(), 0, 0, 0);
+	auto BUFFER = pBuffer.lock();
+	m_pDeviceContext->UpdateSubresource1(BUFFER->m_pBuffer, 0, nullptr, data.data(), 0, 0, 0);
 }

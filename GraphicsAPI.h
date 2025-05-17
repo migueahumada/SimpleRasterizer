@@ -43,7 +43,7 @@ public:
 	
 	ID3D11InputLayout* CreateInputLayout(	
 											Vector<D3D11_INPUT_ELEMENT_DESC> pInputElementDesc,
-											const SPtr<VertexShader>& pVertexShader);
+											const WPtr<VertexShader>& pVertexShader);
 
 	SPtr<GraphicsBuffer> CreateVertexBuffer(const Vector<char>& data);
 	
@@ -51,7 +51,7 @@ public:
 	
 	SPtr<GraphicsBuffer> CreateConstantBuffer(const Vector<char>& data);
 
-	void writeToBuffer(	const SPtr<GraphicsBuffer>& pBuffer,
+	void writeToBuffer(	const WPtr<GraphicsBuffer>& pBuffer,
 											const Vector<char>& data);
 
 public:

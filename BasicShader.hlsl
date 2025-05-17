@@ -26,6 +26,9 @@ cbuffer MatrixCollection : register(b0)
     float4x4 World;
     float4x4 View;
     float4x4 Projection;
+    
+    float3 ViewDir;
+    //float time;
 }
 
 PixelInput vertex_main(VertexInput Input) 
@@ -50,7 +53,7 @@ PixelInput vertex_main(VertexInput Input)
 
 float4 pixel_main(PixelInput Input) : SV_Target
 {
-    float3 lightPos = float3(-6.0f, 3.0f, -2.0f);
+    float3 lightPos = float3(-20.0f, 2.0f, 2.0f);
     
     
     //Luz de direccional
@@ -60,15 +63,28 @@ float4 pixel_main(PixelInput Input) : SV_Target
     //float3 lightDir = normalize(lightPos - Input.posW);
     
     float3 lightDir = normalize(lightPos - Input.posW);
-    float3 spotDir = normalize(float3(1.0f, 0, 0));
+    float3 spotDir = normalize(float3(1.0f, 8.0f, 0.0F));
     
     //Spotlight
-    float spotAngle = 80.0f * (3.14159265383f / 180.0f);
+    //float spotAngle = (50.0f * 20*sin(time)) * (3.14159265383f / 180.0f);
+    float spotAngle = 90.0f  * (3.14159265383f / 180.0f);
     spotAngle = cos(spotAngle);
     
     float DiffuseIncidence = dot(lightDir, Input.normal);
     float IncidenceToLight = dot(-spotDir, lightDir);
     
+    //Specular
+    //Compute light reflection
+    float3 ReflectVector = reflect(lightDir, Input.normal);
+    float3 myViewDir = -ViewDir;
+    
+    float3 H = normalize(lightDir + myViewDir);
+    
+    float SpecularIncidence = max(0.0f, dot(myViewDir, H));
+    SpecularIncidence = pow(SpecularIncidence, 15);
+    
+    //F�rmula de la luz
+    // R = 2(n * L) N - L
     
     if (IncidenceToLight < spotAngle)
     {
@@ -76,8 +92,10 @@ float4 pixel_main(PixelInput Input) : SV_Target
     }
     
     float4 color = txColor.Sample(samLinear, Input.texCoord);
-    color.rgb *= DiffuseIncidence * IncidenceToLight;
+    color.rgb *= DiffuseIncidence;
     
-    return color;
+    // Lo = kD + kS + kA
+    
+    return color + SpecularIncidence;
 
 }

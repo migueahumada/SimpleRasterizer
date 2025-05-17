@@ -63,34 +63,32 @@ SPtr<Character> g_pCharacter;
 SPtr<Character> g_pDinosaur;
 SPtr<Actor> g_pMainActor;
 
+void RecompileShaders()
+{
+
+	auto pVertexShader = g_pGraphicsAPI->CreateVertexShader(L"BasicShader.hlsl", "vertex_main");
+	if (pVertexShader)
+	{
+		g_pVertexShader = pVertexShader;
+	}
+
+
+	auto pPixelShader = g_pGraphicsAPI->CreatePixelShader(L"BasicShader.hlsl", "pixel_main");
+	if (pPixelShader)
+	{
+		g_pPixelShader = pPixelShader;
+	}
+
+}
 void Update(float deltaTime) 
 {
-	//g_Camera.MoveCamera(g_WVP, g_cameraMovSpeed * deltaTime);
-	//g_pAudioAPI->SetCameraListener(g_pCamera);
 
-	/*printf(	"\rCam Position: X:%f Y:%f Z:%f" ,
-					g_Camera.getViewMatrix().m[3][0],
-					g_Camera.getViewMatrix().m[3][1],
-					g_Camera.getViewMatrix().m[3][2]);*/
-	
-
-	/*printf(	"\rPosition: X:%f Y:%f Z:%f", 
-					g_pCamera->getEyePosition().x,
-					g_pCamera->getEyePosition().y,
-					g_pCamera->getEyePosition().z);*/
-
-	/*printf(	"\rPosition: X:%f Y:%f Z:%f",
-					g_Camera.getEyePosition().x,
-					g_Camera.getEyePosition().y,
-					g_Camera.getEyePosition().z);*/
 	g_pCamera->Move(g_CameraMove * deltaTime);
-	//g_pCamera->Rotate(30.0f * deltaTime, 30.0f * deltaTime);
 	g_pCamera->Update();
 	g_pWorld->Update(deltaTime);
 }
 void Render() {
 
-#pragma region VIEWPORT
 	D3D11_VIEWPORT vp;
 	vp.Width = WIDTH;
 	vp.Height = HEIGHT;
@@ -100,16 +98,11 @@ void Render() {
 	vp.TopLeftY = 0;
 
 	g_pGraphicsAPI->m_pDeviceContext->RSSetViewports(1, &vp);
-#pragma endregion VIEWPORT
-
-#pragma region OUTPUT_MERGE_BACKBUFFER
 
 	//Se setea lo que se mostrará en el Output Merge State
 	g_pGraphicsAPI->m_pDeviceContext->OMSetRenderTargets(1, &g_pGraphicsAPI->m_pBackBufferRTV, g_pGraphicsAPI->m_pBackBufferDSV);
 
-#pragma endregion OUTPUT_MERGE_BACKBUFFER
 
-#pragma region CLEAN_RENDER_TARGET_DEPTH_STENCIL
 
 	FloatColor tempColor = Color{ 0, 0, 0, 255 };
 	float clearColor2[4] = { tempColor.r,tempColor.g , tempColor.b,tempColor.a };
@@ -121,30 +114,17 @@ void Render() {
 		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
 		1.0f,
 		0);
-#pragma endregion CLEAN_RENDER_TARGET_DEPTH_STENCIL	
-
-#pragma region SET_VERTEX_SHADER_N_PIXEL_SHADER
 
 	//Seteamos el vertex shader y el pixel shader
 	g_pGraphicsAPI->m_pDeviceContext->VSSetShader(g_pVertexShader->m_pVertexShader, nullptr, 0);
 	g_pGraphicsAPI->m_pDeviceContext->PSSetShader(g_pPixelShader->m_pPixelShader, nullptr, 0);
 
-#pragma endregion SET_VERTEX_SHADER_N_PIXEL_SHADER
-
-#pragma region INPUT_ASSEMBLER_LAYOUT
-
-	//Seteamos lo que necesitamos para el input assembler
-	//Seteamos el arreglo del input assembler y los valores que mandaremos al GPU
 	g_pGraphicsAPI->m_pDeviceContext->IASetInputLayout(g_pInputLayout);
 
-#pragma endregion INPUT_ASSEMBLER_LAYOUT
-
-#pragma region SET_SAMPLERS
 	g_pGraphicsAPI->m_pDeviceContext->PSSetSamplers(0, 1, &g_pSS_Point);
 	g_pGraphicsAPI->m_pDeviceContext->PSSetSamplers(1, 1, &g_pSS_Linear);
 	g_pGraphicsAPI->m_pDeviceContext->PSSetSamplers(2, 1, &g_pSS_Anisotropic);
 
-#pragma endregion SET_SAMPLERS
 
 	g_pWorld->Render();
 
@@ -182,23 +162,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	SDL_SetWindowRelativeMouseMode(g_pWindow,true);  // optional but better
 #pragma endregion SDL3_SETUP
 
-#pragma region VERTEX_SHADER_CREATION
-	//---------------VERTEX SHADER!---------------
-	g_pVertexShader = g_pGraphicsAPI->CreateVertexShader(L"BasicShader.hlsl", "vertex_main");
-	if (!g_pVertexShader)
-	{
-		return SDL_APP_FAILURE;
-	}
-#pragma endregion VERTEX_SHADER_CREATION
+	RecompileShaders();
 
-#pragma region PIXEL_SHADER_CREATION
-	//---------------PIXEL SHADER!---------------
-	g_pPixelShader = g_pGraphicsAPI->CreatePixelShader(L"BasicShader.hlsl", "pixel_main");
-	if(!g_pPixelShader)
-	{
-		return SDL_APP_FAILURE;
-	}
-#pragma endregion PIXEL_SHADER_CREATION
 
 	//---------------INPUT VERTEX BUFFER TO THE SHADER---------------
 	Vector<D3D11_INPUT_ELEMENT_DESC> inputElementDesc = {
@@ -218,6 +183,9 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
 	g_pCamera = make_shared<Camera>();
 
+  /*static float tempo = 2.0f;
+	tempo += 0.0001f;*/
+
 	//---------------CAMERA SET UP---------------
 	g_pCamera->SetLookAt(Vector3(0, 0, -6.0f), Vector3(0, 0, 0), Vector3(0, 1, 0));		//Setea la matriz de la cámara
 	g_pCamera->SetPerspective(3.141592653f/4.0f,WIDTH,HEIGHT,0.1f,100.0f);			//Sete la matriz de la perspectiva
@@ -226,10 +194,12 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	g_WVP.world.Identity();															//Matriz de mundo se hace identidad
 	g_WVP.view = g_pCamera->getViewMatrix();											//Matriz de vista se obtiene de cámara
 	g_WVP.projection = g_pCamera->getProjectionMatrix();								//Matriz de proyección se obtiene de cámara
-	
+	//g_WVP.time = tempo;
+
 	g_WVP.world.Transpose();														//Se transpone
 	g_WVP.view.Transpose();															//Se transpone
 	g_WVP.projection.Transpose();													//Se transpone
+	g_WVP.viewDir = g_pCamera->GetViewDir();
 
 
 	//---------------CONSTANT BUFFER FOR---------------
@@ -279,6 +249,15 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																									"rex_norm.obj", 
 																									"Rex_C.bmp", 
 																									Vector3(0.0f, -1.0f, 0.0f));
+	
+	g_pMainActor = g_pWorld->SpawnActor<Character>(g_pMainActor,
+		g_pGraphicsAPI,
+		g_WVP,
+		g_pCamera,
+		g_pCB_WVP,
+		"disc.obj",
+		"Terrain1.bmp",
+		Vector3(0.0f, -1.0f, 3.0f));
 
 	g_pAudioAPI = make_shared<AudioAPI>(pWndHandle);
 	if (!g_pAudioAPI)
@@ -349,6 +328,11 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 			if (sym == SDLK_A) g_CameraMove.x = 0;
 			if (sym == SDLK_Q) g_CameraMove.y = 0;
 			if (sym == SDLK_E) g_CameraMove.y = 0;
+
+			if (sym == SDLK_F2)
+			{
+				RecompileShaders();
+			}
 			break;
 
 		case SDL_EVENT_MOUSE_MOTION:
@@ -398,6 +382,41 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 
 void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
+	
+	if (g_pRS_Default)
+	{
+		SAFE_RELEASE(g_pRS_Default);
+	}
+
+	if (g_pRS_No_Cull)
+	{
+		SAFE_RELEASE(g_pRS_No_Cull);
+	}
+
+	if (g_pRS_Wireframe)
+	{
+		SAFE_RELEASE(g_pRS_Wireframe);
+	}
+
+	if (g_pSS_Linear)
+	{
+		SAFE_RELEASE(g_pSS_Linear);
+	}
+
+	if (g_pSS_Point)
+	{
+		SAFE_RELEASE(g_pSS_Point);
+	}
+	
+	if (g_pSS_Anisotropic)
+	{
+		SAFE_RELEASE(g_pSS_Anisotropic);
+	}
+
+	if (g_pInputLayout)
+	{
+		SAFE_RELEASE(g_pInputLayout);
+	}
 
 	if (g_pWindow)
 	{

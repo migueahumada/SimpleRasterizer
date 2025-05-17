@@ -97,6 +97,10 @@ public:
 		memcpy(&m_cameraListener, &listener, sizeof(X3DAUDIO_LISTENER));
 	}
 
+	inline Vector3 GetViewDir() const{
+		return (m_target - m_position).normalize();
+	}
+
 	void Update();
 
 private:
