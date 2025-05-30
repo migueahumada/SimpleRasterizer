@@ -28,6 +28,7 @@ struct MODEL_VERTEX
 	Vector3 position;
 	Vector3 color;
 	Vector3 normal;
+	Vector3 tangent;
 	float u = 0.0; 
 	float v = 0.0;
 };
@@ -92,8 +93,12 @@ public:
 
 	bool LoadFromFile(const char* filePath, 
 										WPtr<GraphicsAPI> pGraphicsAPI);
+	void ComputeTangentSpace();
 	//TODO: Iterar sobre el vector de meshes y ahí estarán los buffer
 	Vector<Mesh> m_meshes;
+
+	Vector<MODEL_VERTEX> m_vertices;
+	Vector<unsigned short> m_indices;
 	
 	//Cuántos buffers voy a querer generar
 	SPtr<GraphicsBuffer> m_pVertexBuffer;

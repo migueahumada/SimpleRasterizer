@@ -103,6 +103,17 @@ struct FloatColor {
 	float a;
 };
 
+struct Vector2
+{
+
+	Vector2() = default;
+	Vector2(float _x, float _y = 0.0f) :
+		x(_x),
+		y(_y){}
+	
+	float x;
+	float y;
+};
 
 struct Vector3 
 {
@@ -121,8 +132,11 @@ struct Vector3
 		return { x + v.x, y + v.y, z + v.z };
 	}
 
-	inline Vector3 operator+=(const Vector3& v) {
-		return {x += v.x, y += v.y, z += v.z };
+	inline Vector3& operator+=(const Vector3& v) {
+		x += v.x; 
+		y += v.y;
+		z += v.z; 
+		return *this;
 	}
 
 	inline Vector3 operator-(const Vector3& v) const {
@@ -386,14 +400,14 @@ struct Triangle {
 	Vector3 normal;
 };
 
+//Para crearlo tiene que sermultiplo de 16
 struct MatrixCollection
 {
 	Matrix4 world;
 	Matrix4 view;
 	Matrix4 projection;
-
 	Vector3 viewDir;
-	//float time;
+	float time;
 };
 
 struct Quaternion

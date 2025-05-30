@@ -29,17 +29,17 @@ void Camera::SetPerspective(float halfFOV,
 void Camera::Move(const Vector3& direction)
 {
 	m_position += direction * m_speed;
-	m_target += direction * m_speed;
+	//m_target += direction * m_speed;
 
 	bIsDirty = true;
 }
 
 void Camera::Rotate(float newYaw, float newPitch)
 {
-	m_yaw += newYaw;
-	m_pitch += newPitch;
+	m_yaw += -newYaw;
+	m_pitch += -newPitch;
 
-	m_pitch = clamp(m_pitch, -89.0f, 89.0f);
+	//m_pitch = clamp(m_pitch, -89.0f, 89.0f);
 
 	Vector3 direction;
 	direction.x = cosf(degreesToRadians(m_yaw)) * cosf(degreesToRadians(m_pitch));
@@ -47,16 +47,17 @@ void Camera::Rotate(float newYaw, float newPitch)
 	direction.z = sinf(degreesToRadians(m_yaw)) * cosf(degreesToRadians(m_pitch));
 
 	m_target = direction.normalize();
+	
 
 
-	//bIsDirty = true;
 }
 
 void Camera::Update()
 {
 
-	m_viewMatrix.LookAt(m_position, m_target, m_up);
+	m_viewMatrix.LookAt(m_position,  m_position + m_target, m_up);
 	m_projectionMatrix.Perspective(m_fov, m_width, m_height, m_minZ, m_maxZ);
+
 
 	bIsDirty = false;
 

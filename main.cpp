@@ -30,6 +30,7 @@ SPtr<PixelShader> g_pPixelShader;
 
 Texture g_dsReflection;
 Texture g_rtReflection;
+Texture g_myNormalTexture;
 
 ID3D11InputLayout* g_pInputLayout = nullptr;
 
@@ -55,7 +56,7 @@ SPtr<Submix> g_pSubmix;
 SPtr<VoiceCallback> g_pCallback;
 
 static float g_cameraMovSpeed = 0.001f;
-static float g_cameraRotSpeed = .01f;
+static float g_cameraRotSpeed = 20.0f;
 
 SPtr<World> g_pWorld;
 
@@ -82,7 +83,6 @@ void RecompileShaders()
 }
 void Update(float deltaTime) 
 {
-
 	g_pCamera->Move(g_CameraMove * deltaTime);
 	g_pCamera->Update();
 	g_pWorld->Update(deltaTime);
@@ -104,7 +104,7 @@ void Render() {
 
 
 
-	FloatColor tempColor = Color{ 0, 0, 0, 255 };
+	FloatColor tempColor = Color{ 56, 53, 56, 255 };
 	float clearColor2[4] = { tempColor.r,tempColor.g , tempColor.b,tempColor.a };
 
 	g_pGraphicsAPI->m_pDeviceContext->ClearRenderTargetView(g_pGraphicsAPI->m_pBackBufferRTV, clearColor2);
@@ -170,7 +170,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,	0,  0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "COLOR"	  , 0, DXGI_FORMAT_R32G32B32_FLOAT,	0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL"  , 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT   ,	0, 36,	D3D11_INPUT_PER_VERTEX_DATA, 0 }
+		{ "TANGENT" , 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 36,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT   ,	0, 48,	D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 
 	//---------------INPUT LAYOUT!---------------
@@ -248,16 +249,19 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																									g_pCB_WVP, 
 																									"rex_norm.obj", 
 																									"Rex_C.bmp", 
-																									Vector3(0.0f, -1.0f, 0.0f));
+																									Vector3(0.0f, -1.0f, 0.0f),
+																									"Rex_N.bmp",
+																									"Rex_R.bmp",
+																									"Rex_M.bmp");
 	
-	g_pMainActor = g_pWorld->SpawnActor<Character>(g_pMainActor,
+	/*g_pMainActor = g_pWorld->SpawnActor<Character>(g_pMainActor,
 		g_pGraphicsAPI,
 		g_WVP,
 		g_pCamera,
 		g_pCB_WVP,
 		"disc.obj",
 		"Terrain1.bmp",
-		Vector3(0.0f, -1.0f, 3.0f));
+		Vector3(0.0f, -1.0f, 3.0f));*/
 
 	g_pAudioAPI = make_shared<AudioAPI>(pWndHandle);
 	if (!g_pAudioAPI)
@@ -319,6 +323,11 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 			if (sym == SDLK_A) g_CameraMove.x = -g_cameraMovSpeed;
 			if (sym == SDLK_Q) g_CameraMove.y = -g_cameraMovSpeed;
 			if (sym == SDLK_E) g_CameraMove.y = g_cameraMovSpeed;
+
+			if (sym == SDLK_UP) g_pCamera->Rotate(0.0f, 2.0f);
+			if (sym == SDLK_DOWN) g_pCamera->Rotate(0.0f, -2.0f);
+			if (sym == SDLK_LEFT) g_pCamera->Rotate(2.0f, 0.0f);
+			if (sym == SDLK_RIGHT) g_pCamera->Rotate(-2.0f, 0.0f);
 			break;
 		
 		case SDL_EVENT_KEY_UP:
@@ -336,12 +345,8 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 			break;
 
 		case SDL_EVENT_MOUSE_MOTION:
-		
-				g_pCamera->Rotate(event->motion.xrel * g_pCamera->getRotSpeed(),
-													-event->motion.yrel * g_pCamera->getRotSpeed());
-				printf("X: %f", event->motion.xrel);
-				printf("\tY: %f\n", event->motion.yrel);
-				
+				g_pCamera->Rotate(event->motion.xrel * g_pCamera->getRotSpeed(), 
+													event->motion.yrel * g_pCamera->getRotSpeed());
 			break;
 
 	}

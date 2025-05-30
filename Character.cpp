@@ -11,29 +11,65 @@ Character::Character( WPtr<GraphicsAPI> pGraphicsAPI,
                       WPtr<GraphicsBuffer> constBuffer,
                       const String& modelName,
                       const String& textureName,
-                      const Vector3& positionOffset) :
+                      const Vector3& positionOffset,
+                      const String& normalTextureName,
+                      const String& roughnessTextureName,
+                      const String& metallicTextureName):
                       m_pGraphicsAPI(pGraphicsAPI), 
                       m_WVP(WVP), 
                       m_pCamera(camera),
                       m_pCB(constBuffer),
                       m_modelName(modelName),
                       m_textureName(textureName),
-                      m_positionOffset(positionOffset)
+                      m_positionOffset(positionOffset),
+                      m_normalTextureName(normalTextureName),
+                      m_roughnessTextureName(roughnessTextureName),
+                      m_metallicTextureName(metallicTextureName)
 
 {
 
   m_model = std::make_shared<Model>();
+  
   m_image = std::make_shared<Image>();
   m_texture = std::make_shared<Texture>();
   
+  m_normalImage = std::make_shared<Image>();
+  m_normalTexture = std::make_shared<Texture>();
+
+  m_roughnessImage = std::make_shared<Image>();
+  m_roughnessTexture = std::make_shared<Texture>();
+
+  m_metallicImage = std::make_shared<Image>();
+  m_metallicTexture = std::make_shared<Texture>();
 }
 
 void Character::Init()
 {
   Actor::Init();
-  m_image->decode(m_textureName.c_str());
   m_model->LoadFromFile(m_modelName.c_str(), m_pGraphicsAPI);
+  
+  m_image->decode(m_textureName.c_str());
   m_texture->createImage(*m_image, m_pGraphicsAPI);
+  
+  
+  if (!m_normalTextureName.empty())
+  {
+    m_normalImage->decode(m_normalTextureName.c_str());
+    m_normalTexture->createImage(*m_normalImage, m_pGraphicsAPI);
+  }
+
+  if (!m_roughnessTextureName.empty())
+  {
+    m_roughnessImage->decode(m_roughnessTextureName.c_str());
+    m_roughnessTexture->createImage(*m_roughnessImage, m_pGraphicsAPI);
+  }
+
+  if (!m_metallicTextureName.empty())
+  {
+    m_metallicImage->decode(m_metallicTextureName.c_str());
+    m_metallicTexture->createImage(*m_metallicImage, m_pGraphicsAPI);
+  }
+  
 
   m_localTransform.setPosition(m_positionOffset);
   m_localTransform.setRotation(Vector3(0.0f, 230.0f,0.0f));
@@ -68,7 +104,22 @@ void Character::Render()
 
   GAPI->m_pDeviceContext->IASetIndexBuffer(
     m_model->m_pIndexBuffer->m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
-  GAPI->m_pDeviceContext->PSSetShaderResources(0,1,&m_texture->m_pSRV);
+  GAPI->m_pDeviceContext->PSSetShaderResources(0,1, &m_texture->m_pSRV);
+  
+  if (!m_normalTextureName.empty())
+  {
+    GAPI->m_pDeviceContext->PSSetShaderResources(1, 1, &m_normalTexture->m_pSRV);
+  }
+
+  if (!m_roughnessTextureName.empty())
+  {
+    GAPI->m_pDeviceContext->PSSetShaderResources(2, 1, &m_roughnessTexture->m_pSRV);
+  }
+
+  if (!m_metallicTextureName.empty())
+  {
+    GAPI->m_pDeviceContext->PSSetShaderResources(3, 1, &m_metallicTexture->m_pSRV);
+  }
 
   
   m_WVP.world = m_localTransform.getMatrix();

@@ -407,7 +407,7 @@ SPtr<GraphicsBuffer> GraphicsAPI::CreateConstantBuffer(const Vector<char>& data)
 	memset(&desc, 0, sizeof(D3D11_BUFFER_DESC));
 
 	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.ByteWidth = ((data.size() + 15) / 16) * 16;
+	desc.ByteWidth = data.size();
 	//desc.ByteWidth = data.size();
 	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	desc.CPUAccessFlags = 0;
@@ -425,6 +425,7 @@ SPtr<GraphicsBuffer> GraphicsAPI::CreateConstantBuffer(const Vector<char>& data)
 		return nullptr;
 	}
 
+	
 
 	return pConstantBuffer;
 }

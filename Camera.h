@@ -38,7 +38,7 @@ public:
 											float MaxZ);
 
 	inline Vector3 GetForwardVector() const {
-		return (m_position - m_target).normalize();
+		return (m_target - m_position).normalize();
 	}
 
 
@@ -54,7 +54,7 @@ public:
 	void Move(const Vector3& vector);						
 
 
-	void Rotate(float yaw, float pitch);
+	void Rotate(float newYaw, float newPitch);
 
 
 	inline Matrix4 getViewMatrix() 
@@ -101,6 +101,30 @@ public:
 		return (m_target - m_position).normalize();
 	}
 
+	inline float getYaw() const{
+		return m_yaw;
+	}
+
+	inline float getPitch() const{
+		return m_pitch;
+	}
+
+	inline float getRoll() const{
+		return m_roll;
+	}
+
+	inline void setYaw(float newYaw){
+		m_yaw = newYaw;
+	}
+
+	inline void setPitch(float newPitch) {
+		m_yaw = newPitch;
+	}
+
+	inline void setRoll(float newRoll) {
+		m_yaw = newRoll;
+	}
+
 	void Update();
 
 private:
@@ -127,6 +151,7 @@ private:
 
 	float m_yaw;
 	float m_pitch;
+	float m_roll;
 
 	bool bIsDirty = false;
 

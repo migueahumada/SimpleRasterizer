@@ -21,7 +21,10 @@ public:
             WPtr<GraphicsBuffer> constBuffer,
             const String& modelName,
             const String& textureName,
-            const Vector3& positionOffset);
+            const Vector3& positionOffset, 
+            const String& normalTextureName = "",
+            const String& roughnessTextureName = "",
+            const String& metallicTextureName = "");
   virtual ~Character() = default;
 
   virtual void Init() override;
@@ -31,8 +34,19 @@ private:
  
 protected:
   SPtr<Model> m_model;
+
   SPtr<Image> m_image;
   SPtr<Texture> m_texture;
+
+  SPtr<Image> m_normalImage;
+  SPtr<Texture> m_normalTexture;
+
+  SPtr<Image> m_roughnessImage;
+  SPtr<Texture> m_roughnessTexture;
+
+  SPtr<Image> m_metallicImage;
+  SPtr<Texture> m_metallicTexture;
+
 
   WPtr<GraphicsAPI> m_pGraphicsAPI;
   MatrixCollection& m_WVP;
@@ -47,5 +61,8 @@ protected:
 
   String m_modelName;
   String m_textureName;
+  String m_normalTextureName;
+  String m_roughnessTextureName;
+  String m_metallicTextureName;
 };
 
