@@ -1,11 +1,8 @@
-#include "GraphicsAPI.h"
-
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <cassert>
-
 #include "GraphicsBuffer.h"
-
+#include "GraphicsAPI.h"
 
 template <typename T>
 using Vector = std::vector<T>;

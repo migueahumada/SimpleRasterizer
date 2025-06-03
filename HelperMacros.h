@@ -2,6 +2,7 @@
 
 #include <memory>
 #define SAFE_RELEASE(p) { if(p){p->Release(); p = nullptr;} }
+#define SHOW_ERROR(msg) {MessageBox(nullptr,msg, L"Error",MB_OK);}
 
 #include <string>
 #include <vector>

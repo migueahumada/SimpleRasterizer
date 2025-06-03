@@ -127,19 +127,18 @@ PixelInput vertex_main(VertexInput Input)
     //float3 lightPos = float3(10.0f, 0.0f, 0.0f);
     //float3 lightDir = -normalize(lightPos);
     
+    Output.position  = float4(Input.position, 1.0f);
+    Output.position  = mul(Output.position, World);
+    Output.posW      = Output.position.xyz;
+    Output.position  = mul(Output.position, View);
+    Output.position  = mul(Output.position, Projection);
     
-    Output.position = float4(Input.position, 1.0f);
-    Output.position = mul(Output.position, World);
-    Output.posW = Output.position.xyz;
-    Output.position = mul(Output.position, View);
-    Output.position = mul(Output.position, Projection);
-    
-    Output.normal = normalize(mul(Input.normal, (float3x3) World).xyz);
-    Output.tangent = normalize(mul(Input.tangent, (float3x3) World).xyz);
+    Output.normal    = normalize(mul(Input.normal, (float3x3) World).xyz);
+    Output.tangent   = normalize(mul(Input.tangent, (float3x3) World).xyz);
     Output.bitangent = -cross(Output.normal, Output.tangent);
     
-    Output.color = Input.color;
-    Output.texCoord = Input.texCoord;
+    Output.color     = Input.color;
+    Output.texCoord  = Input.texCoord;
     
     return Output;
 }

@@ -19,31 +19,14 @@
 #include "Actor.h"
 #include "VoiceCallback.h"
 
+#include "Renderer.h"
+
 using std::function;
 
 SDL_Window* g_pWindow = nullptr;
 SDL_Cursor* g_pCursor = nullptr;
 
 SPtr<GraphicsAPI> g_pGraphicsAPI;
-SPtr<VertexShader> g_pVertexShader;
-SPtr<PixelShader> g_pPixelShader;
-
-Texture g_dsReflection;
-Texture g_rtReflection;
-Texture g_myNormalTexture;
-
-ID3D11InputLayout* g_pInputLayout = nullptr;
-
-ID3D11RasterizerState1* g_pRS_Default = nullptr;
-ID3D11RasterizerState1* g_pRS_Wireframe = nullptr;
-ID3D11RasterizerState1* g_pRS_No_Cull = nullptr;
-
-ID3D11SamplerState* g_pSS_Point = nullptr;
-ID3D11SamplerState* g_pSS_Linear = nullptr;
-ID3D11SamplerState* g_pSS_Anisotropic = nullptr;
-
-SPtr<GraphicsBuffer> g_pCB_WVP;
-MatrixCollection g_WVP;
 
 SPtr<Camera> g_pCamera;
 Vector3 g_CameraMove = { 0.0f,0.0f,0.0f };
@@ -64,70 +47,22 @@ SPtr<Character> g_pCharacter;
 SPtr<Character> g_pDinosaur;
 SPtr<Actor> g_pMainActor;
 
-void RecompileShaders()
-{
+SPtr<Renderer> g_pRenderer;
 
-	auto pVertexShader = g_pGraphicsAPI->CreateVertexShader(L"BasicShader.hlsl", "vertex_main");
-	if (pVertexShader)
-	{
-		g_pVertexShader = pVertexShader;
-	}
-
-
-	auto pPixelShader = g_pGraphicsAPI->CreatePixelShader(L"BasicShader.hlsl", "pixel_main");
-	if (pPixelShader)
-	{
-		g_pPixelShader = pPixelShader;
-	}
-
-}
 void Update(float deltaTime) 
 {
 	g_pCamera->Move(g_CameraMove * deltaTime);
 	g_pCamera->Update();
 	g_pWorld->Update(deltaTime);
 }
+
 void Render() {
-
-	D3D11_VIEWPORT vp;
-	vp.Width = WIDTH;
-	vp.Height = HEIGHT;
-	vp.MinDepth = 0.0f;
-	vp.MaxDepth = 1.0f;
-	vp.TopLeftX = 0;
-	vp.TopLeftY = 0;
-
-	g_pGraphicsAPI->m_pDeviceContext->RSSetViewports(1, &vp);
-
-	//Se setea lo que se mostrará en el Output Merge State
-	g_pGraphicsAPI->m_pDeviceContext->OMSetRenderTargets(1, &g_pGraphicsAPI->m_pBackBufferRTV, g_pGraphicsAPI->m_pBackBufferDSV);
-
-
-
-	FloatColor tempColor = Color{ 56, 53, 56, 255 };
-	float clearColor2[4] = { tempColor.r,tempColor.g , tempColor.b,tempColor.a };
-
-	g_pGraphicsAPI->m_pDeviceContext->ClearRenderTargetView(g_pGraphicsAPI->m_pBackBufferRTV, clearColor2);
-
-	//Limpiamos el depth stencil del backbuffer
-	g_pGraphicsAPI->m_pDeviceContext->ClearDepthStencilView(g_pGraphicsAPI->m_pBackBufferDSV,
-		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
-		1.0f,
-		0);
-
-	//Seteamos el vertex shader y el pixel shader
-	g_pGraphicsAPI->m_pDeviceContext->VSSetShader(g_pVertexShader->m_pVertexShader, nullptr, 0);
-	g_pGraphicsAPI->m_pDeviceContext->PSSetShader(g_pPixelShader->m_pPixelShader, nullptr, 0);
-
-	g_pGraphicsAPI->m_pDeviceContext->IASetInputLayout(g_pInputLayout);
-
-	g_pGraphicsAPI->m_pDeviceContext->PSSetSamplers(0, 1, &g_pSS_Point);
-	g_pGraphicsAPI->m_pDeviceContext->PSSetSamplers(1, 1, &g_pSS_Linear);
-	g_pGraphicsAPI->m_pDeviceContext->PSSetSamplers(2, 1, &g_pSS_Anisotropic);
-
 
 	g_pWorld->Render();
 
+	g_pRenderer->SetGeometryPass();
+	g_pRenderer->SetLightingPass();
+	
 	g_pGraphicsAPI->m_pSwapChain->Present(0, 0);
 }
 
@@ -157,32 +92,23 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 			return SDL_APP_FAILURE;
 		}
 	}
+	g_pCamera = make_shared<Camera>();
+	g_pWorld = make_shared<World>();
+	g_pRenderer = make_shared<Renderer>(g_pGraphicsAPI,g_pCamera,g_pWorld);
+
+	
+
 
 	SDL_ShowCursor();
 	SDL_SetWindowRelativeMouseMode(g_pWindow,true);  // optional but better
 #pragma endregion SDL3_SETUP
 
-	RecompileShaders();
+	//RecompileShaders();
+	g_pRenderer->CompileShaders();
 
+	g_pRenderer->InitInputLayout();
 
-	//---------------INPUT VERTEX BUFFER TO THE SHADER---------------
-	Vector<D3D11_INPUT_ELEMENT_DESC> inputElementDesc = {
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,	0,  0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR"	  , 0, DXGI_FORMAT_R32G32B32_FLOAT,	0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL"  , 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TANGENT" , 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 36,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT   ,	0, 48,	D3D11_INPUT_PER_VERTEX_DATA, 0 }
-	};
-
-	//---------------INPUT LAYOUT!---------------
-	g_pInputLayout = g_pGraphicsAPI->CreateInputLayout(	inputElementDesc, 
-																											g_pVertexShader);
-	if (!g_pInputLayout)
-	{
-		return SDL_APP_FAILURE;
-	}
-
-	g_pCamera = make_shared<Camera>();
+	
 
   /*static float tempo = 2.0f;
 	tempo += 0.0001f;*/
@@ -191,77 +117,24 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	g_pCamera->SetLookAt(Vector3(0, 0, -6.0f), Vector3(0, 0, 0), Vector3(0, 1, 0));		//Setea la matriz de la cámara
 	g_pCamera->SetPerspective(3.141592653f/4.0f,WIDTH,HEIGHT,0.1f,100.0f);			//Sete la matriz de la perspectiva
 
-	//---------------WORLD SETUP---------------
-	g_WVP.world.Identity();															//Matriz de mundo se hace identidad
-	g_WVP.view = g_pCamera->getViewMatrix();											//Matriz de vista se obtiene de cámara
-	g_WVP.projection = g_pCamera->getProjectionMatrix();								//Matriz de proyección se obtiene de cámara
-	//g_WVP.time = tempo;
-
-	g_WVP.world.Transpose();														//Se transpone
-	g_WVP.view.Transpose();															//Se transpone
-	g_WVP.projection.Transpose();													//Se transpone
-	g_WVP.viewDir = g_pCamera->GetViewDir();
-
-
-	//---------------CONSTANT BUFFER FOR---------------
-	Vector<char> matrix_data;														//Se pasa al constant buffer para el shader.
-	matrix_data.resize(sizeof(g_WVP));
-	memcpy(matrix_data.data(), &g_WVP, sizeof(g_WVP));
-	g_pCB_WVP = g_pGraphicsAPI->CreateConstantBuffer(matrix_data);
-
-#pragma region RASTERIZER_STATES
-	//---------------RASTERIZER STATES SET UP---------------
-	CD3D11_RASTERIZER_DESC1 descRD(D3D11_DEFAULT);
-	g_pGraphicsAPI->m_pDevice->CreateRasterizerState1(&descRD, &g_pRS_Default);
-
-	descRD.FillMode = D3D11_FILL_WIREFRAME;
-	g_pGraphicsAPI->m_pDevice->CreateRasterizerState1(&descRD, &g_pRS_Wireframe);
-
-	descRD.CullMode = D3D11_CULL_NONE;
-	g_pGraphicsAPI->m_pDevice->CreateRasterizerState1(&descRD, &g_pRS_No_Cull);
-
-#pragma endregion RASTERIZER_STATES
-
-#pragma region SAMPLER_FILTERS
-	//---------------SAMPLER FILTERS SET UP---------------
-	CD3D11_SAMPLER_DESC descSS(D3D11_DEFAULT);
-	descSS.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	descSS.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-
-	descSS.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-	g_pGraphicsAPI->m_pDevice->CreateSamplerState(&descSS, &g_pSS_Point);
-
-	descSS.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	g_pGraphicsAPI->m_pDevice->CreateSamplerState(&descSS, &g_pSS_Linear);
+	g_pRenderer->InitWVP();
+	g_pRenderer->InitConstantBuffer();
+	g_pRenderer->InitRasterizerStates();
+	g_pRenderer->InitSampleFilters();
+	g_pRenderer->InitGBuffer(WIDTH, HEIGHT);
 	
-	descSS.Filter = D3D11_FILTER_ANISOTROPIC;
-	descSS.MaxAnisotropy = 16;
-	g_pGraphicsAPI->m_pDevice->CreateSamplerState(&descSS, &g_pSS_Anisotropic);
-#pragma endregion SAMPLER_FILTERS
-
-	g_pWorld = make_shared<World>();
 	g_pWorld->Init();
 
 	g_pMainActor = g_pWorld->SpawnActor<Character>(	nullptr,
-																									g_pGraphicsAPI, 
-																									g_WVP, 
-																									g_pCamera, 
-																									g_pCB_WVP, 
+																									g_pGraphicsAPI,
 																									"rex_norm.obj", 
 																									"Rex_C.bmp", 
-																									Vector3(0.0f, -1.0f, 0.0f),
+																									Vector3(0.0f, 0.0f, 0.0f),
 																									"Rex_N.bmp",
 																									"Rex_R.bmp",
 																									"Rex_M.bmp");
+
 	
-	/*g_pMainActor = g_pWorld->SpawnActor<Character>(g_pMainActor,
-		g_pGraphicsAPI,
-		g_WVP,
-		g_pCamera,
-		g_pCB_WVP,
-		"disc.obj",
-		"Terrain1.bmp",
-		Vector3(0.0f, -1.0f, 3.0f));*/
 
 	g_pAudioAPI = make_shared<AudioAPI>(pWndHandle);
 	if (!g_pAudioAPI)
@@ -303,6 +176,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	SDL_SetCursor(g_pCursor);
 	
 	
+
 	return SDL_APP_CONTINUE;
 }
 
@@ -340,7 +214,7 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 
 			if (sym == SDLK_F2)
 			{
-				RecompileShaders();
+				//RecompileShaders();
 			}
 			break;
 
@@ -388,40 +262,6 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
 	
-	if (g_pRS_Default)
-	{
-		SAFE_RELEASE(g_pRS_Default);
-	}
-
-	if (g_pRS_No_Cull)
-	{
-		SAFE_RELEASE(g_pRS_No_Cull);
-	}
-
-	if (g_pRS_Wireframe)
-	{
-		SAFE_RELEASE(g_pRS_Wireframe);
-	}
-
-	if (g_pSS_Linear)
-	{
-		SAFE_RELEASE(g_pSS_Linear);
-	}
-
-	if (g_pSS_Point)
-	{
-		SAFE_RELEASE(g_pSS_Point);
-	}
-	
-	if (g_pSS_Anisotropic)
-	{
-		SAFE_RELEASE(g_pSS_Anisotropic);
-	}
-
-	if (g_pInputLayout)
-	{
-		SAFE_RELEASE(g_pInputLayout);
-	}
 
 	if (g_pWindow)
 	{

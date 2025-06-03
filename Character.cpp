@@ -4,21 +4,16 @@
 #include "Image.h"
 #include "Texture.h"
 #include "Camera.h"
+#include "GraphicsBuffer.h"
 
-Character::Character( WPtr<GraphicsAPI> pGraphicsAPI,
-                      MatrixCollection& WVP,
-                      WPtr<Camera> camera,
-                      WPtr<GraphicsBuffer> constBuffer,
+Character::Character( const WPtr<GraphicsAPI>& pGraphicsAPI,
                       const String& modelName,
                       const String& textureName,
                       const Vector3& positionOffset,
                       const String& normalTextureName,
                       const String& roughnessTextureName,
-                      const String& metallicTextureName):
-                      m_pGraphicsAPI(pGraphicsAPI), 
-                      m_WVP(WVP), 
-                      m_pCamera(camera),
-                      m_pCB(constBuffer),
+                      const String& metallicTextureName) :
+                      m_pGraphicsAPI(pGraphicsAPI),
                       m_modelName(modelName),
                       m_textureName(textureName),
                       m_positionOffset(positionOffset),
@@ -84,69 +79,7 @@ void Character::Update(float deltaTime)
 
 void Character::Render()
 {
-  UINT stride = sizeof(MODEL_VERTEX);
-  UINT offset = 0;
-
-  auto GAPI = m_pGraphicsAPI.lock();
-  auto camera = m_pCamera.lock();
-  auto CB = m_pCB.lock();
-
-  if (!GAPI || !camera || !CB)
-  {
-    return;
-  }
-
-  GAPI->m_pDeviceContext->IASetPrimitiveTopology(
-    static_cast<D3D11_PRIMITIVE_TOPOLOGY>(m_model->m_meshes[0].topology));
   
-  GAPI->m_pDeviceContext->IASetVertexBuffers(
-    0,1,&m_model->m_pVertexBuffer->m_pBuffer,&stride,&offset);
-
-  GAPI->m_pDeviceContext->IASetIndexBuffer(
-    m_model->m_pIndexBuffer->m_pBuffer, DXGI_FORMAT_R16_UINT, 0);
-  GAPI->m_pDeviceContext->PSSetShaderResources(0,1, &m_texture->m_pSRV);
-  
-  if (!m_normalTextureName.empty())
-  {
-    GAPI->m_pDeviceContext->PSSetShaderResources(1, 1, &m_normalTexture->m_pSRV);
-  }
-
-  if (!m_roughnessTextureName.empty())
-  {
-    GAPI->m_pDeviceContext->PSSetShaderResources(2, 1, &m_roughnessTexture->m_pSRV);
-  }
-
-  if (!m_metallicTextureName.empty())
-  {
-    GAPI->m_pDeviceContext->PSSetShaderResources(3, 1, &m_metallicTexture->m_pSRV);
-  }
-
-  
-  m_WVP.world = m_localTransform.getMatrix();
-  m_WVP.view = camera->getViewMatrix();
-  m_WVP.projection = camera->getProjectionMatrix();
-  m_WVP.viewDir = camera->GetViewDir();
-
-  m_WVP.projection.Transpose();
-  m_WVP.view.Transpose();
-  m_WVP.world.Transpose();
-  
-
-  // TODO: Renderer tendría que obtener la info del character para mandarlo al shader.
-  // Renderer tendría que tener el Constant Buffer
-  Vector<char> matrix_data;
-  matrix_data.resize(sizeof(m_WVP));
-  memcpy(matrix_data.data(), &m_WVP, sizeof(m_WVP));
-
-  GAPI->m_pDeviceContext->VSSetConstantBuffers(0, 1, &CB->m_pBuffer);
-  GAPI->m_pDeviceContext->PSSetConstantBuffers(0, 1, &CB->m_pBuffer);
-
-  GAPI->writeToBuffer(CB, matrix_data);
-
-  GAPI->m_pDeviceContext->DrawIndexed(m_model->m_meshes[0].numIndices, 
-                                      m_model->m_meshes[0].baseIndex, 
-                                      m_model->m_meshes[0].baseVertex);
-
 }
 
 

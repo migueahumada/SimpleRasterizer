@@ -5,13 +5,13 @@
 #include <fstream>
 #include "HelperMacros.h"
 #include "Shader.h"
-#include "GraphicsBuffer.h"
 
 //This should be cstring
 
 using Path = std::wstring;
 using String = std::string;
 
+class GraphicsBuffer;
 
 class GraphicsAPI
 {

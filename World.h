@@ -16,6 +16,10 @@ public:
   virtual void Update(float deltaTime);
   virtual void Render();
 
+  Vector<SPtr<Actor>>& getActors(){
+    return m_actors;
+  }
+
 protected:
 
  //Actors in thiiis world

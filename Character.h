@@ -15,10 +15,7 @@ class GraphicsBuffer;
 class Character : public Actor
 {
 public:
-  Character(WPtr<GraphicsAPI> pGraphicsAPI, 
-            MatrixCollection& WVP, 
-            WPtr<Camera> camera,
-            WPtr<GraphicsBuffer> constBuffer,
+  Character(const WPtr<GraphicsAPI>& pGraphicsAPI, 
             const String& modelName,
             const String& textureName,
             const Vector3& positionOffset, 
@@ -30,9 +27,7 @@ public:
   virtual void Init() override;
   virtual void Update(float deltaTime) override;
   virtual void Render() override;
-private:
- 
-protected:
+
   SPtr<Model> m_model;
 
   SPtr<Image> m_image;
@@ -49,9 +44,6 @@ protected:
 
 
   WPtr<GraphicsAPI> m_pGraphicsAPI;
-  MatrixCollection& m_WVP;
-  WPtr<Camera> m_pCamera;
-  WPtr<GraphicsBuffer> m_pCB;
 
   
 
