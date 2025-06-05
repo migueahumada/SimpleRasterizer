@@ -26,6 +26,8 @@ bool Model::LoadFromFile(const char* filePath, WPtr<GraphicsAPI> pGraphicsAPI)
 
     //TODO: Ignorar comentarios
 
+    
+
     Vector<String> lines = split(fileData, '\n');
 
     Vector<Vector3> temp_pos;

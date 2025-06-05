@@ -60,6 +60,7 @@ public:
   void InitGBuffer(int width, int height);
 
   void SetGeometryPass();
+  void SetSSAOPass();
   void SetLightingPass();
 
 private:
@@ -81,8 +82,10 @@ private:
   SPtr<VertexShader> m_pGBuffer_VS;
   SPtr<PixelShader> m_pGBuffer_PS;
 
-  SPtr<VertexShader> m_pVS_DefLighting;
+  SPtr<VertexShader> m_pVS_SSFS;
+  
   SPtr<PixelShader> m_pPS_DefLighting;
+  SPtr<PixelShader> m_pPS_AO;
 
   UnorderedMap<RasterStates::E, ID3D11RasterizerState1*> m_RasterStates;
   UnorderedMap<SamplerStates::E, ID3D11SamplerState*> m_SamplerStates;

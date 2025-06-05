@@ -4,7 +4,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
-#include "Model.h"
+#include <SDL3/SDL_keyboard.h>
 #include <iostream>
 #include "MathObjects.h"
 #include "Texture.h"
@@ -13,21 +13,16 @@
 #include "AudioAPI.h"
 #include "Submix.h"
 #include "Audio.h"
-#include <SDL3/SDL_keyboard.h>
 #include "Character.h"
 #include "World.h"
 #include "Actor.h"
 #include "VoiceCallback.h"
-
 #include "Renderer.h"
-
-using std::function;
 
 SDL_Window* g_pWindow = nullptr;
 SDL_Cursor* g_pCursor = nullptr;
 
 SPtr<GraphicsAPI> g_pGraphicsAPI;
-
 SPtr<Camera> g_pCamera;
 Vector3 g_CameraMove = { 0.0f,0.0f,0.0f };
 
@@ -46,6 +41,11 @@ SPtr<World> g_pWorld;
 SPtr<Character> g_pCharacter;
 SPtr<Character> g_pDinosaur;
 SPtr<Actor> g_pMainActor;
+SPtr<Actor> g_pSecondaryActor;
+SPtr<Actor> g_pThirdActor;
+SPtr<Actor> g_pFourthActor;
+
+Vector<SPtr<Actor>> g_spawnActors;
 
 SPtr<Renderer> g_pRenderer;
 
@@ -61,6 +61,7 @@ void Render() {
 	g_pWorld->Render();
 
 	g_pRenderer->SetGeometryPass();
+	g_pRenderer->SetSSAOPass();
 	g_pRenderer->SetLightingPass();
 	
 	g_pGraphicsAPI->m_pSwapChain->Present(0, 0);
@@ -69,7 +70,6 @@ void Render() {
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
 
-#pragma region SDL3_SETUP
 	//---------------SDL SET UP!!-----------------
 	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
 		SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
@@ -96,24 +96,14 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	g_pWorld = make_shared<World>();
 	g_pRenderer = make_shared<Renderer>(g_pGraphicsAPI,g_pCamera,g_pWorld);
 
-	
-
 
 	SDL_ShowCursor();
 	SDL_SetWindowRelativeMouseMode(g_pWindow,true);  // optional but better
-#pragma endregion SDL3_SETUP
 
-	//RecompileShaders();
 	g_pRenderer->CompileShaders();
 
 	g_pRenderer->InitInputLayout();
 
-	
-
-  /*static float tempo = 2.0f;
-	tempo += 0.0001f;*/
-
-	//---------------CAMERA SET UP---------------
 	g_pCamera->SetLookAt(Vector3(0, 0, -6.0f), Vector3(0, 0, 0), Vector3(0, 1, 0));		//Setea la matriz de la cámara
 	g_pCamera->SetPerspective(3.141592653f/4.0f,WIDTH,HEIGHT,0.1f,100.0f);			//Sete la matriz de la perspectiva
 
@@ -133,8 +123,23 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																									"Rex_N.bmp",
 																									"Rex_R.bmp",
 																									"Rex_M.bmp");
-
+	g_pSecondaryActor = g_pWorld->SpawnActor<Character>(nullptr,
+																											g_pGraphicsAPI,
+																											"rex_norm.obj",
+																											"Rex_C.bmp",
+																											Vector3(4.0f, 0.0f, 3.0f),
+																											"Rex_N.bmp",
+																											"Rex_R.bmp",
+																											"Rex_M.bmp");
 	
+	g_pThirdActor = g_pWorld->SpawnActor<Character>(nullptr,
+																									g_pGraphicsAPI,
+																									"rex_norm.obj",
+																									"Rex_C.bmp",
+																									Vector3(7.0f, 0.0f, 6.0f),
+																									"Rex_N.bmp",
+																									"Rex_R.bmp",
+																									"Rex_M.bmp");
 
 	g_pAudioAPI = make_shared<AudioAPI>(pWndHandle);
 	if (!g_pAudioAPI)
@@ -153,8 +158,6 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	g_pSound = g_pAudioAPI->CreateSoundEffect("Mark",
 																						"MX_Menu_Loop.wav", g_pCallback);
 	
-	
-	
 	g_pSound2 = g_pAudioAPI->CreateSoundEffect("Woosh",
 																						"Audio_001.wav");
 
@@ -167,15 +170,12 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	g_pAudioAPI->Play(g_pSound2, 1.0f);
 
 	g_pSubmix->getSubmixVoice()->SetVolume(0.0f);
-	
 
 	int32_t cursorData[2] = { 0, 0 };
 	g_pCursor = SDL_CreateCursor(	(Uint8*)cursorData, 
 																(Uint8*)cursorData, 
 																8, 8, 4, 4);
 	SDL_SetCursor(g_pCursor);
-	
-	
 
 	return SDL_APP_CONTINUE;
 }
@@ -214,6 +214,7 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 
 			if (sym == SDLK_F2)
 			{
+				g_pRenderer->CompileShaders();
 				//RecompileShaders();
 			}
 			break;
@@ -236,7 +237,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 	Uint64 now = SDL_GetTicksNS();
 	float dt = (now - past) / 999999999.0f * 1000.0f;
 	
-	//printf("Delta Time: %f\n", dt);
+	printf("Delta Time: %f\n", dt);
 	
 	Update(dt);
 	Render();

@@ -20,7 +20,6 @@ struct VertexInput
     float3 normal : NORMAL0;
     float3 tangent : TANGENT0;
     float2 texCoord : TEXCOORD0;
-
 };
 
 struct PixelInput

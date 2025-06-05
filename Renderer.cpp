@@ -46,13 +46,19 @@ void Renderer::CompileShaders()
 	auto pVS_DefLighting = GAPI->CreateVertexShader(L"Def_Lighting.hlsl", "vertex_main");
 	if (pVS_DefLighting)
 	{
-		m_pVS_DefLighting = pVS_DefLighting;
+		m_pVS_SSFS = pVS_DefLighting;
 	}
 
 	auto pPS_DefLighting = GAPI->CreatePixelShader(L"Def_Lighting.hlsl", "pixel_main");
 	if (pPS_DefLighting)
 	{
 		m_pPS_DefLighting = pPS_DefLighting;
+	}
+
+	auto pPS_AO = GAPI->CreatePixelShader(L"Def_Lighting.hlsl","ao_main");
+	if (pPS_AO)
+	{
+		m_pPS_AO = pPS_AO;
 	}
 }
 
@@ -81,7 +87,7 @@ void Renderer::InitInputLayout()
 		return;
 	}
 
-	m_pDefLightingInputLayout = GAPI->CreateInputLayout(inputElementDesc, m_pVS_DefLighting);
+	m_pDefLightingInputLayout = GAPI->CreateInputLayout(inputElementDesc, m_pVS_SSFS);
 	if (!m_pDefLightingInputLayout)
 	{
 		SHOW_ERROR(L"Couldn't create input layout for lighting");
@@ -259,7 +265,7 @@ void Renderer::InitGBuffer(int width, int height)
 
 	auto GAPI = m_pGraphicsAPI.lock();
 
-	m_GBuffer.resize(3);
+	m_GBuffer.resize(4);
 
 	//Position texture
 	m_GBuffer[0].m_pTexture = GAPI->CreateTexture(width,
@@ -294,8 +300,18 @@ void Renderer::InitGBuffer(int width, int height)
 																								1,
 																								&m_GBuffer[2].m_pSRV,
 																								&m_GBuffer[2].m_pRTV);
+	//Ambient Occlusion
+	m_GBuffer[3].m_pTexture = GAPI->CreateTexture(width,
+																								height,
+																								DXGI_FORMAT_R16_UNORM,
+																								D3D11_USAGE_DEFAULT,
+																								D3D11_BIND_RENDER_TARGET |
+																								D3D11_BIND_SHADER_RESOURCE,
+																								0,
+																								1,
+																								&m_GBuffer[3].m_pSRV,
+																								&m_GBuffer[3].m_pRTV);
 }
-
 
 void Renderer::RenderActor(const WPtr<Character>& character)
 {
@@ -384,17 +400,19 @@ void Renderer::SetGeometryPass()
 	auto GAPI = m_pGraphicsAPI.lock();
 	auto WORLD = m_pWorld.lock();
 	
-	FloatColor tempColor = Color{ 90, 0, 0, 255 };
+	FloatColor tempColor = Color{ 90, 0, 0, 0 };
 	float clearColor2[4] = { tempColor.r,tempColor.g , tempColor.b,tempColor.a };
 
 	GAPI->m_pDeviceContext->ClearRenderTargetView(GAPI->m_pBackBufferRTV,
-		clearColor2);
+																								clearColor2);
 	GAPI->m_pDeviceContext->ClearRenderTargetView(m_GBuffer[0].m_pRTV,
-		clearColor2);
+																								clearColor2);
 	GAPI->m_pDeviceContext->ClearRenderTargetView(m_GBuffer[1].m_pRTV,
-		clearColor2);
+																								clearColor2);
 	GAPI->m_pDeviceContext->ClearRenderTargetView(m_GBuffer[2].m_pRTV,
-		clearColor2);
+																								clearColor2);
+	GAPI->m_pDeviceContext->ClearRenderTargetView(m_GBuffer[3].m_pRTV,
+																								clearColor2);
 
 	GAPI->m_pDeviceContext->ClearDepthStencilView(GAPI->m_pBackBufferDSV,
 		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
@@ -408,16 +426,15 @@ void Renderer::SetGeometryPass()
 	};
 
 	GAPI->m_pDeviceContext->OMSetRenderTargets(renderTargets.size(),
-		renderTargets.data(),
-		GAPI->m_pBackBufferDSV);
+																						 renderTargets.data(),
+																						 GAPI->m_pBackBufferDSV);
 
 	GAPI->m_pDeviceContext->VSSetShader(m_pGBuffer_VS->m_pVertexShader,
-		nullptr,
-		0);
+																			nullptr,
+																			0);
 	GAPI->m_pDeviceContext->PSSetShader(m_pGBuffer_PS->m_pPixelShader,
-		nullptr,
-		0);
-
+																			nullptr,
+																			0);
 
 	for (auto& actor : WORLD->getActors())
 	{
@@ -428,6 +445,54 @@ void Renderer::SetGeometryPass()
 			RenderActor(character);
 		}
 	}
+
+}
+
+void Renderer::SetSSAOPass()
+{
+	if (m_pGraphicsAPI.expired())
+	{
+		SHOW_ERROR(L"Couldn't set Geometry Pass :(")
+			return;
+	}
+
+	auto GAPI = m_pGraphicsAPI.lock();
+
+	ID3D11ShaderResourceView* pNullSRV = nullptr;
+
+	GAPI->m_pDeviceContext->VSSetShader(m_pVS_SSFS->m_pVertexShader,
+																			nullptr,
+																			0);
+	GAPI->m_pDeviceContext->PSSetShader(m_pPS_AO->m_pPixelShader,
+																			nullptr,
+																			0);
+
+	const Vector<ID3D11RenderTargetView*> renderTargets =
+	{
+		m_GBuffer[3].m_pRTV,
+		nullptr,
+		nullptr
+	};
+	
+	GAPI->m_pDeviceContext->OMSetRenderTargets(renderTargets.size(),
+																						 renderTargets.data(),
+																						 nullptr);
+	
+	GAPI->m_pDeviceContext->RSSetState(m_RasterStates.at(RasterStates::NO_CULLING));
+
+	GAPI->m_pDeviceContext->PSSetShaderResources(0, 1, &m_GBuffer[0].m_pSRV);
+	GAPI->m_pDeviceContext->PSSetShaderResources(1, 1, &m_GBuffer[1].m_pSRV);
+	GAPI->m_pDeviceContext->PSSetShaderResources(2, 1, &m_GBuffer[2].m_pSRV);
+	GAPI->m_pDeviceContext->PSSetShaderResources(3, 1, &pNullSRV);
+
+	GAPI->m_pDeviceContext->IASetInputLayout(m_pDefLightingInputLayout);
+	
+	GAPI->m_pDeviceContext->Draw(3, 0);
+
+	GAPI->m_pDeviceContext->PSSetShaderResources(0, 1, &pNullSRV);
+	GAPI->m_pDeviceContext->PSSetShaderResources(1, 1, &pNullSRV);
+	GAPI->m_pDeviceContext->PSSetShaderResources(2, 1, &pNullSRV);
+	GAPI->m_pDeviceContext->PSSetShaderResources(3, 1, &pNullSRV);
 
 }
 
@@ -444,8 +509,7 @@ void Renderer::SetLightingPass()
 
 	ID3D11ShaderResourceView* pNullSRV = nullptr;
 
-
-	GAPI->m_pDeviceContext->VSSetShader(m_pVS_DefLighting->m_pVertexShader,
+	GAPI->m_pDeviceContext->VSSetShader(m_pVS_SSFS->m_pVertexShader,
 		nullptr,
 		0);
 	GAPI->m_pDeviceContext->PSSetShader(m_pPS_DefLighting->m_pPixelShader,
@@ -468,7 +532,7 @@ void Renderer::SetLightingPass()
 	GAPI->m_pDeviceContext->PSSetShaderResources(0, 1, &m_GBuffer[0].m_pSRV);
 	GAPI->m_pDeviceContext->PSSetShaderResources(1, 1, &m_GBuffer[1].m_pSRV);
 	GAPI->m_pDeviceContext->PSSetShaderResources(2, 1, &m_GBuffer[2].m_pSRV);
-	GAPI->m_pDeviceContext->PSSetShaderResources(3, 1, &pNullSRV);
+	GAPI->m_pDeviceContext->PSSetShaderResources(3, 1, &m_GBuffer[3].m_pSRV);
 
 	GAPI->m_pDeviceContext->IASetInputLayout(m_pDefLightingInputLayout);
 	GAPI->m_pDeviceContext->Draw(3, 0);//DRAWWW
