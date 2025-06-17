@@ -18,7 +18,8 @@ public:
   Character(const WPtr<GraphicsAPI>& pGraphicsAPI, 
             const String& modelName,
             const String& textureName,
-            const Vector3& positionOffset, 
+            const Vector3& positionOffset,
+            const Vector3& scaleOffset = Vector3(1.0f,1.0f,1.0f),
             const String& normalTextureName = "",
             const String& roughnessTextureName = "",
             const String& metallicTextureName = "");
@@ -48,6 +49,7 @@ public:
   
 
   Vector3 m_positionOffset;
+  Vector3 m_scaleOffset;
 
   Vector<char> m_matrixData;
 

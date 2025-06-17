@@ -10,6 +10,7 @@ Character::Character( const WPtr<GraphicsAPI>& pGraphicsAPI,
                       const String& modelName,
                       const String& textureName,
                       const Vector3& positionOffset,
+                      const Vector3& scaleOffset,
                       const String& normalTextureName,
                       const String& roughnessTextureName,
                       const String& metallicTextureName) :
@@ -17,6 +18,7 @@ Character::Character( const WPtr<GraphicsAPI>& pGraphicsAPI,
                       m_modelName(modelName),
                       m_textureName(textureName),
                       m_positionOffset(positionOffset),
+                      m_scaleOffset(scaleOffset),
                       m_normalTextureName(normalTextureName),
                       m_roughnessTextureName(roughnessTextureName),
                       m_metallicTextureName(metallicTextureName)
@@ -67,7 +69,8 @@ void Character::Init()
   
 
   m_localTransform.setPosition(m_positionOffset);
-  m_localTransform.setRotation(Vector3(0.0f, 230.0f,0.0f));
+  m_localTransform.setRotation(Vector3(0.0f, 180.0f,0.0f));
+  m_localTransform.setScale(m_scaleOffset);
 
 }
 

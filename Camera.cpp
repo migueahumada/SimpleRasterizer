@@ -25,6 +25,11 @@ void Camera::SetPerspective(float halfFOV,
 	m_projectionMatrix.Perspective(m_fov, m_width, m_height, m_minZ, m_maxZ);
 }
 
+void Camera::SetOrthographic(float left, float right, float bottom, float top, float nearZ, float farZ)
+{
+	m_projectionMatrix.SetOrthographic(left, right, bottom, top, nearZ, farZ);
+}
+
 
 void Camera::Move(const Vector3& direction)
 {

@@ -44,6 +44,8 @@ SPtr<Actor> g_pMainActor;
 SPtr<Actor> g_pSecondaryActor;
 SPtr<Actor> g_pThirdActor;
 SPtr<Actor> g_pFourthActor;
+SPtr<Actor> g_pFifthActor;
+SPtr<Actor> g_pSixthActor;
 
 Vector<SPtr<Actor>> g_spawnActors;
 
@@ -60,6 +62,7 @@ void Render() {
 
 	g_pWorld->Render();
 
+	g_pRenderer->SetShadowPass();
 	g_pRenderer->SetGeometryPass();
 	g_pRenderer->SetSSAOPass();
 	g_pRenderer->SetLightingPass();
@@ -112,6 +115,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	g_pRenderer->InitRasterizerStates();
 	g_pRenderer->InitSampleFilters();
 	g_pRenderer->InitGBuffer(WIDTH, HEIGHT);
+	g_pRenderer->SetDefaultTextures();
 	
 	g_pWorld->Init();
 
@@ -119,27 +123,51 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																									g_pGraphicsAPI,
 																									"rex_norm.obj", 
 																									"Rex_C.bmp", 
-																									Vector3(0.0f, 0.0f, 0.0f),
+																									Vector3(0.0f, 0.0f,0.0f),
+																									Vector3(1.0f,1.0f,1.0f),
 																									"Rex_N.bmp",
 																									"Rex_R.bmp",
 																									"Rex_M.bmp");
 	g_pSecondaryActor = g_pWorld->SpawnActor<Character>(nullptr,
-																											g_pGraphicsAPI,
-																											"rex_norm.obj",
-																											"Rex_C.bmp",
-																											Vector3(4.0f, 0.0f, 3.0f),
-																											"Rex_N.bmp",
-																											"Rex_R.bmp",
-																											"Rex_M.bmp");
-	
+																								 g_pGraphicsAPI,
+																								 "rex_norm.obj",
+																								 "Rex_C.bmp",
+																								 Vector3(3.0f, 0.0f, 0.0f),
+																								 Vector3(1.0f, 1.0f, 1.0f),
+																								 "Rex_N.bmp",
+																								 "Rex_R.bmp",
+																								 "Rex_M.bmp");
 	g_pThirdActor = g_pWorld->SpawnActor<Character>(nullptr,
+																								 g_pGraphicsAPI,
+																								 "rex_norm.obj",
+																								 "Rex_C.bmp",
+																								 Vector3(5.0f, 0.0f, 2.0f),
+																								 Vector3(0.6f, 0.6f, 0.6f),
+																								 "Rex_N.bmp",
+																								 "Rex_R.bmp",
+																								 "Rex_M.bmp");
+
+	g_pFourthActor = g_pWorld->SpawnActor<Character>(nullptr,
 																									g_pGraphicsAPI,
-																									"rex_norm.obj",
-																									"Rex_C.bmp",
-																									Vector3(7.0f, 0.0f, 6.0f),
-																									"Rex_N.bmp",
-																									"Rex_R.bmp",
-																									"Rex_M.bmp");
+																									"discBetterF.obj",
+																									"tex4.bmp",
+																									Vector3(0.0f, 0.0f, 0.0f),
+																									Vector3(6.0f, 6.0f, 6.0f));
+	g_pFifthActor = g_pWorld->SpawnActor<Character>(nullptr,
+																									g_pGraphicsAPI,
+																									"ManNormals.obj",
+																									"manText.bmp",
+																									Vector3(3.0f, 0.0f, 5.0f),
+																									Vector3(1.0f, 1.0f, 1.0f));
+	g_pSixthActor = g_pWorld->SpawnActor<Character>(nullptr,
+																									g_pGraphicsAPI,
+																									"D:/Models3D/sewing-machine/source/SewingMachine/sewing8.obj",
+																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_BaseColor_A.bmp",
+																									Vector3(-2.0f, 0.0f, 0.0f),
+																									Vector3(0.3f, 0.3f, 0.3f),
+																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_Normal.bmp",
+																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_Roughness.bmp",
+																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_Metallic.bmp");
 
 	g_pAudioAPI = make_shared<AudioAPI>(pWndHandle);
 	if (!g_pAudioAPI)

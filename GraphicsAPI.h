@@ -32,7 +32,8 @@ public:
 									UINT mipLevels = 1,
 									ID3D11ShaderResourceView** ppSRV = nullptr,
 									ID3D11RenderTargetView** ppRTV = nullptr,
-									ID3D11DepthStencilView** ppDSV = nullptr);
+									ID3D11DepthStencilView** ppDSV = nullptr,
+									ID3D11DepthStencilView** ppDSV_RO = nullptr);
 
 
 	SPtr<VertexShader> CreateVertexShader(	const Path& filePath,

@@ -37,6 +37,13 @@ public:
 											float MinZ, 
 											float MaxZ);
 
+	void SetOrthographic(float left, 
+											float right, 
+											float bottom, 
+											float top, 
+											float nearZ, 
+											float farZ);
+
 	inline Vector3 GetForwardVector() const {
 		return (m_target - m_position).normalize();
 	}
@@ -73,7 +80,7 @@ public:
 		}
 		return m_projectionMatrix; 
 	}
-
+	
 	inline Vector3 getEyePosition() const
 	{ 
 		return m_position;

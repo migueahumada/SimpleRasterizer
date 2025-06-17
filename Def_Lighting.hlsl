@@ -2,11 +2,14 @@
 #define M_PI 3.14159265358979323846f
 #define M_2PI M_PI * 2.0f
 #define GAMMA 2.2f // (1.8 a 2.4)
+#define WHITE float4(1.0f, 1.0f, 1.0f, 1.0f);
+#define BLACK float4(0.0f, 0.0f, 0.0f, 1.0f);
 
 Texture2D gbuffer_Position : register(t0);
 Texture2D gbuffer_Normal : register(t1);
 Texture2D gbuffer_Color : register(t2);
 Texture2D gbuffer_AO : register(t3);
+Texture2D gbuffer_ShadowMap : register(t4);
 
 SamplerState samPoint : register(s0);
 SamplerState samLinear : register(s1);
@@ -23,6 +26,8 @@ cbuffer MatrixCollection : register(b0)
     float4x4 World;
     float4x4 View;
     float4x4 Projection;
+    float4x4 lightView;
+    float4x4 lightProjection;
     float3 viewPos;
     //float time;
 }
@@ -203,14 +208,37 @@ float4 pixel_main(PixelInput Input) : SV_Target
     float4 color = gbuffer_Color.Sample(samLinear, Input.texCoord);
     float4 ao = gbuffer_AO.Sample(samLinear, Input.texCoord);
     
+    float4 posInLightVP = mul(float4(position.xyz,1), lightView);
+    
+    posInLightVP = mul(posInLightVP, lightProjection);
+    posInLightVP /= posInLightVP.w;
+    posInLightVP.xy = posInLightVP.xy * 0.5 + 0.5;
+    
+    posInLightVP.y = 1.0f - posInLightVP.y;
+    
+    float4 shadowMap = gbuffer_ShadowMap.Sample(samLinear, posInLightVP.xy);
+    
+    float shadowDepth = shadowMap.r;
+    float currentDepth = posInLightVP.z;
+    float shadowFactor = (currentDepth - 0.005) > shadowDepth ? 0.0f : 1.0f;
+    
+    if (posInLightVP.x < 0.01f || posInLightVP.x > 0.99f || 
+        posInLightVP.y < 0.01f || posInLightVP.y > 0.99f)
+    {
+        //return BLACK;
+        shadowFactor = 1.0f;
+    }
+    
     clip(color.w < 1.0f ? -1 : 1);
     
-    float3 lightPos = float3(200.0f, 200.0f, 20.0f);
+    float3 lightPos = float3(20.0f, 20.0f, 5.0f);
     
     float3 lightDir = normalize(lightPos - position.xyz);
     
     //el 0.04 es un promedio de los objetos dieléctricos
     float3 specularColor = lerp(0.04f, color.rgb, position.w);
+    
+    //return float4(specularColor.xyz, 1);
     
     float3 colorFinal = BRDF_Cook_Torrence(normal.xyz,
                                       lightDir,
@@ -218,10 +246,11 @@ float4 pixel_main(PixelInput Input) : SV_Target
                                       normalize(reflect(lightDir, normal.xyz)),
                                       color.rgb,
                                       specularColor,
-                                      normal.w);
+                                      normal.w) * shadowFactor;
     
     // Lo = kD + kS + kA
-    return float4(pow(colorFinal * ao.xxx, 1.0f / GAMMA), 1.0f);
+    return float4(pow(colorFinal * ao.xxx, 1.0f / GAMMA),
+    1.0f);
     //return float4(ao.xxx, 1.0f);
     //return float4(colorFinal.rgb, 1.0f);
 }

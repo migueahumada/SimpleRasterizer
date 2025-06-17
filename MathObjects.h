@@ -290,6 +290,21 @@ struct Matrix4
 		m[3][2] = plane3[2];
 		m[3][3] = plane3[3];
 	}
+	
+	void SetOrthographic(float left, float right, float bottom, float top, float nearZ, float farZ)
+	{
+	
+		Identity();
+		m[0][0] = 2.0f / (right - left);
+		m[1][1] = 2.0f / (top - bottom);
+		m[2][2] = 1.0f / (farZ - nearZ);
+		m[3][0] = -(right + left) / (right - left);
+		m[3][1] = -(top + bottom) / (top - bottom);
+		m[3][2] = -nearZ / (farZ - nearZ);
+		m[3][3] = 1.0f;
+
+	}
+
 	void Transpose() 
 	{
 		for (int i = 0; i < 4; i++)
@@ -406,6 +421,10 @@ struct MatrixCollection
 	Matrix4 world;
 	Matrix4 view;
 	Matrix4 projection;
+
+	Matrix4 ligthView;
+	Matrix4 lightProjection;
+
 	Vector3 viewDir;
 	float time;
 };

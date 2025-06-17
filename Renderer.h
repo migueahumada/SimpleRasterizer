@@ -9,6 +9,7 @@
 #include <d3d11_2.h>
 #include "HelperMacros.h"
 #include "MathObjects.h"
+#include "Texture.h"
 
 class GraphicsAPI;
 class GraphicsBuffer;
@@ -36,6 +37,15 @@ namespace SamplerStates {
   };
 };
 
+namespace DefaultTextures
+{
+  enum E {
+    WHITE,
+    BLACK,
+    NORMAL
+  };
+};
+
 //TODO: Destruir los raster states y sampler states
 class Renderer
 {
@@ -58,7 +68,9 @@ public:
   void InitRasterizerStates();
   void InitSampleFilters();
   void InitGBuffer(int width, int height);
+  void SetDefaultTextures();
 
+  void SetShadowPass();
   void SetGeometryPass();
   void SetSSAOPass();
   void SetLightingPass();
@@ -66,6 +78,9 @@ public:
 private:
 
   void RenderActor(const WPtr<Character>& character);
+  void RenderShadows(const WPtr<Character>& character);
+  void CreateDefaultSRV(UINT color, 
+                        DefaultTextures::E defaultTextureType, DXGI_FORMAT format = DXGI_FORMAT_B8G8R8A8_UNORM);
 
 private:
   
@@ -87,10 +102,16 @@ private:
   SPtr<PixelShader> m_pPS_DefLighting;
   SPtr<PixelShader> m_pPS_AO;
 
+  SPtr<VertexShader> m_pVS_ShadowMap;
+  SPtr<PixelShader> m_pPS_ShadowMap;
+
   UnorderedMap<RasterStates::E, ID3D11RasterizerState1*> m_RasterStates;
   UnorderedMap<SamplerStates::E, ID3D11SamplerState*> m_SamplerStates;
 
+  UnorderedMap<DefaultTextures::E, ID3D11ShaderResourceView*> m_DefaultTextures; 
+
   Vector<Texture> m_GBuffer;
+  Texture m_dsShadowMap;
   
 };
 
