@@ -141,7 +141,7 @@ void Renderer::InitWVP()
 
 	m_WVP.ligthView.Identity();
 	m_WVP.ligthView.LookAt(Vector3(20.0f,20.0f, 5.0f),Vector3(0, 0, 0),Vector3(0, 1, 0));
-	m_WVP.lightProjection.SetOrthographic(-5, 5, -5, 5, 0.1f, 100.0f);
+	m_WVP.lightProjection.SetOrthographic(-5.0f, 5.0f, -5.0f, 5.0f, 0.1f, 100.0f);
 
 	m_WVP.world.Transpose();														//Se transpone
 	m_WVP.view.Transpose();															//Se transpone
@@ -348,8 +348,8 @@ void Renderer::SetDefaultTextures()
 {
 	CreateDefaultSRV(0xFFFFFF,DefaultTextures::WHITE);
 	CreateDefaultSRV(0x000000, DefaultTextures::BLACK);
+	//CreateDefaultSRV(0x8080FF, DefaultTextures::NORMAL, DXGI_FORMAT_R8G8B8A8_UNORM);
 	CreateDefaultSRV(0xFF8080, DefaultTextures::NORMAL, DXGI_FORMAT_R8G8B8A8_UNORM);
-	
 }
 
 void Renderer::RenderActor(const WPtr<Character>& character)
@@ -602,7 +602,7 @@ void Renderer::SetGeometryPass()
 	
 	FloatColor tempColor = Color{ 0, 0, 0, 0 };
 	float clearColor2[4] = { tempColor.r,tempColor.g , tempColor.b,tempColor.a };
-
+	
 	GAPI->m_pDeviceContext->ClearRenderTargetView(GAPI->m_pBackBufferRTV,
 																								clearColor2);
 	GAPI->m_pDeviceContext->ClearRenderTargetView(m_GBuffer[0].m_pRTV,

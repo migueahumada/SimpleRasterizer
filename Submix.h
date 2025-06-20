@@ -20,8 +20,8 @@ public:
     return m_inputSampleRate;
   }
 
-  void RouteToSubmix(const SPtr<Submix>& destSubmix, unsigned int flags = 0);
-  void RouteToAudio(const SPtr<Audio>& audio, unsigned int flags = 0);
+  void RouteToSubmix(const WPtr<Submix>& destSubmix, unsigned int flags = 0);
+  void RouteToAudio(const WPtr<Audio>& audio, unsigned int flags = 0);
 
   IXAudio2SubmixVoice* getSubmixVoice() const {
     return m_pSubmixVoice;

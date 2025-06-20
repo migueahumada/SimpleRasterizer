@@ -14,7 +14,7 @@ class VoiceCallback;
 class AudioAPI
 {
 public:
-  explicit AudioAPI(void* pHwnd);
+  AudioAPI();
   ~AudioAPI();
 
   void Init();
@@ -46,7 +46,6 @@ private:
   IXAudio2* m_pXAudio2 = nullptr;
   
   IXAudio2MasteringVoice* m_XAudio2MasteringVoice = nullptr;
-  HWND m_pHwnd = nullptr;
 };
 
 /// <summary>

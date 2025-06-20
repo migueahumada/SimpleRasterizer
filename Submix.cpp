@@ -18,10 +18,16 @@ Submix::~Submix()
   m_pSubmixVoice->DestroyVoice();
 }
 
-void Submix::RouteToSubmix(const SPtr<Submix>& destSubmix, unsigned int flags)
+void Submix::RouteToSubmix(const WPtr<Submix>& destSubmix, unsigned int flags)
 {
-  
-  if (!destSubmix->m_pSubmixVoice)
+  if (destSubmix.expired())
+  {
+    return;
+  }
+
+  auto SUBMIX = destSubmix.lock();
+
+  if (!SUBMIX->m_pSubmixVoice)
   {
     MessageBox(nullptr,L"THE SUBMIX VOICE IS NULLPTR",L"ERROR", S_OK);
     return;
@@ -29,7 +35,7 @@ void Submix::RouteToSubmix(const SPtr<Submix>& destSubmix, unsigned int flags)
 
   XAUDIO2_SEND_DESCRIPTOR sendDesc {0};
 
-  sendDesc.pOutputVoice = destSubmix->m_pSubmixVoice;
+  sendDesc.pOutputVoice = SUBMIX->m_pSubmixVoice;
   sendDesc.Flags = flags;
 
   m_sends.SendCount++;
@@ -39,10 +45,16 @@ void Submix::RouteToSubmix(const SPtr<Submix>& destSubmix, unsigned int flags)
   printf("Routing submix done successfully!");
 }
 
-void Submix::RouteToAudio(const SPtr<Audio>& audio, unsigned int flags)
+void Submix::RouteToAudio(const WPtr<Audio>& audio, unsigned int flags)
 {
+  if (audio.expired())
+  {
+    return;
+  }
 
-  if (!audio->getSourceVoice())
+  auto AUDIO = audio.lock();
+
+  if (!AUDIO->getSourceVoice())
   {
     MessageBox(nullptr, L"Routing couldn't be done. Sourcevoice is nullptr",
       L"ERROR", S_OK);
@@ -50,7 +62,7 @@ void Submix::RouteToAudio(const SPtr<Audio>& audio, unsigned int flags)
   }
 
   XAUDIO2_SEND_DESCRIPTOR sendDesc{ 0 };
-  sendDesc.pOutputVoice = audio->getSourceVoice();
+  sendDesc.pOutputVoice = AUDIO->getSourceVoice();
   sendDesc.Flags = flags;
 
   m_sends.SendCount++;

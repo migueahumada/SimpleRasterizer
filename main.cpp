@@ -130,13 +130,13 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																									"Rex_M.bmp");
 	g_pSecondaryActor = g_pWorld->SpawnActor<Character>(nullptr,
 																								 g_pGraphicsAPI,
-																								 "rex_norm.obj",
-																								 "Rex_C.bmp",
+																								 "D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/BrainRot.obj",
+																								 "D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/textures/Patapim_baseColor.bmp",
 																								 Vector3(3.0f, 0.0f, 0.0f),
-																								 Vector3(1.0f, 1.0f, 1.0f),
-																								 "Rex_N.bmp",
-																								 "Rex_R.bmp",
-																								 "Rex_M.bmp");
+																								 Vector3(0.5f, 0.5f, 0.5f),
+																								 "D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/textures/Patapim_normal.bmp",
+																								 "D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/textures/Patapim_metallicRoughness.bmp",
+																								 "D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/textures/Patapim_metallicRoughness.bmp");
 	g_pThirdActor = g_pWorld->SpawnActor<Character>(nullptr,
 																								 g_pGraphicsAPI,
 																								 "rex_norm.obj",
@@ -159,6 +159,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																									"manText.bmp",
 																									Vector3(3.0f, 0.0f, 5.0f),
 																									Vector3(1.0f, 1.0f, 1.0f));
+	
 	g_pSixthActor = g_pWorld->SpawnActor<Character>(nullptr,
 																									g_pGraphicsAPI,
 																									"D:/Models3D/sewing-machine/source/SewingMachine/sewing8.obj",
@@ -169,7 +170,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_Roughness.bmp",
 																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_Metallic.bmp");
 
-	g_pAudioAPI = make_shared<AudioAPI>(pWndHandle);
+	g_pAudioAPI = make_shared<AudioAPI>();
 	if (!g_pAudioAPI)
 	{
 		return SDL_APP_FAILURE;
@@ -194,10 +195,10 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
 	g_pSound->getSourceVoice()->SetFrequencyRatio(1.2f);
 	
-	g_pAudioAPI->Play(g_pSound, 1.0f);
-	g_pAudioAPI->Play(g_pSound2, 1.0f);
+	g_pAudioAPI->Play(g_pSound, 0.8f);
+	g_pAudioAPI->Play(g_pSound2, 0.3f);
 
-	g_pSubmix->getSubmixVoice()->SetVolume(0.0f);
+	g_pSubmix->getSubmixVoice()->SetVolume(0.5f);
 
 	int32_t cursorData[2] = { 0, 0 };
 	g_pCursor = SDL_CreateCursor(	(Uint8*)cursorData, 

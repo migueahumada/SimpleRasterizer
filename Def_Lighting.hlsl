@@ -218,14 +218,18 @@ float4 pixel_main(PixelInput Input) : SV_Target
     
     float4 shadowMap = gbuffer_ShadowMap.Sample(samLinear, posInLightVP.xy);
     
-    float shadowDepth = shadowMap.r;
-    float currentDepth = posInLightVP.z;
-    float shadowFactor = (currentDepth - 0.005) > shadowDepth ? 0.0f : 1.0f;
+    float shadowDepth = shadowMap.x;
+    float lightDepth = posInLightVP.z - 0.005; //bias
+    float shadowFactor;
+    
+    if (lightDepth > shadowDepth)
+        shadowFactor = 0.0f;
+    else
+        shadowFactor = 1.0f;
     
     if (posInLightVP.x < 0.01f || posInLightVP.x > 0.99f || 
         posInLightVP.y < 0.01f || posInLightVP.y > 0.99f)
     {
-        //return BLACK;
         shadowFactor = 1.0f;
     }
     
@@ -241,15 +245,16 @@ float4 pixel_main(PixelInput Input) : SV_Target
     //return float4(specularColor.xyz, 1);
     
     float3 colorFinal = BRDF_Cook_Torrence(normal.xyz,
-                                      lightDir,
-                                      normalize(position.xyz - viewPos),
-                                      normalize(reflect(lightDir, normal.xyz)),
-                                      color.rgb,
-                                      specularColor,
-                                      normal.w) * shadowFactor;
-    
+                                           lightDir,
+                                           normalize(position.xyz - viewPos),
+                                           normalize(reflect(lightDir, normal.xyz)),
+                                           color.rgb,
+                                           specularColor,
+                                           normal.w);
+    //return float4(specularColor, 1);
     // Lo = kD + kS + kA
-    return float4(pow(colorFinal * ao.xxx, 1.0f / GAMMA),
+    //return normal.wwww;
+    return float4(pow(colorFinal * ao.xxx * shadowFactor, 1.0f / GAMMA),
     1.0f);
     //return float4(ao.xxx, 1.0f);
     //return float4(colorFinal.rgb, 1.0f);
@@ -271,7 +276,7 @@ float DoAmbientOcclussion(in float2 tcoord, in float2 uv, in float3 p, in float3
 float4 ao_main(PixelInput Input) : SV_Target
 {
     float AOScale = 1.0f;
-    float AOIntensity = 1.0f;
+    float AOIntensity = 2.0f; //AO
     
     float2 vec[4] = 
     {

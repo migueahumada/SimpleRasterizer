@@ -7,14 +7,13 @@
 #include "VoiceCallback.h"
 #include <assert.h>
 
-AudioAPI::AudioAPI(void* pHwnd) : m_pHwnd(reinterpret_cast<HWND>(m_pHwnd))
+AudioAPI::AudioAPI()
 {
   
 }
 
 AudioAPI::~AudioAPI()
 {
-  m_pHwnd = nullptr;
   SAFE_RELEASE(m_pXAudio2);
 }
 
@@ -31,14 +30,14 @@ void AudioAPI::Init()
   hr = XAudio2Create(&m_pXAudio2, flags);
   if (FAILED(hr))
   {
-    MessageBox(m_pHwnd, L"Couldn't create XAudio2", L"Error", MB_OK);
+    MessageBox(nullptr, L"Couldn't create XAudio2", L"Error", MB_OK);
     return;
   }
 
   hr = m_pXAudio2->StartEngine();
   if (FAILED(hr))
   {
-    MessageBox(m_pHwnd,L"Couldn't start XAudio2", L"Error", MB_OK);
+    MessageBox(nullptr,L"Couldn't start XAudio2", L"Error", MB_OK);
     return;
   }
 
