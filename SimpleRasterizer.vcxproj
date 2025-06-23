@@ -76,7 +76,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\include\SDL3;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\include\SDL3;$(ProjectDir)inc;$(ProjectDir)inc\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -92,7 +92,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\include\SDL3;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\include\SDL3;$(ProjectDir)inc;$(ProjectDir)inc\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -108,7 +108,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\include;$(ProjectDir)inc;$(ProjectDir)inc\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -125,7 +125,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\include;$(ProjectDir)inc;$(ProjectDir)inc\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -157,6 +157,19 @@
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="SceneObject.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="src\ImGuiAPI.cpp" />
+    <ClCompile Include="src\imgui\imgui.cpp" />
+    <ClCompile Include="src\imgui\imgui_demo.cpp" />
+    <ClCompile Include="src\imgui\imgui_draw.cpp" />
+    <ClCompile Include="src\imgui\imgui_impl_dx11.cpp" />
+    <ClCompile Include="src\imgui\imgui_impl_sdl3.cpp" />
+    <ClCompile Include="src\imgui\imgui_impl_win32.cpp" />
+    <ClCompile Include="src\imgui\imgui_tables.cpp" />
+    <ClCompile Include="src\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\MK3DGizmo.cpp" />
+    <ClCompile Include="src\MKConsole.cpp" />
+    <ClCompile Include="src\MKWindow.cpp" />
+    <ClCompile Include="src\SceneGraph.cpp" />
     <ClCompile Include="Submix.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="VoiceCallback.cpp" />
@@ -174,6 +187,20 @@
     <ClInclude Include="GraphicsBuffer.h" />
     <ClInclude Include="HelperMacros.h" />
     <ClInclude Include="Image.h" />
+    <ClInclude Include="inc\ImGuiAPI.h" />
+    <ClInclude Include="inc\imgui\imconfig.h" />
+    <ClInclude Include="inc\imgui\imgui.h" />
+    <ClInclude Include="inc\imgui\imgui_impl_dx11.h" />
+    <ClInclude Include="inc\imgui\imgui_impl_sdl3.h" />
+    <ClInclude Include="inc\imgui\imgui_impl_win32.h" />
+    <ClInclude Include="inc\imgui\imgui_internal.h" />
+    <ClInclude Include="inc\imgui\imstb_rectpack.h" />
+    <ClInclude Include="inc\imgui\imstb_textedit.h" />
+    <ClInclude Include="inc\imgui\imstb_truetype.h" />
+    <ClInclude Include="inc\MK3DGizmo.h" />
+    <ClInclude Include="inc\MKConsole.h" />
+    <ClInclude Include="inc\MKWindow.h" />
+    <ClInclude Include="inc\SceneGraph.h" />
     <ClInclude Include="Master.h" />
     <ClInclude Include="MathObjects.h" />
     <ClInclude Include="Model.h" />
@@ -198,6 +225,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="Shaders\Light1.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Shaders\SimpleShading.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

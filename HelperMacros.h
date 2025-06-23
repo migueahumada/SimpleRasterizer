@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <map>
 
 template <typename T>
 using UPtr = std::unique_ptr<T>;
@@ -22,6 +23,9 @@ using Vector = std::vector<T>;
 
 template <typename K, typename V>
 using UnorderedMap = std::unordered_map<K, V>;
+
+template <typename K, typename V>
+using Map = std::map<K, V>;
 
 using String = std::string;
 using std::make_shared;

@@ -19,7 +19,7 @@ public:
   virtual void OnVoiceProcessingPassStart(UINT32 SamplesRequired) override {    }
   virtual void OnBufferEnd(void* pBufferContext) override{ }
   virtual void OnBufferStart(void* pBufferContext) override{
-    printf("AUDIO STARTED!");
+    //printf("AUDIO STARTED!");
   }
   virtual void OnLoopEnd(void* pBufferContext) override{    }
   virtual void OnVoiceError(void* pBufferContext, HRESULT Error) override { }

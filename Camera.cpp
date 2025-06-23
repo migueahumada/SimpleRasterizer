@@ -33,8 +33,14 @@ void Camera::SetOrthographic(float left, float right, float bottom, float top, f
 
 void Camera::Move(const Vector3& direction)
 {
-	m_position += direction * m_speed;
-	//m_target += direction * m_speed;
+  //se multiplica el vector de dirección por la velocidad en Z
+	//Es como multiplicar el vector por un escalar, o sea escalar el vector a través del tiempo.
+	//En cada eje se debe de multiplicar por su vector ya sea forwrd, up o right.
+	m_position += m_forward * (direction.z * m_speed);
+	m_position += m_right * (direction.x * m_speed);
+	m_position += m_up * (direction.y * m_speed);
+
+	//m_position += direction * m_speed;
 
 	bIsDirty = true;
 }
@@ -44,25 +50,27 @@ void Camera::Rotate(float newYaw, float newPitch)
 	m_yaw += -newYaw;
 	m_pitch += -newPitch;
 
-	//m_pitch = clamp(m_pitch, -89.0f, 89.0f);
+	//Caluclar vector de dirección ya con yaw y pitch
+	Vector3 forwardDir;
+	forwardDir.x = cosf(degreesToRadians(m_yaw)) * cosf(degreesToRadians(m_pitch));
+	forwardDir.y = sinf(degreesToRadians(m_pitch));
+	forwardDir.z = sinf(degreesToRadians(m_yaw)) * cosf(degreesToRadians(m_pitch));
 
-	Vector3 direction;
-	direction.x = cosf(degreesToRadians(m_yaw)) * cosf(degreesToRadians(m_pitch));
-	direction.y = sinf(degreesToRadians(m_pitch));
-	direction.z = sinf(degreesToRadians(m_yaw)) * cosf(degreesToRadians(m_pitch));
+	//Se crea el vector forward y se updatea el right y el up de acuerdo al up del mundo.
+	m_forward = forwardDir.normalize(); //Forward es vec de dirección
+	m_right = (Vector3(0.0f,1.0f,0.0f) ^ m_forward).normalize();
+	m_up = (m_forward^ m_right).normalize();
 
-	m_target = direction.normalize();
 	
 
-
+	bIsDirty = true;
 }
 
 void Camera::Update()
 {
-
-	m_viewMatrix.LookAt(m_position,  m_position + m_target, m_up);
+	
+	m_viewMatrix.LookAt(m_position, m_forward + m_position, m_up);
 	m_projectionMatrix.Perspective(m_fov, m_width, m_height, m_minZ, m_maxZ);
-
 
 	bIsDirty = false;
 

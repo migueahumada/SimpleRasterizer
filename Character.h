@@ -15,7 +15,7 @@ class GraphicsBuffer;
 class Character : public Actor
 {
 public:
-  Character(const WPtr<GraphicsAPI>& pGraphicsAPI, 
+  Character(const WPtr<GraphicsAPI>& pGraphicsAPI,
             const String& modelName,
             const String& textureName,
             const Vector3& positionOffset,
@@ -28,6 +28,10 @@ public:
   virtual void Init() override;
   virtual void Update(float deltaTime) override;
   virtual void Render() override;
+
+  void SetName(const String& newName){
+    Object::SetName(newName);
+  }
 
   SPtr<Model> m_model;
 
@@ -43,10 +47,8 @@ public:
   SPtr<Image> m_metallicImage;
   SPtr<Texture> m_metallicTexture;
 
-
   WPtr<GraphicsAPI> m_pGraphicsAPI;
 
-  
 
   Vector3 m_positionOffset;
   Vector3 m_scaleOffset;

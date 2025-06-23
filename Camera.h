@@ -7,6 +7,7 @@
 #include <x3daudio.h>
 #include <SDL3/SDL.h>
 
+
 namespace CameraDirection{
 	enum E {
 		UP				= 0,
@@ -44,21 +45,21 @@ public:
 											float nearZ, 
 											float farZ);
 
-	inline Vector3 GetForwardVector() const {
+	inline Vector3 GetForwardVector() {
 		return (m_target - m_position).normalize();
 	}
 
 
-	inline Vector3 GetRightVector() const {
-		return (m_up ^ GetForwardVector()).normalize();
+	inline Vector3 GetRightVector(){
+		return (Vector3(0.0f, 1.0f, 0.0f) ^ GetForwardVector()).normalize();
 	}
 
-	inline Vector3 GetUpVector() const {
-		return (-GetForwardVector() ^ GetRightVector()).normalize();
+	inline Vector3 GetUpVector(){
+		return (GetForwardVector() ^ GetRightVector()).normalize();
 	}
 
 	//THIS IS THE MOVE FUNCTION FOR UPDATE
-	void Move(const Vector3& vector);						
+	void Move(const Vector3& direction);
 
 
 	void Rotate(float newYaw, float newPitch);
@@ -84,6 +85,21 @@ public:
 	inline Vector3 getEyePosition() const
 	{ 
 		return m_position;
+	}
+
+	inline Vector3 getTargetPosition() const
+	{
+		return m_target;
+	}
+
+	inline Vector3 getUpDir() const
+	{
+		return m_up;
+	}
+
+	inline Vector3 getRightDir() const
+	{
+		return m_right;
 	}
 
 	inline float getVelocity() const
@@ -132,17 +148,34 @@ public:
 		m_yaw = newRoll;
 	}
 
+	inline void enableRotation(){
+		m_bCanRotate = true;
+	}
+	
+	inline void disableRotation() {
+		m_bCanRotate = false;
+	}
+
+	inline bool canRotate() const{
+	  return m_bCanRotate;
+	}
+
+
 	void Update();
 
 private:
 
-	/*	Para crear una cámara necesito :
-	*   - VectorPosición
-	*/
-
 	Vector3 m_position;
 	Vector3 m_target;
 	Vector3 m_up;
+
+	//Vectores de dirección
+	Vector3 m_forward;
+	Vector3 m_right;
+	
+	
+
+	Vector3 m_velocity;
 
 	float m_fov;
 	float m_height;
@@ -152,6 +185,7 @@ private:
 	
 	Matrix4 m_viewMatrix;
 	Matrix4 m_projectionMatrix;
+	Matrix4 m_rotationMatrix;
 
 	float m_speed = 10.0f;
 	float m_rotSpeed = 0.1f;
@@ -161,6 +195,7 @@ private:
 	float m_roll;
 
 	bool bIsDirty = false;
+	bool m_bCanRotate = false;
 
 	X3DAUDIO_LISTENER m_cameraListener = {};
 };

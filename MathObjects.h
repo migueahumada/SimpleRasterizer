@@ -1,4 +1,4 @@
-#pragma once
+Ôªø#pragma once
 
 #define M_PI       3.14159265358979323846   // pi
 #include <cmath>
@@ -15,8 +15,8 @@ inline float clamp(float value, float min, float max) {
 
 /*
 *	Para representar color necesitaremos una estructura que
-*	guarde lo que llevarÌa un color , o sea RGBA.
-*	Se guarda en char por que el tamaÒo es de 1 byte.
+*	guarde lo que llevar√≠a un color , o sea RGBA.
+*	Se guarda en char por que el tama√±o es de 1 byte.
 *	Es unsigned para que tome valores de 0 a 255
 */
 
@@ -139,6 +139,13 @@ struct Vector3
 		return *this;
 	}
 
+	inline Vector3& operator-=(const Vector3& v) {
+		x -= v.x;
+		y -= v.y;
+		z -= v.z;
+		return *this;
+	}
+
 	inline Vector3 operator-(const Vector3& v) const {
 		return { x - v.x, y - v.y, z - v.z };
 	}
@@ -256,16 +263,17 @@ struct Matrix4
 		m[3][3] = 1.0f;
 	}
 
-	//ProyecciÛn puede no ser una perspectiva
-	//Usamos dos matrices de proyecciÛn diferentes.
-	// Uno es usar matrices de perspectiva
-	// Uno es perspecttiva ortogr·fica -> Es cuadrada, donde no queremos que haya deformaciÛn.
 
-	//Se escala seg˙n la profundidad.
+	//Proyecci√≥n puede no ser una perspectiva
+	//Usamos dos matrices de proyecci√≥n diferentes.
+	// Uno es usar matrices de perspectiva
+	// Uno es perspecttiva ortogr√°fica -> Es cuadrada, donde no queremos que haya deformaci√≥n.
+
+	//Se escala seg√∫n la profundidad.
 	void Perspective(float halfFOV, float widthScreen, float heightScreen, float MinZ, float MaxZ) 
 	{
 		float plane0[4] = { 1.0f / tanf(halfFOV), 0.0f, 0.0f, 0.0f };
-		//Aspectratio-> dformaciÛn con respecto a la reosluciÛnd ela pantalla.
+		//Aspectratio-> dformaci√≥n con respecto a la reosluci√≥nd ela pantalla.
 		float plane1[4] = { 0.0f, widthScreen / tanf(halfFOV) / heightScreen, 0.0f							,0.0f};
 		float plane2[4] = { 0.0f, 0.0f										, MaxZ / (MaxZ - MinZ)			,1.0f };
 		float plane3[4] = { 0.0f, 0.0f										,-MinZ * MaxZ / (MaxZ - MinZ)	,0.0f };
@@ -399,6 +407,14 @@ struct Matrix4
 			}
 		}
 		return result;
+	}
+
+	Vector3 operator*(const Vector3& v) const{
+		return Vector3{
+			v.x * m[0][0] + v.y * m[0][1] + v.z * m[0][2],
+			v.x * m[1][0] + v.y * m[1][1] + v.z * m[1][2],
+			v.x * m[2][0] + v.y * m[2][1] + v.z * m[2][2],
+		};
 	}
 
 	float m[4][4];

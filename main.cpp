@@ -18,6 +18,7 @@
 #include "Actor.h"
 #include "VoiceCallback.h"
 #include "Renderer.h"
+#include "ImGuiAPI.h"
 
 SDL_Window* g_pWindow = nullptr;
 SDL_Cursor* g_pCursor = nullptr;
@@ -51,11 +52,14 @@ Vector<SPtr<Actor>> g_spawnActors;
 
 SPtr<Renderer> g_pRenderer;
 
+SPtr<ImGuiAPI> g_pImGuiAPI;
+
 void Update(float deltaTime) 
 {
 	g_pCamera->Move(g_CameraMove * deltaTime);
 	g_pCamera->Update();
 	g_pWorld->Update(deltaTime);
+	g_pImGuiAPI->Update();
 }
 
 void Render() {
@@ -66,6 +70,8 @@ void Render() {
 	g_pRenderer->SetGeometryPass();
 	g_pRenderer->SetSSAOPass();
 	g_pRenderer->SetLightingPass();
+
+	g_pImGuiAPI->Render();
 	
 	g_pGraphicsAPI->m_pSwapChain->Present(0, 0);
 }
@@ -101,7 +107,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
 
 	SDL_ShowCursor();
-	SDL_SetWindowRelativeMouseMode(g_pWindow,true);  // optional but better
+	//SDL_SetWindowRelativeMouseMode(g_pWindow,false);  // optional but better
 
 	g_pRenderer->CompileShaders();
 
@@ -128,7 +134,19 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																									"Rex_N.bmp",
 																									"Rex_R.bmp",
 																									"Rex_M.bmp");
-	g_pSecondaryActor = g_pWorld->SpawnActor<Character>(nullptr,
+	g_pMainActor->SetName("Dinosaur");
+
+	
+
+	g_pFourthActor = g_pWorld->SpawnActor<Character>(nullptr,
+																									 g_pGraphicsAPI,
+																									 "discBetterF.obj",
+																									 "tex4.bmp",
+																									 Vector3(0.0f, 0.0f, 0.0f),
+																									 Vector3(6.0f, 6.0f, 6.0f));
+	g_pFourthActor->SetName("Floor");
+
+	/*g_pSecondaryActor = g_pWorld->SpawnActor<Character>(nullptr,
 																								 g_pGraphicsAPI,
 																								 "D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/BrainRot.obj",
 																								 "D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/textures/Patapim_baseColor.bmp",
@@ -137,6 +155,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																								 "D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/textures/Patapim_normal.bmp",
 																								 "D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/textures/Patapim_metallicRoughness.bmp",
 																								 "D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/textures/Patapim_metallicRoughness.bmp");
+	g_pSecondaryActor->SetName("Patapim");
+
 	g_pThirdActor = g_pWorld->SpawnActor<Character>(nullptr,
 																								 g_pGraphicsAPI,
 																								 "rex_norm.obj",
@@ -147,19 +167,24 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																								 "Rex_R.bmp",
 																								 "Rex_M.bmp");
 
+	g_pThirdActor->SetName("Dino Small");
+
 	g_pFourthActor = g_pWorld->SpawnActor<Character>(nullptr,
 																									g_pGraphicsAPI,
 																									"discBetterF.obj",
 																									"tex4.bmp",
 																									Vector3(0.0f, 0.0f, 0.0f),
 																									Vector3(6.0f, 6.0f, 6.0f));
+	g_pFourthActor->SetName("Floor");
+
 	g_pFifthActor = g_pWorld->SpawnActor<Character>(nullptr,
 																									g_pGraphicsAPI,
 																									"ManNormals.obj",
 																									"manText.bmp",
 																									Vector3(3.0f, 0.0f, 5.0f),
 																									Vector3(1.0f, 1.0f, 1.0f));
-	
+	g_pFifthActor->SetName("Man");
+
 	g_pSixthActor = g_pWorld->SpawnActor<Character>(nullptr,
 																									g_pGraphicsAPI,
 																									"D:/Models3D/sewing-machine/source/SewingMachine/sewing8.obj",
@@ -170,6 +195,22 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_Roughness.bmp",
 																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_Metallic.bmp");
 
+  g_pSixthActor->SetName("Sewing Machine");*/
+
+	g_pImGuiAPI = make_shared<ImGuiAPI>(g_pWindow, g_pWorld, g_pCamera);
+	if (!g_pImGuiAPI)
+	{
+	  SHOW_ERROR(L"Failed to create imGui");
+		return SDL_APP_FAILURE;
+	}
+
+	
+	if (!g_pImGuiAPI->Init(g_pGraphicsAPI->m_pDevice, g_pGraphicsAPI->m_pDeviceContext))
+	{
+		SHOW_ERROR(L"Failed to initialize imGui");
+		return SDL_APP_FAILURE;
+	}
+	
 	g_pAudioAPI = make_shared<AudioAPI>();
 	if (!g_pAudioAPI)
 	{
@@ -198,7 +239,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	g_pAudioAPI->Play(g_pSound, 0.8f);
 	g_pAudioAPI->Play(g_pSound2, 0.3f);
 
-	g_pSubmix->getSubmixVoice()->SetVolume(0.5f);
+	g_pSubmix->getSubmixVoice()->SetVolume(0.0f);
 
 	int32_t cursorData[2] = { 0, 0 };
 	g_pCursor = SDL_CreateCursor(	(Uint8*)cursorData, 
@@ -213,6 +254,8 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 {
 	SDL_Keycode sym = event->key.key;
 	
+	g_pImGuiAPI->Input(event);
+
 	switch (event->type)
 	{
 		case SDL_EVENT_QUIT:
@@ -220,12 +263,14 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 			break;
 
 		case SDL_EVENT_KEY_DOWN:
+
 			if (sym == SDLK_W) g_CameraMove.z = g_cameraMovSpeed;
 			if (sym == SDLK_S) g_CameraMove.z = -g_cameraMovSpeed;
 			if (sym == SDLK_D) g_CameraMove.x = g_cameraMovSpeed;
 			if (sym == SDLK_A) g_CameraMove.x = -g_cameraMovSpeed;
 			if (sym == SDLK_Q) g_CameraMove.y = -g_cameraMovSpeed;
 			if (sym == SDLK_E) g_CameraMove.y = g_cameraMovSpeed;
+
 
 			if (sym == SDLK_UP) g_pCamera->Rotate(0.0f, 2.0f);
 			if (sym == SDLK_DOWN) g_pCamera->Rotate(0.0f, -2.0f);
@@ -249,8 +294,25 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 			break;
 
 		case SDL_EVENT_MOUSE_MOTION:
-				g_pCamera->Rotate(event->motion.xrel * g_pCamera->getRotSpeed(), 
-													event->motion.yrel * g_pCamera->getRotSpeed());
+			
+			if (g_pCamera->canRotate() && SDL_GetWindowRelativeMouseMode(g_pWindow))
+			{
+				g_pCamera->Rotate(event->motion.xrel * g_pCamera->getRotSpeed(),
+					event->motion.yrel * g_pCamera->getRotSpeed());
+			}
+			break;
+		case SDL_EVENT_MOUSE_BUTTON_DOWN:
+			g_pCamera->enableRotation();
+			if (event->button.button == SDL_BUTTON_RIGHT) 
+				SDL_SetWindowRelativeMouseMode(g_pWindow, true);
+			
+			break;
+
+		case SDL_EVENT_MOUSE_BUTTON_UP:
+			g_pCamera->disableRotation();
+			if (event->button.button == SDL_BUTTON_RIGHT) 
+				SDL_SetWindowRelativeMouseMode(g_pWindow, false);
+			
 			break;
 
 	}
@@ -266,7 +328,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 	Uint64 now = SDL_GetTicksNS();
 	float dt = (now - past) / 999999999.0f * 1000.0f;
 	
-	printf("Delta Time: %f\n", dt);
+	//printf("Delta Time: %f\n", dt);
 	
 	Update(dt);
 	Render();
