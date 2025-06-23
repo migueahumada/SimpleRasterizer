@@ -43,23 +43,6 @@ void AudioAPI::Init()
 
 
 
-  //TODO: ################################TERMINAR EL AUDIO 3D################################
-  /*DWORD dwChannelMask;
-  hr = m_XAudio2MasteringVoice->GetChannelMask(&dwChannelMask);
-  if (FAILED(hr))
-  {
-    MessageBox(m_pHwnd, L"Couldn't get channel mask", L"Error", MB_OK);
-    return;
-  }
-
-  X3DAUDIO_HANDLE X3DInstance;
-  hr = X3DAudioInitialize(dwChannelMask, X3DAUDIO_SPEED_OF_SOUND, X3DInstance);
-  if (FAILED(hr))
-  {
-    MessageBox(m_pHwnd, L"Couldn't intialize 3DAudio", L"Error", MB_OK);
-    return;
-  }*/
-
 }
 
 SPtr<Audio> AudioAPI::CreateSoundEffect(const String& name, 
@@ -134,27 +117,31 @@ SPtr<Master> AudioAPI::CreateMaster(unsigned int inChannels,
   return pMaster;
 }
 
-void AudioAPI::SetCameraListener(Camera& camera)
+void AudioAPI::Init3DAudio(WPtr<Master> pMaster)
 {
-  X3DAUDIO_LISTENER listener;
-  listener.OrientFront.x = camera.GetForwardVector().x;
-  listener.OrientFront.y = camera.GetForwardVector().y;
-  listener.OrientFront.z = camera.GetForwardVector().z;
+  if (pMaster.expired())
+  {
+    return;
+  }
 
-  listener.OrientTop.x = camera.GetUpVector().x;
-  listener.OrientTop.y = camera.GetUpVector().y;
-  listener.OrientTop.z = camera.GetUpVector().z;
+  auto MASTER = pMaster.lock();
 
-  listener.Position.x = camera.getViewMatrix().m[3][0];
-  listener.Position.y = camera.getViewMatrix().m[3][1];
-  listener.Position.z = camera.getViewMatrix().m[3][2];
+  DWORD dwChannelMask;
+  memset(&dwChannelMask,0, sizeof(DWORD));
+  HRESULT hr = MASTER->getMasterVoice()->GetChannelMask(&dwChannelMask);
+  if (FAILED(hr))
+  {
+    SHOW_ERROR(L"Couldn't get channel mask");
+    return;
+  }
 
-  listener.Velocity.x = camera.getVelocity();
-  listener.Velocity.y = camera.getVelocity();
-  listener.Velocity.z = camera.getVelocity();
-
-  camera.setCameraListener(listener);
-  
+  X3DAUDIO_HANDLE X3DInstance;
+  hr = X3DAudioInitialize(dwChannelMask, X3DAUDIO_SPEED_OF_SOUND, X3DInstance);
+  if (FAILED(hr))
+  {
+    SHOW_ERROR(L"Couldn't intialize 3DAudio");
+    return;
+  }
 }
 
 void AudioAPI::Play(const WPtr<Audio>& audio, float volume)

@@ -45,6 +45,8 @@ bool ImGuiAPI::Init(ID3D11Device* pDevice, ID3D11DeviceContext* pDeviceContext)
 		return false;
 	}
 
+	ImGui::StyleColorsClassic();
+
 	return true;
 }
 

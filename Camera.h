@@ -44,6 +44,8 @@ public:
 											float top, 
 											float nearZ, 
 											float farZ);
+	
+	void SetAudioListener();
 
 	inline Vector3 GetForwardVector() {
 		return (m_target - m_position).normalize();

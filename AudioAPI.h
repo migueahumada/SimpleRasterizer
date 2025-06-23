@@ -33,19 +33,19 @@ public:
   template<typename T, typename S>
   void RouteTo(const WPtr<T>& from, const WPtr<S>& to, unsigned int flags);
   
-  void SetCameraListener(Camera& camera);
+  void Init3DAudio(WPtr<Master> pMaster);
 
   void Play(const WPtr<Audio>& audio, float volume);
 
   void Update();
 
 private:
-
+  
+  
  // UnorderedMap<String, SPtr<Audio>> m_audioMap;
 
   IXAudio2* m_pXAudio2 = nullptr;
-  
-  IXAudio2MasteringVoice* m_XAudio2MasteringVoice = nullptr;
+
 };
 
 /// <summary>

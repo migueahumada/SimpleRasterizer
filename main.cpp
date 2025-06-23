@@ -146,7 +146,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																									 Vector3(6.0f, 6.0f, 6.0f));
 	g_pFourthActor->SetName("Floor");
 
-	/*g_pSecondaryActor = g_pWorld->SpawnActor<Character>(nullptr,
+	g_pSecondaryActor = g_pWorld->SpawnActor<Character>(nullptr,
 																								 g_pGraphicsAPI,
 																								 "D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/BrainRot.obj",
 																								 "D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/textures/Patapim_baseColor.bmp",
@@ -195,7 +195,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_Roughness.bmp",
 																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_Metallic.bmp");
 
-  g_pSixthActor->SetName("Sewing Machine");*/
+  g_pSixthActor->SetName("Sewing Machine");
 
 	g_pImGuiAPI = make_shared<ImGuiAPI>(g_pWindow, g_pWorld, g_pCamera);
 	if (!g_pImGuiAPI)
@@ -223,6 +223,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
 	g_pMaster = g_pAudioAPI->CreateMaster();
 
+	g_pAudioAPI->Init3DAudio(g_pMaster);
+
 	g_pSubmix = g_pAudioAPI->CreateSubmix(2, 48000);
 	
 	g_pSound = g_pAudioAPI->CreateSoundEffect("Mark",
@@ -239,7 +241,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	g_pAudioAPI->Play(g_pSound, 0.8f);
 	g_pAudioAPI->Play(g_pSound2, 0.3f);
 
-	g_pSubmix->getSubmixVoice()->SetVolume(0.0f);
+	g_pSubmix->getSubmixVoice()->SetVolume(0.6f);
 
 	int32_t cursorData[2] = { 0, 0 };
 	g_pCursor = SDL_CreateCursor(	(Uint8*)cursorData, 
@@ -263,7 +265,8 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 			break;
 
 		case SDL_EVENT_KEY_DOWN:
-
+			if (SDL_GetWindowRelativeMouseMode(g_pWindow))
+			{
 			if (sym == SDLK_W) g_CameraMove.z = g_cameraMovSpeed;
 			if (sym == SDLK_S) g_CameraMove.z = -g_cameraMovSpeed;
 			if (sym == SDLK_D) g_CameraMove.x = g_cameraMovSpeed;
@@ -276,6 +279,7 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 			if (sym == SDLK_DOWN) g_pCamera->Rotate(0.0f, -2.0f);
 			if (sym == SDLK_LEFT) g_pCamera->Rotate(2.0f, 0.0f);
 			if (sym == SDLK_RIGHT) g_pCamera->Rotate(-2.0f, 0.0f);
+			}
 			break;
 		
 		case SDL_EVENT_KEY_UP:

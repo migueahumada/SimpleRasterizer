@@ -30,6 +30,11 @@ void Camera::SetOrthographic(float left, float right, float bottom, float top, f
 	m_projectionMatrix.SetOrthographic(left, right, bottom, top, nearZ, farZ);
 }
 
+void Camera::SetAudioListener()
+{
+	
+}
+
 
 void Camera::Move(const Vector3& direction)
 {
@@ -60,8 +65,6 @@ void Camera::Rotate(float newYaw, float newPitch)
 	m_forward = forwardDir.normalize(); //Forward es vec de dirección
 	m_right = (Vector3(0.0f,1.0f,0.0f) ^ m_forward).normalize();
 	m_up = (m_forward^ m_right).normalize();
-
-	
 
 	bIsDirty = true;
 }
