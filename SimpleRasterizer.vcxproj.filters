@@ -13,21 +13,304 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\GameFramework">
+      <UniqueIdentifier>{12f63b93-01b5-4ed7-a686-1a41daea4378}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GameFramework">
+      <UniqueIdentifier>{7ddb011d-18b1-4f9f-9b58-c0704ced4bad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Audio">
+      <UniqueIdentifier>{79824952-d23f-41f2-978c-6017a19a087e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Audio">
+      <UniqueIdentifier>{7145b7e9-651f-4385-bdca-4fc20ee5bd7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Graphics">
+      <UniqueIdentifier>{7dd50e37-47c6-418d-b2d9-17e78b1fed92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Graphics">
+      <UniqueIdentifier>{446c2ef1-4a93-4913-9083-9f5f8f303e57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ImGui">
+      <UniqueIdentifier>{6935709f-2bb5-4ac2-aaed-b3b4c6d0a7c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ImGui">
+      <UniqueIdentifier>{72a7dc53-c1e3-45ae-9906-411fd8b0c135}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\UI">
+      <UniqueIdentifier>{95b9655a-6283-4cb8-bac8-83e718a82568}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\UI">
+      <UniqueIdentifier>{1f477cc4-1110-4a55-84a1-5af1e211a5db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Shaders">
+      <UniqueIdentifier>{4d26f337-1a79-464f-8cf3-c8ed4c4f8054}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\3DModels">
+      <UniqueIdentifier>{3b8f1784-5a41-4a5e-89c2-e5b7960f509d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Audio">
+      <UniqueIdentifier>{0cbafaf0-cdc6-41ca-823d-5af096ca2917}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utilities">
+      <UniqueIdentifier>{23e8467d-c493-4a66-8a43-3a368e2967dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utilities">
+      <UniqueIdentifier>{e87380e4-98bc-4f9b-a69a-7ddeabb677da}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="main.cpp.bak">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Image.cpp">
+    <ClCompile Include="src\imgui\imgui.cpp">
+      <Filter>Source Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\imgui_demo.cpp">
+      <Filter>Source Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\imgui_draw.cpp">
+      <Filter>Source Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\imgui_impl_dx11.cpp">
+      <Filter>Source Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\imgui_impl_sdl3.cpp">
+      <Filter>Source Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\imgui_impl_win32.cpp">
+      <Filter>Source Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\imgui_tables.cpp">
+      <Filter>Source Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\imgui_widgets.cpp">
+      <Filter>Source Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MKWindow.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SceneGraph.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MKConsole.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ImGuiAPI.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\App.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\World.cpp">
+      <Filter>Source Files\GameFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Audio.cpp">
+      <Filter>Source Files\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AudioAPI.cpp">
+      <Filter>Source Files\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Bus.cpp">
+      <Filter>Source Files\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EngineCallback.cpp">
+      <Filter>Source Files\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Master.cpp">
+      <Filter>Source Files\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Submix.cpp">
+      <Filter>Source Files\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VoiceCallback.cpp">
+      <Filter>Source Files\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Actor.cpp">
+      <Filter>Source Files\GameFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Character.cpp">
+      <Filter>Source Files\GameFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SceneObject.cpp">
+      <Filter>Source Files\GameFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Object.cpp">
+      <Filter>Source Files\GameFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GraphicsAPI.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GraphicsBuffer.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Image.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Model.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shader.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MK3DGizmo.cpp">
+      <Filter>Source Files\Utilities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Image.h">
+    <ClInclude Include="inc\imgui\imconfig.h">
+      <Filter>Header Files\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\imgui\imgui.h">
+      <Filter>Header Files\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\imgui\imgui_impl_dx11.h">
+      <Filter>Header Files\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\imgui\imgui_impl_sdl3.h">
+      <Filter>Header Files\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\imgui\imgui_impl_win32.h">
+      <Filter>Header Files\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\imgui\imgui_internal.h">
+      <Filter>Header Files\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\imgui\imstb_rectpack.h">
+      <Filter>Header Files\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\imgui\imstb_textedit.h">
+      <Filter>Header Files\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\imgui\imstb_truetype.h">
+      <Filter>Header Files\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\MKWindow.h">
+      <Filter>Header Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\SceneGraph.h">
+      <Filter>Header Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\MKConsole.h">
+      <Filter>Header Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ImGuiAPI.h">
+      <Filter>Header Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\App.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Common.h">
+    <ClInclude Include="inc\World.h">
+      <Filter>Header Files\GameFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\GraphicsAPI.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\GraphicsBuffer.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\Image.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\Renderer.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\Model.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\Shader.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\Texture.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\Object.h">
+      <Filter>Header Files\GameFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\SceneObject.h">
+      <Filter>Header Files\GameFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\Actor.h">
+      <Filter>Header Files\GameFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\Character.h">
+      <Filter>Header Files\GameFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\Audio.h">
+      <Filter>Header Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\AudioAPI.h">
+      <Filter>Header Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\Bus.h">
+      <Filter>Header Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\EngineCallback.h">
+      <Filter>Header Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\Master.h">
+      <Filter>Header Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\Submix.h">
+      <Filter>Header Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\VoiceCallback.h">
+      <Filter>Header Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="inc\MK3DGizmo.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\MathObjects.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\HelperMacros.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="Module.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\Light1.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\SimpleShading.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\BasicShader.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Def_Lighting.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Gbuffer.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="audio\Audio_001.wav">
+      <Filter>Resource Files\Audio</Filter>
+    </Media>
+    <Media Include="audio\AudioPrueba.wav">
+      <Filter>Resource Files\Audio</Filter>
+    </Media>
+    <Media Include="audio\MX_Menu_Loop.wav">
+      <Filter>Resource Files\Audio</Filter>
+    </Media>
   </ItemGroup>
 </Project>
