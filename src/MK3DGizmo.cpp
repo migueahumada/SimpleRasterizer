@@ -1,5 +1,5 @@
 #include "MK3DGizmo.h"
-#include "../GraphicsAPI.h"
+#include "GraphicsAPI.h"
 
 MK3DGizmo::MK3DGizmo(const WPtr<GraphicsAPI>& pGraphicsAPI) : m_pGraphicsAPI(pGraphicsAPI)
 {

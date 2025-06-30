@@ -133,30 +133,25 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\VisualC\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL3.lib;%(AdditionalDependencies);dxguid.lib;dxgi.lib;d3d11.lib;d3dcompiler.lib</AdditionalDependencies>
+      <AdditionalDependencies>SDL3.lib;%(AdditionalDependencies);dxguid.lib;dxgi.lib;d3d11.lib;d3dcompiler.lib;XAudio2.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Actor.cpp" />
-    <ClCompile Include="Audio.cpp" />
-    <ClCompile Include="AudioAPI.cpp" />
-    <ClCompile Include="Bus.cpp" />
-    <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="Character.cpp" />
-    <ClCompile Include="EngineCallback.cpp" />
-    <ClCompile Include="GraphicsAPI.cpp" />
-    <ClCompile Include="GraphicsBuffer.cpp" />
-    <ClCompile Include="Image.cpp" />
-    <ClCompile Include="main.cpp" />
     <ClCompile Include="main.cpp.bak">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Master.cpp" />
-    <ClCompile Include="Model.cpp" />
-    <ClCompile Include="Object.cpp" />
-    <ClCompile Include="Renderer.cpp" />
-    <ClCompile Include="SceneObject.cpp" />
-    <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="src\Actor.cpp" />
+    <ClCompile Include="src\App.cpp" />
+    <ClCompile Include="src\Audio.cpp" />
+    <ClCompile Include="src\AudioAPI.cpp" />
+    <ClCompile Include="src\Bus.cpp" />
+    <ClCompile Include="src\Camera.cpp" />
+    <ClCompile Include="src\Character.cpp" />
+    <ClCompile Include="src\EngineCallback.cpp" />
+    <ClCompile Include="src\GraphicsAPI.cpp" />
+    <ClCompile Include="src\GraphicsBuffer.cpp" />
+    <ClCompile Include="src\Image.cpp" />
     <ClCompile Include="src\ImGuiAPI.cpp" />
     <ClCompile Include="src\imgui\imgui.cpp" />
     <ClCompile Include="src\imgui\imgui_demo.cpp" />
@@ -166,27 +161,35 @@
     <ClCompile Include="src\imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="src\imgui\imgui_tables.cpp" />
     <ClCompile Include="src\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Master.cpp" />
     <ClCompile Include="src\MK3DGizmo.cpp" />
     <ClCompile Include="src\MKConsole.cpp" />
     <ClCompile Include="src\MKWindow.cpp" />
+    <ClCompile Include="src\Model.cpp" />
+    <ClCompile Include="src\Object.cpp" />
+    <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\SceneGraph.cpp" />
-    <ClCompile Include="Submix.cpp" />
-    <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="VoiceCallback.cpp" />
-    <ClCompile Include="World.cpp" />
+    <ClCompile Include="src\SceneObject.cpp" />
+    <ClCompile Include="src\Shader.cpp" />
+    <ClCompile Include="src\Submix.cpp" />
+    <ClCompile Include="src\Texture.cpp" />
+    <ClCompile Include="src\VoiceCallback.cpp" />
+    <ClCompile Include="src\World.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Actor.h" />
-    <ClInclude Include="Audio.h" />
-    <ClInclude Include="AudioAPI.h" />
-    <ClInclude Include="Bus.h" />
-    <ClInclude Include="Camera.h" />
-    <ClInclude Include="Character.h" />
-    <ClInclude Include="EngineCallback.h" />
-    <ClInclude Include="GraphicsAPI.h" />
-    <ClInclude Include="GraphicsBuffer.h" />
-    <ClInclude Include="HelperMacros.h" />
-    <ClInclude Include="Image.h" />
+    <ClInclude Include="inc\Actor.h" />
+    <ClInclude Include="inc\App.h" />
+    <ClInclude Include="inc\Audio.h" />
+    <ClInclude Include="inc\AudioAPI.h" />
+    <ClInclude Include="inc\Bus.h" />
+    <ClInclude Include="inc\Camera.h" />
+    <ClInclude Include="inc\Character.h" />
+    <ClInclude Include="inc\EngineCallback.h" />
+    <ClInclude Include="inc\GraphicsAPI.h" />
+    <ClInclude Include="inc\GraphicsBuffer.h" />
+    <ClInclude Include="inc\HelperMacros.h" />
+    <ClInclude Include="inc\Image.h" />
     <ClInclude Include="inc\ImGuiAPI.h" />
     <ClInclude Include="inc\imgui\imconfig.h" />
     <ClInclude Include="inc\imgui\imgui.h" />
@@ -197,32 +200,41 @@
     <ClInclude Include="inc\imgui\imstb_rectpack.h" />
     <ClInclude Include="inc\imgui\imstb_textedit.h" />
     <ClInclude Include="inc\imgui\imstb_truetype.h" />
+    <ClInclude Include="inc\Master.h" />
+    <ClInclude Include="inc\MathObjects.h" />
     <ClInclude Include="inc\MK3DGizmo.h" />
     <ClInclude Include="inc\MKConsole.h" />
     <ClInclude Include="inc\MKWindow.h" />
+    <ClInclude Include="inc\Model.h" />
+    <ClInclude Include="inc\Object.h" />
+    <ClInclude Include="inc\Renderer.h" />
     <ClInclude Include="inc\SceneGraph.h" />
-    <ClInclude Include="Master.h" />
-    <ClInclude Include="MathObjects.h" />
-    <ClInclude Include="Model.h" />
-    <ClInclude Include="Object.h" />
-    <ClInclude Include="Renderer.h" />
-    <ClInclude Include="SceneObject.h" />
-    <ClInclude Include="Shader.h" />
-    <ClInclude Include="Submix.h" />
-    <ClInclude Include="Texture.h" />
-    <ClInclude Include="VoiceCallback.h" />
-    <ClInclude Include="World.h" />
+    <ClInclude Include="inc\SceneObject.h" />
+    <ClInclude Include="inc\Shader.h" />
+    <ClInclude Include="inc\Submix.h" />
+    <ClInclude Include="inc\Texture.h" />
+    <ClInclude Include="inc\VoiceCallback.h" />
+    <ClInclude Include="inc\World.h" />
+    <ClInclude Include="Module.h" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="BasicShader.hlsl">
+    <FxCompile Include="Shaders\BasicShader.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="Def_Lighting.hlsl">
+    <FxCompile Include="Shaders\Def_Lighting.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="Gbuffer.hlsl">
+    <FxCompile Include="Shaders\Gbuffer.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="Shaders\Light1.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -236,6 +248,11 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="audio\AudioPrueba.wav" />
+    <Media Include="audio\Audio_001.wav" />
+    <Media Include="audio\MX_Menu_Loop.wav" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,5 +1,5 @@
 #pragma once
-#include "../HelperMacros.h"
+#include "HelperMacros.h"
 
 class GraphicsAPI;
 

@@ -1,9 +1,16 @@
 #include "ImGuiAPI.h"
-#include "../World.h"
-#include "../Camera.h"
+#include "World.h"
+#include "Camera.h"
+#include "Renderer.h"
 
-ImGuiAPI::ImGuiAPI(SDL_Window* pWindow, const WPtr<World>& pWorld, const WPtr<Camera>& pCamera)
-	: m_pWindow(pWindow), m_pWorld(pWorld), m_pCamera (pCamera)
+ImGuiAPI::ImGuiAPI(SDL_Window* pWindow, 
+									 const WPtr<World>& pWorld, 
+									 const WPtr<Camera>& pCamera, 
+									 const WPtr<Renderer>& pRenderer)
+	: m_pWindow(pWindow), 
+		m_pWorld(pWorld), 
+		m_pCamera (pCamera), 
+		m_pRenderer(pRenderer)
 {
 
 	
@@ -45,7 +52,7 @@ bool ImGuiAPI::Init(ID3D11Device* pDevice, ID3D11DeviceContext* pDeviceContext)
 		return false;
 	}
 
-	ImGui::StyleColorsClassic();
+	//ImGui::StyleColorsClassic();
 
 	return true;
 }
@@ -64,13 +71,14 @@ void ImGuiAPI::Update()
 
 void ImGuiAPI::Render()
 {
-	if (m_pWorld.expired() || m_pCamera.expired())
+	if (m_pWorld.expired() || m_pCamera.expired() || m_pRenderer.expired())
 	{
 		return;
 	}
 
 	auto WORLD = m_pWorld.lock();
 	auto CAMERA = m_pCamera.lock();
+	auto RENDERER = m_pRenderer.lock();
 
 	ImGui::ShowDemoWindow();
 
@@ -87,7 +95,7 @@ void ImGuiAPI::Render()
 	}
 	ImGui::End();
 
-	bool bIsOpen;
+	//bool bIsOpen;
 	ImGui::Begin("Camera", (bool*)1, ImGuiWindowFlags_AlwaysAutoResize);
 		
 		ImGui::Text("EyePos");
@@ -119,6 +127,36 @@ void ImGuiAPI::Render()
 			CAMERA->getUpDir().y,
 			CAMERA->getUpDir().z);
 
+	ImGui::End();
+
+
+  ImGui::SetNextWindowBgAlpha(1.0f);
+	ImGui::Begin("GBuffer Images", (bool*)1);
+		
+		ImGui::Text("Position");
+		ImGui::Separator();
+		ImGui::Image((ImTextureID)RENDERER->getGBuffer().at(0).m_pSRV,
+									ImVec2(320, 180));
+		
+		ImGui::Text("Normal");
+		ImGui::Separator();
+		ImGui::Image((ImTextureID)RENDERER->getGBuffer().at(1).m_pSRV,
+									ImVec2(320, 180));
+		
+		ImGui::Text("Color");
+		ImGui::Separator();
+		ImGui::Image((ImTextureID)RENDERER->getGBuffer().at(2).m_pSRV,
+									ImVec2(320, 180));
+		
+		ImGui::Text("SSAO");
+		ImGui::Separator();
+		ImGui::Image((ImTextureID)RENDERER->getGBuffer().at(3).m_pSRV,
+									ImVec2(320, 180));
+		
+		ImGui::Text("Shadow Map");
+		ImGui::Separator();
+		ImGui::Image((ImTextureID)RENDERER->getShadowMap().m_pSRV,
+			ImVec2(320, 180));
 	ImGui::End();
 
 	ImGui::Render();

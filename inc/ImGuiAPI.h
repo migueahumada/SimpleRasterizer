@@ -4,18 +4,20 @@
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_dx11.h"
 #include <Windows.h>
-#include "../HelperMacros.h"
+#include "HelperMacros.h"
 
 class MKWindow;
 class World;
 class Camera;
+class Renderer;
 
 class ImGuiAPI
 {
 public:
 	ImGuiAPI(SDL_Window* pWindow, 
 					const WPtr<World>& pWorld, 
-					const WPtr<Camera>& pCamera);
+					const WPtr<Camera>& pCamera,
+					const WPtr<Renderer>& pRenderer);
 	
 	~ImGuiAPI();
 
@@ -29,7 +31,7 @@ private:
 	SDL_Window* m_pWindow;
 	WPtr<World> m_pWorld;
 	WPtr<Camera> m_pCamera;
-	//Map <String, UPtr<MKWindow>> m_windows;
+	WPtr<Renderer> m_pRenderer;
 
 };
 
