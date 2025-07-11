@@ -168,6 +168,9 @@
     <ClCompile Include="src\MK3DGizmo.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
+    <ClCompile Include="src\MainApplication.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\imgui\imconfig.h">
@@ -281,7 +284,7 @@
     <ClInclude Include="inc\HelperMacros.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="Module.h">
+    <ClInclude Include="inc\Module.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
   </ItemGroup>

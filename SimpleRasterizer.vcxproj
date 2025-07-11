@@ -162,6 +162,12 @@
     <ClCompile Include="src\imgui\imgui_tables.cpp" />
     <ClCompile Include="src\imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\MainApplication.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\Master.cpp" />
     <ClCompile Include="src\MK3DGizmo.cpp" />
     <ClCompile Include="src\MKConsole.cpp" />
@@ -206,6 +212,7 @@
     <ClInclude Include="inc\MKConsole.h" />
     <ClInclude Include="inc\MKWindow.h" />
     <ClInclude Include="inc\Model.h" />
+    <ClInclude Include="inc\Module.h" />
     <ClInclude Include="inc\Object.h" />
     <ClInclude Include="inc\Renderer.h" />
     <ClInclude Include="inc\SceneGraph.h" />
@@ -215,7 +222,6 @@
     <ClInclude Include="inc\Texture.h" />
     <ClInclude Include="inc\VoiceCallback.h" />
     <ClInclude Include="inc\World.h" />
-    <ClInclude Include="Module.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\BasicShader.hlsl">

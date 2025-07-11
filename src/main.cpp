@@ -147,7 +147,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																									 Vector3(6.0f, 6.0f, 6.0f));
 	g_pFourthActor->SetName("Floor");
 
-	g_pSecondaryActor = g_pWorld->SpawnActor<Character>(nullptr,
+	/*g_pSecondaryActor = g_pWorld->SpawnActor<Character>(nullptr,
 																								 g_pGraphicsAPI,
 																								 "D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/BrainRot.obj",
 																								 "D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/textures/Patapim_baseColor.bmp",
@@ -196,7 +196,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_Roughness.bmp",
 																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_Metallic.bmp");
 
-  g_pSixthActor->SetName("Sewing Machine");
+  g_pSixthActor->SetName("Sewing Machine");*/
 
 	g_pImGuiAPI = make_shared<ImGuiAPI>(g_pWindow, g_pWorld, g_pCamera, g_pRenderer);
 	if (!g_pImGuiAPI)

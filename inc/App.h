@@ -2,10 +2,8 @@
 #include "Module.h"
 #include <SDL3/SDL.h>
 
-
-
 namespace MKEngine{
-  class App : Module<App>
+  class App : public Module<App>
   {
   public:
     App();
@@ -32,8 +30,8 @@ namespace MKEngine{
     * World
     */
 
-    int m_width{1280};
-    int m_height{720};
+    const int m_width{1280};
+    const int m_height{720};
   };
 }
 

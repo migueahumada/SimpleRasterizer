@@ -19,7 +19,7 @@ namespace MKEngine {
       SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
     }
 
-    m_pWindow = SDL_CreateWindow("Soft Rasterizer",
+    m_pWindow = SDL_CreateWindow("MKEngine",
                                  m_width,
                                  m_height,
                                  SDL_WINDOW_RESIZABLE);
@@ -31,6 +31,12 @@ namespace MKEngine {
 
   void App::runMainLoop()
   {
+    while (m_runMainLoop)
+    {
+      
+      update();
+      render();
+    }
   }
 
   void App::update()
