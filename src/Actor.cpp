@@ -4,6 +4,10 @@ void Actor::Init()
 {
 }
 
+void Actor::FixedUpdate()
+{
+}
+
 void Actor::Update(float deltaTime)
 {
   UpdateTransform();

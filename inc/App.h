@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Module.h"
 #include <SDL3/SDL.h>
 
@@ -10,16 +11,18 @@ namespace MKEngine{
     virtual ~App();
 
     void onStartUp() override;
+    void onShutDown() override;
     void runMainLoop();
 
   private:
-    void update();
+    void inputs();
+    void update(float deltaTime);
     void render();
 
   protected:
     bool m_runMainLoop;
     SDL_Window* m_pWindow;
-    SDL_Renderer* m_pRenderer;
+    
 
     /*
     * GraphicsAPI

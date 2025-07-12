@@ -26,6 +26,7 @@ public:
   virtual ~Character() = default;
 
   virtual void Init() override;
+  virtual void FixedUpdate() override;
   virtual void Update(float deltaTime) override;
   virtual void Render() override;
 

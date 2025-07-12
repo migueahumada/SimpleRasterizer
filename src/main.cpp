@@ -35,7 +35,7 @@ SPtr<Audio> g_pSound2;
 SPtr<Submix> g_pSubmix;
 SPtr<VoiceCallback> g_pCallback;
 
-static float g_cameraMovSpeed = 0.001f;
+static float g_cameraMovSpeed = 2.0f;
 static float g_cameraRotSpeed = 20.0f;
 
 SPtr<World> g_pWorld;
@@ -55,12 +55,19 @@ SPtr<Renderer> g_pRenderer;
 
 SPtr<ImGuiAPI> g_pImGuiAPI;
 
+constexpr float fixedDeltaTime = 1.0f/60.0f;
+
 void Update(float deltaTime) 
 {
 	g_pCamera->Move(g_CameraMove * deltaTime);
 	g_pCamera->Update();
 	g_pWorld->Update(deltaTime);
 	g_pImGuiAPI->Update();
+}
+
+void FixedUpdate(){
+	g_pWorld->FixedUpdate();
+	printf("FixedUpdateLlamado\n");
 }
 
 void Render() {
@@ -327,31 +334,49 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 
 SDL_AppResult SDL_AppIterate(void* appstate)
 {
-	static Uint64 accu = 0;
 	static Uint64 last = 0;
 	static Uint64 past = 0;
+	static float tiempoAcumulado = 0.0f;
+
 	Uint64 now = SDL_GetTicksNS();
-	float dt = (now - past) / 999999999.0f * 1000.0f;
 	
-	//printf("Delta Time: %f\n", dt);
+	if (past == 0) {
+		past = now;
+		return SDL_APP_CONTINUE;
+	}
+	
+	float dt = (now - past) / 1000000000.0f;
+
+	printf("DeltaTime: %f\n",dt);
 	
 	Update(dt);
+
+	//La cantidad de veces que fixed update va a correr es relativo a cuántas veces es mayor el dt
+	
+	// Caso 1: DeltaTime es mayor al fixedDeltaTime
+	// Fixed |-------|-------|
+	// Delta ^-----------^---^ 
+
+	// Caso 2: DeltaTime es menor al fixedDeltaTime
+	// Fixed |-------|-------|
+	// Delta ^--^---^----^---^ 
+
+	tiempoAcumulado += dt;
+
+	while (tiempoAcumulado >= fixedDeltaTime) // si el dt es mayor al fdt
+	{
+		FixedUpdate();
+		tiempoAcumulado -= fixedDeltaTime;
+	}
+	
 	Render();
 
-	if (now - last > 999999999)
+	if (now - last > 1000000000)
 	{
 		last = now;
-		
-		accu = 0;
 	}
 
 	past = now;
-	accu += 1;
-	
-	Uint64 elapsed = SDL_GetTicksNS() - now;
-	if (elapsed < 999999) {
-		SDL_DelayNS(999999 - elapsed);
-	}
 
 	return SDL_APP_CONTINUE;
 }

@@ -161,16 +161,20 @@
     <ClCompile Include="src\imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="src\imgui\imgui_tables.cpp" />
     <ClCompile Include="src\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\Light.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MainApplication.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\Master.cpp" />
     <ClCompile Include="src\MK3DGizmo.cpp" />
     <ClCompile Include="src\MKConsole.cpp" />
+    <ClCompile Include="src\MKGraphicsAPI.cpp" />
+    <ClCompile Include="src\MKRenderer.cpp" />
+    <ClCompile Include="src\MKWorldManager.cpp" />
     <ClCompile Include="src\MKWindow.cpp" />
     <ClCompile Include="src\Model.cpp" />
     <ClCompile Include="src\Object.cpp" />
@@ -206,10 +210,14 @@
     <ClInclude Include="inc\imgui\imstb_rectpack.h" />
     <ClInclude Include="inc\imgui\imstb_textedit.h" />
     <ClInclude Include="inc\imgui\imstb_truetype.h" />
+    <ClInclude Include="inc\Light.h" />
     <ClInclude Include="inc\Master.h" />
     <ClInclude Include="inc\MathObjects.h" />
     <ClInclude Include="inc\MK3DGizmo.h" />
     <ClInclude Include="inc\MKConsole.h" />
+    <ClInclude Include="inc\MKGraphicsAPI.h" />
+    <ClInclude Include="inc\MKRenderer.h" />
+    <ClInclude Include="inc\MKWorldManager.h" />
     <ClInclude Include="inc\MKWindow.h" />
     <ClInclude Include="inc\Model.h" />
     <ClInclude Include="inc\Module.h" />

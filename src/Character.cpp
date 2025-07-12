@@ -74,6 +74,11 @@ void Character::Init()
 
 }
 
+void Character::FixedUpdate()
+{
+  //Actor::FixedUpdate();
+}
+
 void Character::Update(float deltaTime)
 {
   Actor::Update(deltaTime);

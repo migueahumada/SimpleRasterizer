@@ -10,7 +10,7 @@ public:
   virtual ~Actor() = default;
 
   virtual void Init();
-  
+  virtual void FixedUpdate();
   virtual void Update(float deltaTime);
   virtual void Render();
 
