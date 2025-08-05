@@ -13,7 +13,7 @@ namespace MKEngine {
   {
   }
 
-  void App::onStartUp()
+  void App::OnStartUp()
   {
     //---------------SDL SET UP!!-----------------
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
@@ -44,7 +44,7 @@ namespace MKEngine {
 
   }
 
-  void App::onShutdown()
+  void App::OnShutdown()
   {
     //Subsystems should be shutdown in inverse order
     MKRenderer::Shutdown();

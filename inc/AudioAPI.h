@@ -2,7 +2,7 @@
 #include "HelperMacros.h"
 
 #include <xaudio2.h>
-
+#include "Module.h"
 
 
 class Audio;
@@ -11,11 +11,11 @@ class Master;
 class Camera;
 class VoiceCallback;
 
-class AudioAPI
+class AudioAPI : public Module<AudioAPI>
 {
 public:
   AudioAPI();
-  ~AudioAPI();
+  virtual ~AudioAPI();
 
   void Init();
 
@@ -40,7 +40,8 @@ public:
   void Update();
 
 private:
-  
+  void OnStartUp() override;
+  void OnShutdown() override;
   
  // UnorderedMap<String, SPtr<Audio>> m_audioMap;
 
@@ -67,35 +68,4 @@ void AudioAPI::RouteTo(const WPtr<T>& from, const WPtr<S>& to, unsigned int flag
                 
 }
 
-//template <typename T>
-//void Bus::Route(const WPtr<T>& voice, unsigned int flags)
-//{
-//  static_assert(std::is_base_of<Audio, T>::value ||
-//    std::is_base_of<Submix, T>::value,
-//    "T should be Audio or Submix type.");
-//
-//  if (voice.expired())
-//  {
-//    return;
-//  }
-//
-//  SPtr<T> pVoice = voice.lock();
-//
-//  XAUDIO2_SEND_DESCRIPTOR sendDesc;
-//  memset(&sendDesc, 0, XAUDIO2_SEND_DESCRIPTOR);
-//
-//  sendDesc.Flags = flags;
-//  sendDesc.pOutputVoice = pVoice->getSubmixVoice();
-//
-//  m_sendsList.push_back(sendDesc);
-//  m_sends.SendCount = m_sendsList.size();
-//  m_sends.pSends = m_sendsList.data();
-//
-//  HRESULT hr = pVoice->SetOutputVoices(&m_sends);
-//  if (FAILED(hr))
-//  {
-//    MessageBox(nullptr, L"Error routing bus", L"ERROR", S_OK);
-//    return;
-//  }
-//
-//}
+AudioAPI& g_audioAPI();

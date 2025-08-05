@@ -10,8 +10,8 @@ namespace MKEngine{
     App();
     virtual ~App();
 
-    void onStartUp() override;
-    void onShutdown() override;
+    void OnStartUp() override;
+    void OnShutdown() override;
     void runMainLoop();
 
   private:

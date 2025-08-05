@@ -155,6 +155,14 @@ GraphicsAPI::~GraphicsAPI()
 	SAFE_RELEASE(m_pDevice);
 }
 
+void GraphicsAPI::OnStartUp()
+{
+}
+
+void GraphicsAPI::OnShutdown()
+{
+}
+
 void GraphicsAPI::QueryInterfaces(int width, int height)
 {
 	if (!m_pSwapChain)
@@ -478,4 +486,8 @@ void GraphicsAPI::writeToBuffer(const WPtr<GraphicsBuffer>& pBuffer, const Vecto
 {
 	auto BUFFER = pBuffer.lock();
 	m_pDeviceContext->UpdateSubresource1(BUFFER->m_pBuffer, 0, nullptr, data.data(), 0, 0, 0);
+}
+
+GraphicsAPI& g_graphicsAPI(){
+	return GraphicsAPI::GetInstance();
 }

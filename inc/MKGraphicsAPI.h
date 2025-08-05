@@ -18,9 +18,9 @@ namespace MKEngine{
 
     virtual ~MKGraphicsAPI();
 
-    virtual void onStartUp() override;
+    virtual void OnStartUp() override;
 
-    virtual void onShutdown() override;
+    virtual void OnShutdown() override;
 
 		
 

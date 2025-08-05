@@ -21,7 +21,7 @@ public:
   
   static T& GetInstance() //regresa la dirección de memoria del módulo
   {
-    assert(!isStartedUp() && "The instance is not started yet.");
+    assert(isStartedUp() && "The instance is not started yet.");
 
     assert(!isDestroyed() && "The instance is not destroyed.");
 
@@ -47,7 +47,7 @@ public:
     instance() = new T(std::forward<Args>(args)...);
     isStartedUp() = true;
 
-    static_cast<Module*>(instance())->onStartUp();
+    static_cast<Module*>(instance())->OnStartUp();
   }
 
   static void Shutdown()
@@ -55,7 +55,7 @@ public:
     assert(isStartedUp() && "Cannot destroy something that hasn't been started up.");
     assert(!isDestroyed() && "Cannot destroy something that's already been destroyed.");
 
-    static_cast<Module*>(instance())->onShutdown();
+    static_cast<Module*>(instance())->OnShutdown();
 
     delete(instance());
     isDestroyed() = true;
@@ -68,7 +68,7 @@ public:
 
 
 
-protected: //porqué son protegidos?
+protected:
   Module() = default;
 
   virtual ~Module() = default; 
@@ -81,9 +81,9 @@ protected: //porqué son protegidos?
 
   Module& operator=(const Module&) = delete; // no se puede asignar por copia
 
-  virtual void onStartUp() {}
+  virtual void OnStartUp() {}
   
-  virtual void onShutdown() {}
+  virtual void OnShutdown() {}
 
   static T*& instance() // regresa la dirección del puntero donde se crea la clase 
   {

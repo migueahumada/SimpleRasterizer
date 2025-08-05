@@ -49,9 +49,9 @@ namespace MKEngine{
     MKRenderer();
     virtual ~MKRenderer();
 
-    virtual void onStartUp() override{}
+    virtual void OnStartUp() override{}
 
-    virtual void onShutdown() override{}
+    virtual void OnShutdown() override{}
 
     void CompileShaders();
     void InitInputLayout();

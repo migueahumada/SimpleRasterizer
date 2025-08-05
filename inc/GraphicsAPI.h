@@ -5,6 +5,7 @@
 #include <fstream>
 #include "HelperMacros.h"
 #include "Shader.h"
+#include "Module.h"
 
 //This should be cstring
 
@@ -13,11 +14,15 @@ using String = std::string;
 
 class GraphicsBuffer;
 
-class GraphicsAPI 
+class GraphicsAPI : public Module<GraphicsAPI>
 {
 public:
 	GraphicsAPI(void* pWindowHandle);
+	
 	virtual ~GraphicsAPI();
+
+	void OnStartUp() override;
+	void OnShutdown() override;
 
 private:
 	void QueryInterfaces(int width,int height);
@@ -67,4 +72,6 @@ public:
 	
 
 };
+
+GraphicsAPI& g_graphicsAPI();
 

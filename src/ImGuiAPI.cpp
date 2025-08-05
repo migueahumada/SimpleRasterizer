@@ -5,12 +5,10 @@
 
 ImGuiAPI::ImGuiAPI(SDL_Window* pWindow, 
 									 const WPtr<World>& pWorld, 
-									 const WPtr<Camera>& pCamera, 
-									 const WPtr<Renderer>& pRenderer)
+									 const WPtr<Camera>& pCamera)
 	: m_pWindow(pWindow), 
 		m_pWorld(pWorld), 
-		m_pCamera (pCamera), 
-		m_pRenderer(pRenderer)
+		m_pCamera (pCamera) 
 {
 
 	
@@ -71,14 +69,13 @@ void ImGuiAPI::Update()
 
 void ImGuiAPI::Render()
 {
-	if (m_pWorld.expired() || m_pCamera.expired() || m_pRenderer.expired())
+	if (m_pWorld.expired() || m_pCamera.expired())
 	{
 		return;
 	}
 
 	auto WORLD = m_pWorld.lock();
 	auto CAMERA = m_pCamera.lock();
-	auto RENDERER = m_pRenderer.lock();
 
 	ImGui::ShowDemoWindow();
 
@@ -143,27 +140,27 @@ void ImGuiAPI::Render()
 		
 		ImGui::Text("Position");
 		ImGui::Separator();
-		ImGui::Image((ImTextureID)RENDERER->getGBuffer().at(0).m_pSRV,
+		ImGui::Image((ImTextureID)g_renderer().getGBuffer().at(0).m_pSRV,
 									ImVec2(320, 180));
 		
 		ImGui::Text("Normal");
 		ImGui::Separator();
-		ImGui::Image((ImTextureID)RENDERER->getGBuffer().at(1).m_pSRV,
+		ImGui::Image((ImTextureID)g_renderer().getGBuffer().at(1).m_pSRV,
 									ImVec2(320, 180));
 		
 		ImGui::Text("Color");
 		ImGui::Separator();
-		ImGui::Image((ImTextureID)RENDERER->getGBuffer().at(2).m_pSRV,
+		ImGui::Image((ImTextureID)g_renderer().getGBuffer().at(2).m_pSRV,
 									ImVec2(320, 180));
 		
 		ImGui::Text("SSAO");
 		ImGui::Separator();
-		ImGui::Image((ImTextureID)RENDERER->getGBuffer().at(3).m_pSRV,
+		ImGui::Image((ImTextureID)g_renderer().getGBuffer().at(3).m_pSRV,
 									ImVec2(320, 180));
 		
 		ImGui::Text("Shadow Map");
 		ImGui::Separator();
-		ImGui::Image((ImTextureID)RENDERER->getShadowMap().m_pSRV,
+		ImGui::Image((ImTextureID)g_renderer().getShadowMap().m_pSRV,
 			ImVec2(320, 180));
 	ImGui::End();
 
@@ -175,4 +172,17 @@ void ImGuiAPI::Render()
 		ImGui::UpdatePlatformWindows();
 		ImGui::RenderPlatformWindowsDefault();
 	}
+}
+
+void ImGuiAPI::OnShutdown()
+{
+}
+
+void ImGuiAPI::OnStartUp()
+{
+}
+
+ImGuiAPI& g_imguiAPI()
+{
+	return ImGuiAPI::GetInstance();
 }

@@ -6,15 +6,13 @@
 #include "Camera.h"
 #include "GraphicsBuffer.h"
 
-Character::Character( const WPtr<GraphicsAPI>& pGraphicsAPI,
-                      const String& modelName,
+Character::Character( const String& modelName,
                       const String& textureName,
                       const Vector3& positionOffset,
                       const Vector3& scaleOffset,
                       const String& normalTextureName,
                       const String& roughnessTextureName,
                       const String& metallicTextureName) :
-                      m_pGraphicsAPI(pGraphicsAPI),
                       m_modelName(modelName),
                       m_textureName(textureName),
                       m_positionOffset(positionOffset),
@@ -43,28 +41,28 @@ Character::Character( const WPtr<GraphicsAPI>& pGraphicsAPI,
 void Character::Init()
 {
   Actor::Init();
-  m_model->LoadFromFile(m_modelName.c_str(), m_pGraphicsAPI);
+  m_model->LoadFromFile(m_modelName.c_str());
   
   m_image->decode(m_textureName.c_str());
-  m_texture->createImage(*m_image, m_pGraphicsAPI);
+  m_texture->createImage(*m_image, g_graphicsAPI());
   
   
   if (!m_normalTextureName.empty())
   {
     m_normalImage->decode(m_normalTextureName.c_str());
-    m_normalTexture->createImage(*m_normalImage, m_pGraphicsAPI);
+    m_normalTexture->createImage(*m_normalImage, g_graphicsAPI());
   }
 
   if (!m_roughnessTextureName.empty())
   {
     m_roughnessImage->decode(m_roughnessTextureName.c_str());
-    m_roughnessTexture->createImage(*m_roughnessImage, m_pGraphicsAPI);
+    m_roughnessTexture->createImage(*m_roughnessImage, g_graphicsAPI());
   }
 
   if (!m_metallicTextureName.empty())
   {
     m_metallicImage->decode(m_metallicTextureName.c_str());
-    m_metallicTexture->createImage(*m_metallicImage, m_pGraphicsAPI);
+    m_metallicTexture->createImage(*m_metallicImage, g_graphicsAPI());
   }
   
 

@@ -10,6 +10,7 @@
 #include "HelperMacros.h"
 #include "MathObjects.h"
 #include "Texture.h"
+#include "Module.h"
 
 class GraphicsAPI;
 class GraphicsBuffer;
@@ -47,18 +48,13 @@ namespace DefaultTextures
 };
 
 //TODO: Destruir los raster states y sampler states
-class Renderer
+class Renderer : public Module<Renderer>
 {
-public:
-  Renderer(const WPtr<GraphicsAPI>& pGraphicsAPI, 
-                    const WPtr<Camera>& pCamera,
-                    const WPtr<World>& pWorld);
-  
-  Renderer(const Renderer& r) = delete;
-  Renderer(Renderer&& r) = delete;
 
-  Renderer& operator=(const Renderer&) = delete;
-  Renderer& operator=(Renderer&&) = delete;
+public:
+  Renderer(const WPtr<Camera>& pCamera,
+    const WPtr<World>& pWorld);
+  virtual ~Renderer() = default;
 
   void CompileShaders();
   void InitInputLayout();
@@ -85,6 +81,13 @@ public:
 
 private:
 
+  
+  
+
+  void OnStartUp() override;
+
+  void OnShutdown() override;
+
   void RenderActor(const WPtr<Character>& character);
   void RenderShadows(const WPtr<Character>& character);
   void CreateDefaultSRV(UINT color, 
@@ -93,7 +96,6 @@ private:
   
 private:
   
-  WPtr<GraphicsAPI> m_pGraphicsAPI;
   WPtr<Camera> m_pCamera;
   WPtr<World> m_pWorld;
 
@@ -126,3 +128,4 @@ private:
   
 };
 
+Renderer& g_renderer();

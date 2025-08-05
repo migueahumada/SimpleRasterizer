@@ -16,7 +16,7 @@ namespace MKEngine {
 	{
 	}
 
-	void MKGraphicsAPI::onStartUp()
+	void MKGraphicsAPI::OnStartUp()
 	{
 		HRESULT hr;
 
@@ -152,7 +152,7 @@ namespace MKEngine {
 		SAFE_RELEASE(pFactory2);
 	}
 
-	void MKGraphicsAPI::onShutdown()
+	void MKGraphicsAPI::OnShutdown()
 	{
 		SAFE_RELEASE(m_pBackBufferRTV);
 		SAFE_RELEASE(m_pBackBufferDSV);

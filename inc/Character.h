@@ -15,8 +15,7 @@ class GraphicsBuffer;
 class Character : public Actor
 {
 public:
-  Character(const WPtr<GraphicsAPI>& pGraphicsAPI,
-            const String& modelName,
+  Character(const String& modelName,
             const String& textureName,
             const Vector3& positionOffset,
             const Vector3& scaleOffset = Vector3(1.0f,1.0f,1.0f),

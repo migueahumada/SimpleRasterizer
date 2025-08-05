@@ -91,8 +91,7 @@ public:
 	Model() = default;
 	~Model() = default;
 
-	bool LoadFromFile(const char* filePath, 
-										WPtr<GraphicsAPI> pGraphicsAPI);
+	bool LoadFromFile(const char* filePath);
 	void ComputeTangentSpace();
 	//TODO: Iterar sobre el vector de meshes y ahí estarán los buffer
 	Vector<Mesh> m_meshes;

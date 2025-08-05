@@ -163,3 +163,16 @@ void AudioAPI::Update()
 {
 
 }
+
+void AudioAPI::OnStartUp()
+{
+}
+
+void AudioAPI::OnShutdown()
+{
+}
+
+AudioAPI& g_audioAPI()
+{
+  return AudioAPI::GetInstance();
+}

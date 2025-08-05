@@ -24,11 +24,10 @@
 SDL_Window* g_pWindow = nullptr;
 SDL_Cursor* g_pCursor = nullptr;
 
-SPtr<GraphicsAPI> g_pGraphicsAPI;
+//SPtr<GraphicsAPI> g_pGraphicsAPI;
 SPtr<Camera> g_pCamera;
 Vector3 g_CameraMove = { 0.0f,0.0f,0.0f };
 
-SPtr<AudioAPI> g_pAudioAPI;
 SPtr<Master> g_pMaster;
 SPtr<Audio> g_pSound;
 SPtr<Audio> g_pSound2;
@@ -39,7 +38,6 @@ static float g_cameraMovSpeed = 2.0f;
 static float g_cameraRotSpeed = 20.0f;
 
 SPtr<World> g_pWorld;
-
 SPtr<Character> g_pCharacter;
 SPtr<Character> g_pDinosaur;
 SPtr<Actor> g_pMainActor;
@@ -49,11 +47,6 @@ SPtr<Actor> g_pFourthActor;
 SPtr<Actor> g_pFifthActor;
 SPtr<Actor> g_pSixthActor;
 
-Vector<SPtr<Actor>> g_spawnActors;
-
-SPtr<Renderer> g_pRenderer;
-
-SPtr<ImGuiAPI> g_pImGuiAPI;
 
 constexpr float fixedDeltaTime = 1.0f/60.0f;
 
@@ -62,7 +55,7 @@ void Update(float deltaTime)
 	g_pCamera->Move(g_CameraMove * deltaTime);
 	g_pCamera->Update();
 	g_pWorld->Update(deltaTime);
-	g_pImGuiAPI->Update();
+	g_imguiAPI().Update();
 }
 
 void FixedUpdate(){
@@ -74,14 +67,14 @@ void Render() {
 
 	g_pWorld->Render();
 
-	g_pRenderer->SetShadowPass();
-	g_pRenderer->SetGeometryPass();
-	g_pRenderer->SetSSAOPass();
-	g_pRenderer->SetLightingPass();
+	g_renderer().SetShadowPass();
+	g_renderer().SetGeometryPass();
+	g_renderer().SetSSAOPass();
+	g_renderer().SetLightingPass();
 
-	g_pImGuiAPI->Render();
+	g_imguiAPI().Render();
 	
-	g_pGraphicsAPI->m_pSwapChain->Present(0, 0);
+	g_graphicsAPI().m_pSwapChain->Present(0, 0);
 }
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
@@ -103,38 +96,40 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 											nullptr);
 	if (pWndHandle)
 	{
-		g_pGraphicsAPI = make_shared<GraphicsAPI>(pWndHandle);
+		/*g_pGraphicsAPI = make_shared<GraphicsAPI>(pWndHandle);
 		if(!g_pGraphicsAPI)
 		{
 			return SDL_APP_FAILURE;
-		}
+		}*/
+
+		GraphicsAPI::StartUp(pWndHandle);
 	}
 	g_pCamera = make_shared<Camera>();
 	g_pWorld = make_shared<World>();
-	g_pRenderer = make_shared<Renderer>(g_pGraphicsAPI,g_pCamera,g_pWorld);
+
+	Renderer::StartUp(g_pCamera, g_pWorld);
 
 
 	SDL_ShowCursor();
 	//SDL_SetWindowRelativeMouseMode(g_pWindow,false);  // optional but better
 
-	g_pRenderer->CompileShaders();
+	g_renderer().CompileShaders();
 
-	g_pRenderer->InitInputLayout();
+	g_renderer().InitInputLayout();
 
 	g_pCamera->SetLookAt(Vector3(0, 0, -6.0f), Vector3(0, 0, 0), Vector3(0, 1, 0));		//Setea la matriz de la cámara
 	g_pCamera->SetPerspective(3.141592653f/4.0f,WIDTH,HEIGHT,0.1f,100.0f);			//Sete la matriz de la perspectiva
 
-	g_pRenderer->InitWVP();
-	g_pRenderer->InitConstantBuffer();
-	g_pRenderer->InitRasterizerStates();
-	g_pRenderer->InitSampleFilters();
-	g_pRenderer->InitGBuffer(WIDTH, HEIGHT);
-	g_pRenderer->SetDefaultTextures();
+	g_renderer().InitWVP();
+	g_renderer().InitConstantBuffer();
+	g_renderer().InitRasterizerStates();
+	g_renderer().InitSampleFilters();
+	g_renderer().InitGBuffer(WIDTH, HEIGHT);
+	g_renderer().SetDefaultTextures();
 	
 	g_pWorld->Init();
 
 	g_pMainActor = g_pWorld->SpawnActor<Character>(	nullptr,
-																									g_pGraphicsAPI,
 																									"rex_norm.obj", 
 																									"Rex_C.bmp", 
 																									Vector3(0.0f, 0.0f,0.0f),
@@ -147,7 +142,6 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	
 
 	g_pFourthActor = g_pWorld->SpawnActor<Character>(nullptr,
-																									 g_pGraphicsAPI,
 																									 "discBetterF.obj",
 																									 "tex4.bmp",
 																									 Vector3(0.0f, 0.0f, 0.0f),
@@ -206,40 +200,27 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
   g_pSixthActor->SetName("Sewing Machine");
 	*/
 
-	g_pImGuiAPI = make_shared<ImGuiAPI>(g_pWindow, g_pWorld, g_pCamera, g_pRenderer);
-	if (!g_pImGuiAPI)
-	{
-	  SHOW_ERROR(L"Failed to create imGui");
-		return SDL_APP_FAILURE;
-	}
+	ImGuiAPI::StartUp(g_pWindow, g_pWorld, g_pCamera);
 
+	g_imguiAPI().Init(g_graphicsAPI().m_pDevice, g_graphicsAPI().m_pDeviceContext);
 	
-	if (!g_pImGuiAPI->Init(g_pGraphicsAPI->m_pDevice, g_pGraphicsAPI->m_pDeviceContext))
-	{
-		SHOW_ERROR(L"Failed to initialize imGui");
-		return SDL_APP_FAILURE;
-	}
 	
-	g_pAudioAPI = make_shared<AudioAPI>();
-	if (!g_pAudioAPI)
-	{
-		return SDL_APP_FAILURE;
-	}
+	AudioAPI::StartUp();
 	
-	g_pAudioAPI->Init();
+	g_audioAPI().Init();
 
 	g_pCallback = make_shared<VoiceCallback>();
 
-	g_pMaster = g_pAudioAPI->CreateMaster();
+	g_pMaster = g_audioAPI().CreateMaster();
 
-	g_pAudioAPI->Init3DAudio(g_pMaster);
+	g_audioAPI().Init3DAudio(g_pMaster);
 
-	g_pSubmix = g_pAudioAPI->CreateSubmix(2, 48000);
+	g_pSubmix = g_audioAPI().CreateSubmix(2, 48000);
 	
-	g_pSound = g_pAudioAPI->CreateSoundEffect("Mark",
+	g_pSound = g_audioAPI().CreateSoundEffect("Mark",
 																						"./audio/MX_Menu_Loop.wav", g_pCallback);
 	
-	g_pSound2 = g_pAudioAPI->CreateSoundEffect("Woosh",
+	g_pSound2 = g_audioAPI().CreateSoundEffect("Woosh",
 																						"./audio/Audio_001.wav");
 
 	g_pSound->RouteTo(g_pSubmix);
@@ -247,8 +228,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
 	g_pSound->getSourceVoice()->SetFrequencyRatio(1.2f);
 	
-	g_pAudioAPI->Play(g_pSound, 0.8f);
-	g_pAudioAPI->Play(g_pSound2, 0.3f);
+	g_audioAPI().Play(g_pSound, 0.8f);
+	g_audioAPI().Play(g_pSound2, 0.3f);
 
 	g_pSubmix->getSubmixVoice()->SetVolume(0.0f);
 
@@ -265,7 +246,7 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 {
 	SDL_Keycode sym = event->key.key;
 	
-	g_pImGuiAPI->Input(event);
+	g_imguiAPI().Input(event);
 
 	switch (event->type)
 	{
@@ -301,7 +282,7 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 
 			if (sym == SDLK_F2)
 			{
-				g_pRenderer->CompileShaders();
+				g_renderer().CompileShaders();
 				//RecompileShaders();
 			}
 			break;
@@ -384,6 +365,10 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 
 void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
+	AudioAPI::Shutdown();
+	ImGuiAPI::Shutdown();
+	Renderer::Shutdown();
+	GraphicsAPI::Shutdown();
 	
 
 	if (g_pWindow)
