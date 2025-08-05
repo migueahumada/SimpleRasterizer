@@ -67,7 +67,7 @@ void Update(float deltaTime)
 
 void FixedUpdate(){
 	g_pWorld->FixedUpdate();
-	printf("FixedUpdateLlamado\n");
+	//printf("FixedUpdateLlamado\n");
 }
 
 void Render() {
@@ -203,7 +203,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_Roughness.bmp",
 																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_Metallic.bmp");
 
-  g_pSixthActor->SetName("Sewing Machine");*/
+  g_pSixthActor->SetName("Sewing Machine");
+	*/
 
 	g_pImGuiAPI = make_shared<ImGuiAPI>(g_pWindow, g_pWorld, g_pCamera, g_pRenderer);
 	if (!g_pImGuiAPI)
@@ -347,7 +348,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 	
 	float dt = (now - past) / 1000000000.0f;
 
-	printf("DeltaTime: %f\n",dt);
+	//printf("DeltaTime: %f\n",dt);
 	
 	Update(dt);
 

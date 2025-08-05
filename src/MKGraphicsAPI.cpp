@@ -152,7 +152,7 @@ namespace MKEngine {
 		SAFE_RELEASE(pFactory2);
 	}
 
-	void MKGraphicsAPI::onShutDown()
+	void MKGraphicsAPI::onShutdown()
 	{
 		SAFE_RELEASE(m_pBackBufferRTV);
 		SAFE_RELEASE(m_pBackBufferDSV);
@@ -491,6 +491,6 @@ namespace MKEngine {
 
 	MKGraphicsAPI& g_graphicsAPI()
 	{
-		return MKGraphicsAPI::instance();
+		return MKGraphicsAPI::GetInstance();
 	}
 }

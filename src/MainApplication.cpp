@@ -4,9 +4,9 @@
 
 int main(){
   
-  MKEngine::App::startUp();
-  MKEngine::App::instance().runMainLoop();
-  MKEngine::App::shutDown();
+  MKEngine::App::StartUp();
+  MKEngine::App::GetInstance().runMainLoop();
+  MKEngine::App::Shutdown();
  
    return 0;
 }

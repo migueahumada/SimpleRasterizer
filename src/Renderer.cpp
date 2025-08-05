@@ -49,7 +49,7 @@ void Renderer::CompileShaders()
 		m_pVS_SSFS = pVS_DefLighting;
 	}
 
-	auto pPS_DefLighting = GAPI->CreatePixelShader(L"./shaders/Def_Lighting.hlsl", "pixel_main");
+	auto pPS_DefLighting = GAPI->CreatePixelShader(L"./shaders/Def_Lighting.hlsl", "cel_shading");
 	if (pPS_DefLighting)
 	{
 		m_pPS_DefLighting = pPS_DefLighting;

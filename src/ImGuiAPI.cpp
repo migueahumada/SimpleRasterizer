@@ -82,6 +82,7 @@ void ImGuiAPI::Render()
 
 	ImGui::ShowDemoWindow();
 
+	ImGui::SetNextWindowBgAlpha(0.2f);
 	ImGui::Begin("Scene Graph");
 	if (ImGui::TreeNode("Scene"))
 	{
@@ -95,7 +96,7 @@ void ImGuiAPI::Render()
 	}
 	ImGui::End();
 
-	//bool bIsOpen;
+	ImGui::SetNextWindowBgAlpha(0.2f);
 	ImGui::Begin("Camera", (bool*)1, ImGuiWindowFlags_AlwaysAutoResize);
 		
 		ImGui::Text("EyePos");
@@ -127,6 +128,13 @@ void ImGuiAPI::Render()
 			CAMERA->getUpDir().y,
 			CAMERA->getUpDir().z);
 
+	ImGui::End();
+
+
+	
+	//-------Shaders----UI
+	ImGui::Begin("Shaders", (bool*)1);
+		//ImGui::BeginCombo("Shaders",);
 	ImGui::End();
 
 

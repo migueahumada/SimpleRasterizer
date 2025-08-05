@@ -34,21 +34,21 @@ namespace MKEngine {
     }
 
     //Subsytems must have an order
-    MKGraphicsAPI::startUp(pWndHandle);
-    MKRenderer::startUp();
+    MKGraphicsAPI::StartUp(pWndHandle);
+    MKRenderer::StartUp();
 
     bool isStarted = MKRenderer::isStarted();
 
-    MKRenderer::instance().CompileShaders();
+    MKRenderer::GetInstance().CompileShaders();
     
 
   }
 
-  void App::onShutDown()
+  void App::onShutdown()
   {
     //Subsystems should be shutdown in inverse order
-    MKRenderer::shutDown();
-    MKGraphicsAPI::shutDown();
+    MKRenderer::Shutdown();
+    MKGraphicsAPI::Shutdown();
 
     if (m_pWindow)
     {

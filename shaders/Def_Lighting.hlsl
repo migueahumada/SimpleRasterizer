@@ -201,6 +201,27 @@ float2 GetRandom(float2 uv)
 
 }
 
+float4 cel_shading(PixelInput Input) : SV_Target
+{
+    float4 position = gbuffer_Position.Sample(samLinear, Input.texCoord);
+    float4 normal = gbuffer_Normal.Sample(samLinear, Input.texCoord);
+    float4 color = gbuffer_Color.Sample(samLinear, Input.texCoord);
+    
+    uint levels = 8;
+    
+    float4 green = float4(0.1, 0.4, 0.5, 1);
+    
+    float4 finalColor = floor(color * levels) / (levels - 1);
+    
+    /*
+    * 0,0,1 -> 
+    */
+    
+    
+    return finalColor;
+
+}
+
 float4 pixel_main(PixelInput Input) : SV_Target
 {
     float4 position = GetPosition(Input.texCoord);
@@ -218,8 +239,9 @@ float4 pixel_main(PixelInput Input) : SV_Target
     
     float4 shadowMap = gbuffer_ShadowMap.Sample(samLinear, posInLightVP.xy);
     
+    //PCF o PCCF
     float shadowDepth = shadowMap.x;
-    float lightDepth = posInLightVP.z - 0.005; //bias
+    float lightDepth = posInLightVP.z - 0.005; //bias para las manchas
     float shadowFactor;
     
     if (lightDepth > shadowDepth)

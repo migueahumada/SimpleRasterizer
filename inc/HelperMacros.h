@@ -31,6 +31,8 @@ using String = std::string;
 using std::make_shared;
 using std::make_unique;
 
+#include <cassert>
+
 static String trim(const String& str)
 {
 	size_t start = str.find_first_not_of(' ');

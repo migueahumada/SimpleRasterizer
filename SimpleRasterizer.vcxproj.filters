@@ -328,6 +328,9 @@
     <FxCompile Include="Shaders\Gbuffer.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\CelShading.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <Media Include="audio\Audio_001.wav">
