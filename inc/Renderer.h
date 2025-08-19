@@ -71,6 +71,15 @@ public:
   void SetSSAOPass();
   void SetLightingPass();
 
+  //Forward+
+  //iF PARA forward O DEFERRED.
+  //Scene Graph para decir qué es lo que tengo que dibujar.
+  //Def -> Opacos y después alpha testing. Alpha testing en el shader de las sombras
+  //Sombras
+
+  //Primero alpha tsitng de opacos->
+  //Todo de transparencia se tiene que hacer pase depsués de los opacos.
+
   inline Vector<Texture>& getGBuffer() {
     return m_GBuffer;
   }

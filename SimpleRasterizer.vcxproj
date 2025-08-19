@@ -191,6 +191,7 @@
     <ClCompile Include="src\Texture.cpp" />
     <ClCompile Include="src\VoiceCallback.cpp" />
     <ClCompile Include="src\World.cpp" />
+    <ClCompile Include="src\WorldManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\Actor.h" />
@@ -235,6 +236,7 @@
     <ClInclude Include="inc\Texture.h" />
     <ClInclude Include="inc\VoiceCallback.h" />
     <ClInclude Include="inc\World.h" />
+    <ClInclude Include="inc\WorldManager.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\BasicShader.hlsl">

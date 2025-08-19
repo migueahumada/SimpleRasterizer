@@ -221,6 +221,42 @@ float4 cel_shading(PixelInput Input) : SV_Target
     return finalColor;
 
 }
+//Azul es lo metálico
+
+//Un shift en el tono es un cambio en el tono para desfasarlo.
+
+// el HSV está dado por el círculo unitario
+float3 RGBtoHSV(float3 c)
+{
+    //Direccion
+    float4 K = float4(0.0f, -1.0f/3.0f, 2.0f/3.0f, -1);
+    
+    //Position
+    float4 p = (c.g < c.b) ? float4(c.bg, K.wz) : float4(c.gb, K.xy);
+    
+    //
+    float4 q = (c.r < p.x) ? float4(p.xyw, c.r) : float4(c.r, p.yzx);
+    
+    float d = q.x - min(q.w, p.y);
+    
+    float e = 1.0e-10; //No usar ifs en shaders
+    
+    return float3(abs(  q.z + (q.w - p.y) / (6.0f * d + e)), 
+                        d / (q.x + e), 
+                        q.x);
+
+}
+
+//El Hue Shift
+float3 HSVtoRGB(float3 c)
+{
+    float4 K = float4(1.0f, 2.0f/3.0f, 1.0f/3.0f, 3.0f);
+    
+    float3 p = abs(frac(c.xxx + K.xyz) * 6.0f - K.www);
+    
+    return c.z * lerp(K.xxx, saturate(p - K.xxx), c.y);
+
+}
 
 float4 pixel_main(PixelInput Input) : SV_Target
 {
@@ -266,6 +302,7 @@ float4 pixel_main(PixelInput Input) : SV_Target
     
     //return float4(specularColor.xyz, 1);
     
+    
     float3 colorFinal = BRDF_Cook_Torrence(normal.xyz,
                                            lightDir,
                                            normalize(position.xyz - viewPos),
@@ -273,6 +310,7 @@ float4 pixel_main(PixelInput Input) : SV_Target
                                            color.rgb,
                                            specularColor,
                                            normal.w);
+    //return float4(RGBtoHSV(colorFinal),1.0f);
     //return float4(specularColor, 1);
     // Lo = kD + kS + kA
     //return normal.wwww;
