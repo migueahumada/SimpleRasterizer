@@ -2,6 +2,8 @@
 #include "MathObjects.h"
 #include "SceneObject.h"
 
+#include "Renderer.h"
+
 class Actor : public SceneObject
 {
 
@@ -21,6 +23,15 @@ public:
   Transform getWorldTransform() const{
     return m_worldTransform;
   }
+  
+  ShadingState::E getShadingState() const{
+    return m_shadingState;
+  }
+  
+  void setShadingState(ShadingState::E newShadingState)
+  {
+    m_shadingState = newShadingState;
+  }
 
 private:
   
@@ -31,7 +42,7 @@ protected:
   Transform m_localTransform;
   Transform m_worldTransform;
 
-
+  ShadingState::E m_shadingState {ShadingState::DEFERRED};
   
   
 };

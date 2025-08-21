@@ -49,7 +49,7 @@ void Renderer::CompileShaders()
 		m_pVS_SSFS = pVS_DefLighting;
 	}
 
-	auto pPS_DefLighting = g_graphicsAPI().CreatePixelShader(L"./shaders/Def_Lighting.hlsl", "cel_shading");
+	auto pPS_DefLighting = g_graphicsAPI().CreatePixelShader(L"./shaders/Def_Lighting.hlsl", "pixel_main");
 	if (pPS_DefLighting)
 	{
 		m_pPS_DefLighting = pPS_DefLighting;
@@ -71,6 +71,19 @@ void Renderer::CompileShaders()
 	if (pPS_ShadowMap)
 	{
 		m_pPS_ShadowMap = pPS_ShadowMap;
+	}
+
+	//FORWARD SHADER
+	auto pVS_Forward = g_graphicsAPI().CreateVertexShader(L"./shaders/ForwardShading.hlsl", "vertex_main");
+	if (pVS_Forward)
+	{
+		m_pVS_Forward = pVS_Forward;
+	}
+
+	auto pPS_Forward = g_graphicsAPI().CreatePixelShader(L"./shaders/ForwardShading.hlsl", "pixel_main");
+	if (pPS_Forward)
+	{
+		m_pPS_Forward = pPS_Forward;
 	}
 
 }
@@ -294,7 +307,7 @@ void Renderer::InitGBuffer(int width, int height)
 																								1,
 																								&m_GBuffer[3].m_pSRV,
 																								&m_GBuffer[3].m_pRTV);
-
+	//ShadowMap
 	m_dsShadowMap.m_pTexture = g_graphicsAPI().CreateTexture(width,
 																								 height,
 																								 DXGI_FORMAT_D32_FLOAT,
@@ -317,6 +330,70 @@ void Renderer::SetDefaultTextures()
 	CreateDefaultSRV(0xFF8080, DefaultTextures::NORMAL, DXGI_FORMAT_R8G8B8A8_UNORM);
 }
 
+
+void Renderer::SetPasses()
+{
+	//Todo lo que se podría renderizar aquí de los RTV puede ir aquí.
+
+	SetShadowPass();
+	
+	if (m_currentShadingState == ShadingState::DEFERRED)
+	{
+		SetGeometryPass();
+		SetSSAOPass();
+		SetLightingPass();
+	}
+
+	// Definir la cámara que se va a usar.
+	if (m_currentShadingState == ShadingState::FORWARD)
+	{
+		SetForwardPass();
+	}
+}
+
+void Renderer::SetForwardPass()
+{
+	if (m_pWorld.expired())
+	{
+		SHOW_ERROR(L"Couldn't set Geometry Pass :(")
+			return;
+	}
+
+	auto WORLD = m_pWorld.lock();
+
+	FloatColor tempColor = Color{ 0, 0, 0, 0 };
+	float clearColor[4] = { tempColor.r,tempColor.g , tempColor.b,tempColor.a };
+
+	g_graphicsAPI().m_pDeviceContext->ClearRenderTargetView(g_graphicsAPI().m_pBackBufferRTV,
+																													clearColor);
+
+	g_graphicsAPI().m_pDeviceContext->ClearDepthStencilView(g_graphicsAPI().m_pBackBufferDSV,
+																													D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
+																													1.0f, 0);
+	
+	g_graphicsAPI().m_pDeviceContext->OMSetRenderTargets(1,
+		&g_graphicsAPI().m_pBackBufferRTV,
+		g_graphicsAPI().m_pBackBufferDSV);
+	
+	g_graphicsAPI().m_pDeviceContext->VSSetShader(m_pVS_Forward->m_pVertexShader,
+		nullptr,
+		0);
+	
+	g_graphicsAPI().m_pDeviceContext->PSSetShader(m_pPS_Forward->m_pPixelShader,
+		nullptr,
+		0);
+
+	for (const auto& actor : WORLD->getActors())
+	{
+		auto character = std::dynamic_pointer_cast<Character>(actor);
+
+		if (character)
+		{
+			RenderActor(character);
+		}
+	}
+}
+
 void Renderer::RenderActor(const WPtr<Character>& character)
 {
 	
@@ -333,16 +410,16 @@ void Renderer::RenderActor(const WPtr<Character>& character)
 	UINT stride = sizeof(MODEL_VERTEX);
 	UINT offset = 0;
 
-	g_graphicsAPI().m_pDeviceContext->IASetVertexBuffers(0,1,
-																							&CHAR->m_model->m_pVertexBuffer->m_pBuffer, 
-																							&stride, &offset);
+	g_graphicsAPI().m_pDeviceContext->IASetVertexBuffers(0, 1,
+		&CHAR->m_model->m_pVertexBuffer->m_pBuffer,
+		&stride, &offset);
 	g_graphicsAPI().m_pDeviceContext->IASetIndexBuffer(CHAR->m_model->m_pIndexBuffer->m_pBuffer,
-																						DXGI_FORMAT_R16_UINT,0);
+		DXGI_FORMAT_R16_UINT, 0);
 
 	g_graphicsAPI().m_pDeviceContext->PSSetSamplers(0, 1, &m_SamplerStates.at(SamplerStates::POINT));
 	g_graphicsAPI().m_pDeviceContext->PSSetSamplers(1, 1, &m_SamplerStates.at(SamplerStates::LINEAR));
 	g_graphicsAPI().m_pDeviceContext->PSSetSamplers(2, 1, &m_SamplerStates.at(SamplerStates::ANISOTROPIC));
-	
+
 
 	m_WVP.world = CHAR->getLocalTransform().getMatrix();
 	m_WVP.view = CAMERA->getViewMatrix();
@@ -364,10 +441,11 @@ void Renderer::RenderActor(const WPtr<Character>& character)
 	g_graphicsAPI().m_pDeviceContext->RSSetState(m_RasterStates.at(RasterStates::DEFAULT));
 	g_graphicsAPI().writeToBuffer(m_pCB_WVP, matrix_data);
 
-	
 
+	//Color
 	g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(0, 1, &CHAR->m_texture->m_pSRV);
 
+	//Normal
 	if (!CHAR->m_normalTextureName.empty())
 	{
 		g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(1, 1, &CHAR->m_normalTexture->m_pSRV);
@@ -375,6 +453,7 @@ void Renderer::RenderActor(const WPtr<Character>& character)
 	else
 		g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(1, 1, &m_DefaultTextures.at(DefaultTextures::NORMAL));
 
+	//Roughness
 	if (!CHAR->m_roughnessTextureName.empty())
 	{
 		g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(2, 1, &CHAR->m_roughnessTexture->m_pSRV);
@@ -382,6 +461,7 @@ void Renderer::RenderActor(const WPtr<Character>& character)
 	else
 		g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(2, 1, &m_DefaultTextures.at(DefaultTextures::BLACK));
 
+	//Metallic
 	if (!CHAR->m_metallicTextureName.empty())
 	{
 		g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(3, 1, &CHAR->m_metallicTexture->m_pSRV);
@@ -390,11 +470,8 @@ void Renderer::RenderActor(const WPtr<Character>& character)
 		g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(3, 1, &m_DefaultTextures.at(DefaultTextures::WHITE));
 
 	g_graphicsAPI().m_pDeviceContext->DrawIndexed(CHAR->m_model->m_meshes[0].numIndices,
-																			CHAR->m_model->m_meshes[0].baseIndex,
-																			CHAR->m_model->m_meshes[0].baseVertex);
-	
-	
-	
+		CHAR->m_model->m_meshes[0].baseIndex,
+		CHAR->m_model->m_meshes[0].baseVertex);
 
 }
 
@@ -428,7 +505,7 @@ void Renderer::RenderShadows(const WPtr<Character>& character)
 	m_WVP.projection = CAMERA->getProjectionMatrix();
 	m_WVP.viewDir = CAMERA->GetViewDir();
 
-	////GPASS
+	//GPASS
 	m_WVP.projection.Transpose();
 	m_WVP.view.Transpose();
 	m_WVP.world.Transpose();
@@ -450,7 +527,6 @@ void Renderer::RenderShadows(const WPtr<Character>& character)
 
 void Renderer::CreateDefaultSRV(UINT value, DefaultTextures::E defaultTextureType, DXGI_FORMAT format)
 {
-
 
 	HRESULT hr;
 
@@ -497,6 +573,49 @@ void Renderer::CreateDefaultSRV(UINT value, DefaultTextures::E defaultTextureTyp
 
 	m_DefaultTextures.insert({ defaultTextureType, pSRV });
 }
+
+// 
+// Indice asociado a cual hueso está ligado
+// Y un peso flotatnte que indica el porcentaje de cambio que se aplica el movimiento de hueso al movimiento del vértices.
+// Cinemática directa e inversa.
+// Cinemática directa es el brazo de robot.
+// 
+// Cinemática Inversa
+// La resolución de los huesos se hace del final hacia atrás.
+// 
+// Constraints
+// Ejemplo-> se le ponen limitantes.
+// 
+// Esqueleto: Tendrá constraints para tener la solución correcta al final del IK. 
+//						Se ve como si fuera 2D.
+//						Máximo de 4 huesos.
+//						Skinning, Pesos, Joints. 
+//						En un modelo, limitamos el número de huesos que pueden afectar a unvértice.
+//						Tradicionalmente 4 huesos por vértices.
+//						Cada vértices puede ser por 4 huesos.
+// 
+// La base de cómo construir la estructura del esqueleto. Cómo estar ligado.
+// 
+// La animación -> Es como tener un timeline, es como un pentagrama. De música. Por cada hueso en el modelos
+//								 Se pondrá una línea en este timeline. Es un poligrama. Las notas son los keyframes. 
+//								 Este hueso tien esta posición y giro.
+//								 La curva es como una interpolación.
+//								 A + (B - A) * T
+//								 Interpolación:
+//								 Interpolación esférica -> son las curvas
+//								 Interpolación lineal para posición.
+//								 Quaterniones para interpolaciónes esféricas.
+// 
+// Crystal Dynamics -> Tomb Raider el I -> Legacy of Kane Soul River
+// 
+// Así es una mezcla de animación con collider.
+// 
+// Esto viene de la robótica.
+// 
+// Sistemas de parkour son IKs y ligados a mecanismos de animación.
+// 
+// Assimp tiene para la animación
+
 
 void Renderer::SetShadowPass()
 {
@@ -548,7 +667,6 @@ void Renderer::SetGeometryPass()
 			return;
 	}
 
-
 	auto WORLD = m_pWorld.lock();
 	
 	FloatColor tempColor = Color{ 0, 0, 0, 0 };
@@ -576,30 +694,24 @@ void Renderer::SetGeometryPass()
 		m_GBuffer[2].m_pRTV
 	};
 
-	g_graphicsAPI().m_pDeviceContext->OMSetRenderTargets(renderTargets.size(),
-																						 renderTargets.data(),
-																						 g_graphicsAPI().m_pBackBufferDSV);
-
-	g_graphicsAPI().m_pDeviceContext->VSSetShader(m_pGBuffer_VS->m_pVertexShader,
-																			nullptr,
-																			0);
-	g_graphicsAPI().m_pDeviceContext->PSSetShader(m_pGBuffer_PS->m_pPixelShader,
-																			nullptr,
-																			0);
-
 	for (const auto& actor : WORLD->getActors())
 	{
 		auto character = std::dynamic_pointer_cast<Character>(actor);
 
 		if (character)
 		{
+			g_graphicsAPI().m_pDeviceContext->OMSetRenderTargets(renderTargets.size(),
+				renderTargets.data(),
+				g_graphicsAPI().m_pBackBufferDSV);
+			g_graphicsAPI().m_pDeviceContext->VSSetShader(m_pGBuffer_VS->m_pVertexShader,
+				nullptr,
+				0);
+			g_graphicsAPI().m_pDeviceContext->PSSetShader(m_pGBuffer_PS->m_pPixelShader,
+				nullptr,
+				0);
 			RenderActor(character);
-			//SetShadowPass(character);
-			
-			
 		}
 	}
-
 }
 
 void Renderer::SetSSAOPass()

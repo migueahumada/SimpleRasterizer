@@ -67,10 +67,7 @@ void Render() {
 
 	g_pWorld->Render();
 
-	g_renderer().SetShadowPass();
-	g_renderer().SetGeometryPass();
-	g_renderer().SetSSAOPass();
-	g_renderer().SetLightingPass();
+	g_renderer().SetPasses();
 
 	g_imguiAPI().Render();
 	
@@ -147,9 +144,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																									 Vector3(0.0f, 0.0f, 0.0f),
 																									 Vector3(6.0f, 6.0f, 6.0f));
 	g_pFourthActor->SetName("Floor");
-
-	/*g_pSecondaryActor = g_pWorld->SpawnActor<Character>(nullptr,
-																								 g_pGraphicsAPI,
+	/*
+	g_pSecondaryActor = g_pWorld->SpawnActor<Character>(nullptr,
 																								 "D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/BrainRot.obj",
 																								 "D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/textures/Patapim_baseColor.bmp",
 																								 Vector3(3.0f, 0.0f, 0.0f),
@@ -158,9 +154,11 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																								 "D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/textures/Patapim_metallicRoughness.bmp",
 																								 "D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/textures/Patapim_metallicRoughness.bmp");
 	g_pSecondaryActor->SetName("Patapim");
+	g_pSecondaryActor->setShadingState(ShadingState::FORWARD);
+	*/
 
+	/*
 	g_pThirdActor = g_pWorld->SpawnActor<Character>(nullptr,
-																								 g_pGraphicsAPI,
 																								 "rex_norm.obj",
 																								 "Rex_C.bmp",
 																								 Vector3(5.0f, 0.0f, 2.0f),
@@ -169,8 +167,9 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																								 "Rex_R.bmp",
 																								 "Rex_M.bmp");
 
-	g_pThirdActor->SetName("Dino Small");
-
+	g_pThirdActor->SetName("Dino Small");*/
+	
+	/*
 	g_pFourthActor = g_pWorld->SpawnActor<Character>(nullptr,
 																									g_pGraphicsAPI,
 																									"discBetterF.obj",
@@ -186,9 +185,11 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																									Vector3(3.0f, 0.0f, 5.0f),
 																									Vector3(1.0f, 1.0f, 1.0f));
 	g_pFifthActor->SetName("Man");
-
+	*/
+	
+	
 	g_pSixthActor = g_pWorld->SpawnActor<Character>(nullptr,
-																									g_pGraphicsAPI,
+																									
 																									"D:/Models3D/sewing-machine/source/SewingMachine/sewing8.obj",
 																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_BaseColor_A.bmp",
 																									Vector3(-2.0f, 0.0f, 0.0f),
@@ -198,7 +199,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_Metallic.bmp");
 
   g_pSixthActor->SetName("Sewing Machine");
-	*/
+	g_pSixthActor->setShadingState(ShadingState::FORWARD);
 
 	ImGuiAPI::StartUp(g_pWindow, g_pWorld, g_pCamera);
 
@@ -227,11 +228,11 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	g_pSound2->RouteTo(g_pSubmix);
 
 	g_pSound->getSourceVoice()->SetFrequencyRatio(1.2f);
-	
+	g_pSubmix->getSubmixVoice()->SetVolume(0.0f);
 	g_audioAPI().Play(g_pSound, 0.8f);
 	g_audioAPI().Play(g_pSound2, 0.3f);
 
-	g_pSubmix->getSubmixVoice()->SetVolume(0.0f);
+	
 
 	int32_t cursorData[2] = { 0, 0 };
 	g_pCursor = SDL_CreateCursor(	(Uint8*)cursorData, 

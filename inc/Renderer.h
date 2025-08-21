@@ -12,6 +12,13 @@
 #include "Texture.h"
 #include "Module.h"
 
+namespace ShadingState{
+  enum E {
+    FORWARD,
+    DEFERRED
+  };
+}
+
 class GraphicsAPI;
 class GraphicsBuffer;
 struct MatrixCollection;
@@ -65,6 +72,11 @@ public:
   void InitSampleFilters();
   void InitGBuffer(int width, int height);
   void SetDefaultTextures();
+  
+  
+  void SetPasses();
+  
+  void SetForwardPass();
 
   void SetShadowPass();
   void SetGeometryPass();
@@ -125,6 +137,9 @@ private:
   SPtr<VertexShader> m_pVS_ShadowMap;
   SPtr<PixelShader> m_pPS_ShadowMap;
 
+  SPtr<VertexShader> m_pVS_Forward;
+  SPtr<PixelShader> m_pPS_Forward;
+
   UnorderedMap<RasterStates::E, ID3D11RasterizerState1*> m_RasterStates;
   UnorderedMap<SamplerStates::E, ID3D11SamplerState*> m_SamplerStates;
 
@@ -132,9 +147,13 @@ private:
 
   Vector<Texture> m_GBuffer;
   Texture m_dsShadowMap;
+  //TODOOOO
+  Texture m_forwardRTV;
 
-  
-  
+  ShadingState::E m_currentShadingState{ShadingState::FORWARD};
+
+
+
 };
 
 Renderer& g_renderer();
