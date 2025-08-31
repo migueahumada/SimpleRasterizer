@@ -334,6 +334,29 @@ void Renderer::SetDefaultTextures()
 void Renderer::SetPasses()
 {
 	//Todo lo que se podría renderizar aquí de los RTV puede ir aquí.
+	
+	//Primero Opacos
+	//Luego objetos transparentes
+	//´Primero el personaje, luego sus lentes y se ve bien perfecto
+
+	// Primero -> !!!!!!!!!!!Opacos
+	// Transparentes -> ->SEGUNDOOOOOOOOOOOOOOO -> CULLING ATRÁS Y LUEGO ADELANTE.
+	// Atrás -> pa adelante.
+
+	// Pase de transmisión tal vez.
+
+	// Propiedad del material -> PONERSELO Y DE ACUERDO AL TIPO DE OPACO O TRANSPARENCIA.
+	// Por ejemplo -> Si la textura tiene un nivel de alpha diferente de 1.
+	// 
+	// DIBUJALS TODOS PRIMERO Y LUEGO LO DIBUJAS DESPUÉS LOS OTROS.
+	// OPACOS.
+	// TRANSPARENTES.
+	
+	//Una manera puede ser checando la textura.
+
+	//Opacos.
+	//Transmisión. .-> qué tanto permito que pase la luz. -> similar a la refracción.
+	//Transparente.
 
 	SetShadowPass();
 	

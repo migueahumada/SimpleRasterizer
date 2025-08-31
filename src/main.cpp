@@ -117,6 +117,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	g_pCamera->SetLookAt(Vector3(0, 0, -6.0f), Vector3(0, 0, 0), Vector3(0, 1, 0));		//Setea la matriz de la cámara
 	g_pCamera->SetPerspective(3.141592653f/4.0f,WIDTH,HEIGHT,0.1f,100.0f);			//Sete la matriz de la perspectiva
 
+	//Pipeline de artista, como decirle al artista para que funcione.
 	g_renderer().InitWVP();
 	g_renderer().InitConstantBuffer();
 	g_renderer().InitRasterizerStates();
