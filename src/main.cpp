@@ -21,6 +21,7 @@
 #include "Renderer.h"
 #include "ImGuiAPI.h"
 
+
 SDL_Window* g_pWindow = nullptr;
 SDL_Cursor* g_pCursor = nullptr;
 

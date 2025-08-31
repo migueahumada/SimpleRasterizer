@@ -12,6 +12,10 @@
 #include "Texture.h"
 #include "Module.h"
 
+#include <assimp/Importer.hpp>      // C++ importer interface
+#include <assimp/scene.h>           // Output data structure
+#include <assimp/postprocess.h>     // Post processing flags
+
 namespace ShadingState{
   enum E {
     FORWARD,
@@ -150,8 +154,9 @@ private:
   //TODOOOO
   Texture m_forwardRTV;
 
-  ShadingState::E m_currentShadingState{ShadingState::FORWARD};
+  ShadingState::E m_currentShadingState{ShadingState::DEFERRED};
 
+  //Assimp::Importer importer;
 
 
 };
