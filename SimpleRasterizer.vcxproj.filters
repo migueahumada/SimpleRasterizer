@@ -186,6 +186,9 @@
     <ClCompile Include="src\WorldManager.cpp">
       <Filter>Source Files\GameFramework</Filter>
     </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\imgui\imconfig.h">
@@ -316,6 +319,9 @@
     </ClInclude>
     <ClInclude Include="inc\WorldManager.h">
       <Filter>Header Files\GameFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Header Files\Graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

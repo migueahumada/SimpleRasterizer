@@ -41,7 +41,7 @@ Character::Character( const String& modelName,
 void Character::Init()
 {
   Actor::Init();
-  m_model->LoadFromFile(m_modelName.c_str());
+  m_model->LoadWithAssimp(m_modelName.c_str());
   
   m_image->decode(m_textureName.c_str());
   m_texture->createImage(*m_image, g_graphicsAPI());

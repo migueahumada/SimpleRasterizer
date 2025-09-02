@@ -2,6 +2,7 @@
 #include <cassert>
 #include <fstream>
 #include "GraphicsAPI.h"
+#include <iostream>
 
 using std::fstream;
 using std::ios;
@@ -243,3 +244,113 @@ void Model::ComputeTangentSpace()
     }
   }
 }
+
+bool Model::LoadWithAssimp(const char* filePath)
+{
+  Assimp::Importer importer;
+
+  unsigned int flags = aiProcess_CalcTangentSpace |
+                       aiProcess_Triangulate |
+                       aiProcess_JoinIdenticalVertices |
+                       aiProcess_SortByPType |
+                       aiProcess_ConvertToLeftHanded;
+
+  const aiScene* scene = importer.ReadFile(filePath, flags);
+
+  if (!scene)
+  {
+    MessageBox(nullptr, L"Couldn't load model with assimp", L"Error", MB_OK);
+    return false;
+  }
+
+  
+  int accumVertex = 0;
+  int accumIndex = 0;
+
+  for (size_t i = 0; i < scene->mNumMeshes; ++i)
+  { 
+
+    //VERTICES
+    for (size_t j = 0; j < scene->mMeshes[i]->mNumVertices; ++j)
+    { 
+      MODEL_VERTEX modelVertex;
+      memset(&modelVertex, 0, sizeof(MODEL_VERTEX));
+
+      modelVertex.position.x = scene->mMeshes[i]->mVertices[j].x;
+      modelVertex.position.y = scene->mMeshes[i]->mVertices[j].y;
+      modelVertex.position.z = scene->mMeshes[i]->mVertices[j].z;
+
+      modelVertex.color.x = 1.0f;
+      modelVertex.color.y = 1.0f;
+      modelVertex.color.z = 1.0f;
+
+      modelVertex.normal.x = scene->mMeshes[i]->mNormals[j].x;
+      modelVertex.normal.y = scene->mMeshes[i]->mNormals[j].y;
+      modelVertex.normal.z = scene->mMeshes[i]->mNormals[j].z;
+
+      modelVertex.tangent.x = scene->mMeshes[i]->mTangents[j].x;
+      modelVertex.tangent.y = scene->mMeshes[i]->mTangents[j].y;
+      modelVertex.tangent.z = scene->mMeshes[i]->mTangents[j].z;
+
+      modelVertex.u = static_cast<float>(scene->mMeshes[i]->mTextureCoords[0][j].x);
+      modelVertex.v = static_cast<float>(scene->mMeshes[i]->mTextureCoords[0][j].y);
+
+      m_vertices.push_back(modelVertex);
+    }
+
+    //ÍNDICES
+    for (size_t j = 0; j < scene->mMeshes[i]->mNumFaces; ++j)
+    {
+
+      //3 índices por que la cara es de triángulos.
+      m_indices.push_back(scene->mMeshes[i]->mFaces[j].mIndices[0]);
+      m_indices.push_back(scene->mMeshes[i]->mFaces[j].mIndices[1]);
+      m_indices.push_back(scene->mMeshes[i]->mFaces[j].mIndices[2]);
+    } 
+
+    Mesh currentMesh;
+    currentMesh.topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+    currentMesh.numVertices = scene->mMeshes[i]->mNumVertices;
+    currentMesh.baseVertex = accumVertex;
+    currentMesh.baseIndex = accumIndex;
+    currentMesh.numIndices = scene->mMeshes[i]->mNumFaces * 3;
+
+    accumVertex += scene->mMeshes[i]->mNumVertices;
+
+    accumIndex += scene->mMeshes[i]->mNumFaces * 3;
+
+    m_meshes.push_back(currentMesh);
+
+  }
+  
+  Vector<char> vectorData;
+  vectorData.resize(m_vertices.size() * sizeof(MODEL_VERTEX));
+  memcpy(vectorData.data(), m_vertices.data(), m_vertices.size() * sizeof(MODEL_VERTEX));
+
+  m_pVertexBuffer = g_graphicsAPI().CreateVertexBuffer(vectorData);
+  if (!m_pVertexBuffer)
+  {
+    MessageBox(nullptr, L"Couldn't create the vertex buffer with assimp", L"Error", MB_OK);
+    return false;
+  }
+
+  Vector<char> indexData;
+  indexData.resize(m_indices.size() * sizeof(unsigned short));
+  memcpy(indexData.data(),m_indices.data(),m_indices.size() * sizeof(unsigned short));
+
+  m_pIndexBuffer = g_graphicsAPI().CreateIndexBuffer(indexData);
+  if (!m_pIndexBuffer)
+  {
+    MessageBox(nullptr, L"Couldn't create the index buffer with assimp", L"Error", MB_OK);
+    return false;
+  }
+  
+
+
+  return true;
+}
+
+
+
+
+

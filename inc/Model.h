@@ -5,6 +5,10 @@
 #include <vector>
 #include <string>
 
+#include <assimp/Importer.hpp>      // C++ importer interface
+#include <assimp/scene.h>           // Output data structure
+#include <assimp/postprocess.h>     // Post processing flags
+
 class GraphicsAPI;
 class GraphicsBuffer;
 
@@ -93,6 +97,10 @@ public:
 
 	bool LoadFromFile(const char* filePath);
 	void ComputeTangentSpace();
+
+	bool LoadWithAssimp(const char* filePath);
+
+
 	//TODO: Iterar sobre el vector de meshes y ahí estarán los buffer
 	Vector<Mesh> m_meshes;
 

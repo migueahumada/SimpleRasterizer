@@ -20,6 +20,7 @@
 #include "VoiceCallback.h"
 #include "Renderer.h"
 #include "ImGuiAPI.h"
+#include "Model.h"
 
 
 SDL_Window* g_pWindow = nullptr;
@@ -146,7 +147,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																									 Vector3(0.0f, 0.0f, 0.0f),
 																									 Vector3(6.0f, 6.0f, 6.0f));
 	g_pFourthActor->SetName("Floor");
-	/*
+	
 	g_pSecondaryActor = g_pWorld->SpawnActor<Character>(nullptr,
 																								 "D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/BrainRot.obj",
 																								 "D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/textures/Patapim_baseColor.bmp",
@@ -157,9 +158,9 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																								 "D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/textures/Patapim_metallicRoughness.bmp");
 	g_pSecondaryActor->SetName("Patapim");
 	g_pSecondaryActor->setShadingState(ShadingState::FORWARD);
-	*/
+	
 
-	/*
+	
 	g_pThirdActor = g_pWorld->SpawnActor<Character>(nullptr,
 																								 "rex_norm.obj",
 																								 "Rex_C.bmp",
@@ -169,11 +170,11 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																								 "Rex_R.bmp",
 																								 "Rex_M.bmp");
 
-	g_pThirdActor->SetName("Dino Small");*/
+	g_pThirdActor->SetName("Dino Small");
 	
-	/*
+	
 	g_pFourthActor = g_pWorld->SpawnActor<Character>(nullptr,
-																									g_pGraphicsAPI,
+
 																									"discBetterF.obj",
 																									"tex4.bmp",
 																									Vector3(0.0f, 0.0f, 0.0f),
@@ -181,13 +182,13 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	g_pFourthActor->SetName("Floor");
 
 	g_pFifthActor = g_pWorld->SpawnActor<Character>(nullptr,
-																									g_pGraphicsAPI,
+
 																									"ManNormals.obj",
 																									"manText.bmp",
 																									Vector3(3.0f, 0.0f, 5.0f),
 																									Vector3(1.0f, 1.0f, 1.0f));
 	g_pFifthActor->SetName("Man");
-	*/
+	
 	
 	
 	g_pSixthActor = g_pWorld->SpawnActor<Character>(nullptr,
@@ -202,6 +203,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
   g_pSixthActor->SetName("Sewing Machine");
 	g_pSixthActor->setShadingState(ShadingState::FORWARD);
+
+
 
 	ImGuiAPI::StartUp(g_pWindow, g_pWorld, g_pCamera);
 
@@ -241,6 +244,10 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																(Uint8*)cursorData, 
 																8, 8, 4, 4);
 	SDL_SetCursor(g_pCursor);
+
+	
+	//Model model;
+	//model.LoadWithAssimp("D:/Models3D/sewing-machine/source/SewingMachine/sewing8.obj");
 
 	return SDL_APP_CONTINUE;
 }

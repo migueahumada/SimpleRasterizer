@@ -492,9 +492,12 @@ void Renderer::RenderActor(const WPtr<Character>& character)
 	else
 		g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(3, 1, &m_DefaultTextures.at(DefaultTextures::WHITE));
 
-	g_graphicsAPI().m_pDeviceContext->DrawIndexed(CHAR->m_model->m_meshes[0].numIndices,
-		CHAR->m_model->m_meshes[0].baseIndex,
-		CHAR->m_model->m_meshes[0].baseVertex);
+	for (size_t i = 0; i < CHAR->m_model->m_meshes.size(); ++i)
+	{
+		g_graphicsAPI().m_pDeviceContext->DrawIndexed(CHAR->m_model->m_meshes[i].numIndices,
+																									CHAR->m_model->m_meshes[i].baseIndex,
+																									CHAR->m_model->m_meshes[i].baseVertex);
+	}
 
 }
 
@@ -543,9 +546,12 @@ void Renderer::RenderShadows(const WPtr<Character>& character)
 	g_graphicsAPI().m_pDeviceContext->RSSetState(m_RasterStates.at(RasterStates::DEFAULT));
 	g_graphicsAPI().writeToBuffer(m_pCB_WVP, matrix_data);
 
-	g_graphicsAPI().m_pDeviceContext->DrawIndexed(CHAR->m_model->m_meshes[0].numIndices,
-																			CHAR->m_model->m_meshes[0].baseIndex,
-																			CHAR->m_model->m_meshes[0].baseVertex);
+	for (size_t i = 0; i < CHAR->m_model->m_meshes.size(); ++i)
+	{
+		g_graphicsAPI().m_pDeviceContext->DrawIndexed(CHAR->m_model->m_meshes[i].numIndices,
+			CHAR->m_model->m_meshes[i].baseIndex,
+			CHAR->m_model->m_meshes[i].baseVertex);
+	}
 }
 
 void Renderer::CreateDefaultSRV(UINT value, DefaultTextures::E defaultTextureType, DXGI_FORMAT format)
