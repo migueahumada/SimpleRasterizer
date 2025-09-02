@@ -1,0 +1,4 @@
+Info,  T8876: Load D:/Models3D/San_Miguel/san-miguel-low-poly.obj
+Debug, T8876: Assimp 6.0.0 amd64 msvc debug shared singlethreadedsingle : 
+Info,  T8876: Found a matching importer for this file format: Wavefront Object Importer.
+Info,  T8876: Import root directory is 'D:/Models3D/San_Miguel\'

@@ -1,0 +1,4 @@
+Info,  T22920: Load D:Models3DSan_Miguel.obj
+Debug, T22920: Assimp 6.0.0 amd64 msvc debug shared singlethreadedsingle : 
+Error, T22920: Unable to open file "D:Models3DSan_Miguel.obj".
+Info,  T22920: This is a messahe

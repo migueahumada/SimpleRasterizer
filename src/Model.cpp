@@ -3,6 +3,7 @@
 #include <fstream>
 #include "GraphicsAPI.h"
 #include <iostream>
+#include <assimp/DefaultLogger.hpp>
 
 using std::fstream;
 using std::ios;
@@ -34,7 +35,7 @@ bool Model::LoadFromFile(const char* filePath)
     Vector<float2> temp_tc;
     Vector<Vector3> temp_norm;
 
-    UnorderedMap<FaceVertex, unsigned short> uniqueVertices;
+    UnorderedMap<FaceVertex, uint32> uniqueVertices;
 
     for (const auto& line: lines)
     {
@@ -69,7 +70,7 @@ bool Model::LoadFromFile(const char* filePath)
         }
         else if (tokens[0] == "f")
         {
-            Vector<unsigned short> faceIndex;
+            Vector<uint32> faceIndex;
 
             //assert(tokens.size() == 4);
             for (size_t i = 1; i < tokens.size(); ++i)
@@ -83,7 +84,7 @@ bool Model::LoadFromFile(const char* filePath)
 
                 if (uniqueVertices.find(fv) == uniqueVertices.end())
                 {
-                    uniqueVertices[fv] = static_cast<unsigned short>(m_vertices.size());
+                    uniqueVertices[fv] = static_cast<uint32>(m_vertices.size());
 
                     MODEL_VERTEX mvertex;
                     mvertex.position = temp_pos[fv.vertex_index];
@@ -127,8 +128,8 @@ bool Model::LoadFromFile(const char* filePath)
     }
 
     Vector<char> index_data;
-    index_data.resize(m_indices.size() * sizeof(unsigned short));
-    memcpy(index_data.data(), m_indices.data(), m_indices.size() * sizeof(unsigned short));
+    index_data.resize(m_indices.size() * sizeof(uint32));
+    memcpy(index_data.data(), m_indices.data(), m_indices.size() * sizeof(uint32));
 
     m_pIndexBuffer = g_graphicsAPI().CreateIndexBuffer(index_data);
     if (!m_pIndexBuffer)
@@ -144,7 +145,7 @@ bool Model::LoadFromFile(const char* filePath)
 void Model::ComputeTangentSpace()
 {
   Vector<MODEL_VERTEX>& vertices  = m_vertices;
-  Vector<unsigned short>& indices = m_indices;
+  Vector<uint32>& indices = m_indices;
 
   //Compute tangents
   Vector<Vector3> tan1(vertices.size(), Vector3(0.0f, 0.0f, 0.0f));
@@ -247,9 +248,10 @@ void Model::ComputeTangentSpace()
 
 bool Model::LoadWithAssimp(const char* filePath)
 {
+  /*Assimp::DefaultLogger::create("asdfasdf.txt", Assimp::Logger::VERBOSE);*/
   Assimp::Importer importer;
 
-  unsigned int flags = aiProcess_CalcTangentSpace |
+  uint32 flags =       aiProcess_CalcTangentSpace |
                        aiProcess_Triangulate |
                        aiProcess_JoinIdenticalVertices |
                        aiProcess_SortByPType |
@@ -259,7 +261,9 @@ bool Model::LoadWithAssimp(const char* filePath)
 
   if (!scene)
   {
+    //Assimp::DefaultLogger::get()->info("This is a messahe");
     MessageBox(nullptr, L"Couldn't load model with assimp", L"Error", MB_OK);
+    //Assimp::DefaultLogger::kill;
     return false;
   }
 
@@ -267,9 +271,9 @@ bool Model::LoadWithAssimp(const char* filePath)
   int accumVertex = 0;
   int accumIndex = 0;
 
+  //MESHES
   for (size_t i = 0; i < scene->mNumMeshes; ++i)
   { 
-
     //VERTICES
     for (size_t j = 0; j < scene->mMeshes[i]->mNumVertices; ++j)
     { 
@@ -335,8 +339,8 @@ bool Model::LoadWithAssimp(const char* filePath)
   }
 
   Vector<char> indexData;
-  indexData.resize(m_indices.size() * sizeof(unsigned short));
-  memcpy(indexData.data(),m_indices.data(),m_indices.size() * sizeof(unsigned short));
+  indexData.resize(m_indices.size() * sizeof(uint32));
+  memcpy(indexData.data(),m_indices.data(),m_indices.size() * sizeof(uint32));
 
   m_pIndexBuffer = g_graphicsAPI().CreateIndexBuffer(indexData);
   if (!m_pIndexBuffer)
@@ -345,7 +349,8 @@ bool Model::LoadWithAssimp(const char* filePath)
     return false;
   }
   
-
+  //__debugbreak();
+  //Assimp::DefaultLogger::kill;
 
   return true;
 }

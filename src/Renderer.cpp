@@ -437,7 +437,7 @@ void Renderer::RenderActor(const WPtr<Character>& character)
 		&CHAR->m_model->m_pVertexBuffer->m_pBuffer,
 		&stride, &offset);
 	g_graphicsAPI().m_pDeviceContext->IASetIndexBuffer(CHAR->m_model->m_pIndexBuffer->m_pBuffer,
-		DXGI_FORMAT_R16_UINT, 0);
+		DXGI_FORMAT_R32_UINT, 0);
 
 	g_graphicsAPI().m_pDeviceContext->PSSetSamplers(0, 1, &m_SamplerStates.at(SamplerStates::POINT));
 	g_graphicsAPI().m_pDeviceContext->PSSetSamplers(1, 1, &m_SamplerStates.at(SamplerStates::LINEAR));
@@ -524,7 +524,7 @@ void Renderer::RenderShadows(const WPtr<Character>& character)
 																						 &CHAR->m_model->m_pVertexBuffer->m_pBuffer,
 																						 &stride, &offset);
 	g_graphicsAPI().m_pDeviceContext->IASetIndexBuffer(CHAR->m_model->m_pIndexBuffer->m_pBuffer,
-																					 DXGI_FORMAT_R16_UINT, 0);
+																					 DXGI_FORMAT_R32_UINT, 0);
 
 	m_WVP.world = CHAR->getLocalTransform().getMatrix();
 	m_WVP.view = CAMERA->getViewMatrix();

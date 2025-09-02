@@ -84,6 +84,7 @@ struct Mesh {
 	int baseIndex;
 	int numIndices;
 
+	//Material
 };
 
 //TODO: tener un vertexbuffer y un index buffer por modelo.
@@ -105,7 +106,7 @@ public:
 	Vector<Mesh> m_meshes;
 
 	Vector<MODEL_VERTEX> m_vertices;
-	Vector<unsigned short> m_indices;
+	Vector<uint32> m_indices;
 	
 	//Cuántos buffers voy a querer generar
 	SPtr<GraphicsBuffer> m_pVertexBuffer;

@@ -48,6 +48,7 @@ SPtr<Actor> g_pThirdActor;
 SPtr<Actor> g_pFourthActor;
 SPtr<Actor> g_pFifthActor;
 SPtr<Actor> g_pSixthActor;
+SPtr<Actor> g_pSeventhActor;
 
 
 constexpr float fixedDeltaTime = 1.0f/60.0f;
@@ -129,6 +130,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	
 	g_pWorld->Init();
 
+	
 	g_pMainActor = g_pWorld->SpawnActor<Character>(	nullptr,
 																									"rex_norm.obj", 
 																									"Rex_C.bmp", 
@@ -204,7 +206,17 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
   g_pSixthActor->SetName("Sewing Machine");
 	g_pSixthActor->setShadingState(ShadingState::FORWARD);
 
+	/*g_pSeventhActor = g_pWorld->SpawnActor<Character>(nullptr,
 
+																									"D:/Models3D/San_Miguel/san-miguel-low-poly.obj",
+																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_BaseColor_A.bmp",
+																									Vector3(-2.0f, 0.0f, 0.0f),
+																									Vector3(0.3f, 0.3f, 0.3f),
+																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_Normal.bmp",
+																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_Roughness.bmp",
+																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_Metallic.bmp");
+
+	g_pSeventhActor->SetName("San Miguel");*/
 
 	ImGuiAPI::StartUp(g_pWindow, g_pWorld, g_pCamera);
 

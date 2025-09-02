@@ -294,6 +294,7 @@ float4 pixel_main(PixelInput Input) : SV_Target
     clip(color.w < 1.0f ? -1 : 1);
     
     float3 lightPos = float3(20.0f, 20.0f, 5.0f);
+    //float3 lightPos = float3(20.0f, 2000.0f, 5.0f);
     
     float3 lightDir = normalize(lightPos - position.xyz);
     
