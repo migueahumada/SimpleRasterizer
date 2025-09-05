@@ -5,10 +5,22 @@
 #include "MathObjects.h"
 #include "Texture.h"
 
+struct MatrixCollection2
+{
+  Matrix4 world;
+  Matrix4 view;
+  Matrix4 projection;
+
+  Matrix4 ligthView;
+  Matrix4 lightProjection;
+
+  Vector3 viewDir;
+  float time;
+};
 
 class MKGraphicsAPI;
 class GraphicsBuffer;
-struct MatrixCollection;
+struct MatrixCollection2;
 class VertexShader;
 class PixelShader;
 class Texture;
@@ -95,7 +107,7 @@ namespace MKEngine{
     ID3D11InputLayout* m_pDefLightingInputLayout = nullptr;
 
     //World-View-Projection Camera Matrix
-    MatrixCollection m_WVP;
+    MatrixCollection2 m_WVP;
     SPtr<GraphicsBuffer> m_pCB_WVP;
 
     //Shaders

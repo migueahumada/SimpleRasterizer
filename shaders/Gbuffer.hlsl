@@ -93,7 +93,9 @@ GBuffer gbuffer_pixel_main(PixelInput Input)
     normal.xyz = normalize(mul(normal.xyz, TBN));
     
     Output.position = float4(Input.posW, metallic);
+    //Output.position = float4(Input.posW, 1.0f);
     Output.normal = float4(normal.xyz * 0.5f + 0.5f, roughness);
+    //Output.normal = float4(normal.xyz * 0.5f + 0.5f, 1.0f);
     Output.color = diffColor;
     
     return Output;

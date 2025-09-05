@@ -186,7 +186,10 @@
     <ClCompile Include="src\WorldManager.cpp">
       <Filter>Source Files\GameFramework</Filter>
     </ClCompile>
-    <ClCompile Include="Material.cpp">
+    <ClCompile Include="src\Material.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceManager.cpp">
       <Filter>Source Files\Graphics</Filter>
     </ClCompile>
   </ItemGroup>
@@ -320,7 +323,10 @@
     <ClInclude Include="inc\WorldManager.h">
       <Filter>Header Files\GameFramework</Filter>
     </ClInclude>
-    <ClInclude Include="Material.h">
+    <ClInclude Include="inc\Material.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ResourceManager.h">
       <Filter>Header Files\Graphics</Filter>
     </ClInclude>
   </ItemGroup>

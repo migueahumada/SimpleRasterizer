@@ -364,34 +364,6 @@ namespace MKEngine{
 
 
 
-		g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(0, 1, &CHAR->m_texture->m_pSRV);
-
-		if (!CHAR->m_normalTextureName.empty())
-		{
-			g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(1, 1, &CHAR->m_normalTexture->m_pSRV);
-		}
-		else
-			g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(1, 1, &m_DefaultTextures.at(DefaultTextures::NORMAL));
-
-		if (!CHAR->m_roughnessTextureName.empty())
-		{
-			g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(2, 1, &CHAR->m_roughnessTexture->m_pSRV);
-		}
-		else
-			g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(2, 1, &m_DefaultTextures.at(DefaultTextures::BLACK));
-
-		if (!CHAR->m_metallicTextureName.empty())
-		{
-			g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(3, 1, &CHAR->m_metallicTexture->m_pSRV);
-		}
-		else
-			g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(3, 1, &m_DefaultTextures.at(DefaultTextures::WHITE));
-
-		g_graphicsAPI().m_pDeviceContext->DrawIndexed(CHAR->m_model->m_meshes[0].numIndices,
-			CHAR->m_model->m_meshes[0].baseIndex,
-			CHAR->m_model->m_meshes[0].baseVertex);
-
-
 
 
 	}

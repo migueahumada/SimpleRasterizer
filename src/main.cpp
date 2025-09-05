@@ -21,6 +21,7 @@
 #include "Renderer.h"
 #include "ImGuiAPI.h"
 #include "Model.h"
+#include "ResourceManager.h"
 
 
 SDL_Window* g_pWindow = nullptr;
@@ -80,7 +81,6 @@ void Render() {
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
 
-	//---------------SDL SET UP!!-----------------
 	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
 		SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
 		return SDL_APP_FAILURE;
@@ -96,22 +96,15 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 											nullptr);
 	if (pWndHandle)
 	{
-		/*g_pGraphicsAPI = make_shared<GraphicsAPI>(pWndHandle);
-		if(!g_pGraphicsAPI)
-		{
-			return SDL_APP_FAILURE;
-		}*/
-
 		GraphicsAPI::StartUp(pWndHandle);
 	}
+
 	g_pCamera = make_shared<Camera>();
 	g_pWorld = make_shared<World>();
 
 	Renderer::StartUp(g_pCamera, g_pWorld);
 
-
 	SDL_ShowCursor();
-	//SDL_SetWindowRelativeMouseMode(g_pWindow,false);  // optional but better
 
 	g_renderer().CompileShaders();
 
@@ -120,7 +113,6 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	g_pCamera->SetLookAt(Vector3(0, 0, -6.0f), Vector3(0, 0, 0), Vector3(0, 1, 0));		//Setea la matriz de la cámara
 	g_pCamera->SetPerspective(3.141592653f/4.0f,WIDTH,HEIGHT,0.1f,100.0f);			//Sete la matriz de la perspectiva
 
-	//Pipeline de artista, como decirle al artista para que funcione.
 	g_renderer().InitWVP();
 	g_renderer().InitConstantBuffer();
 	g_renderer().InitRasterizerStates();
@@ -130,93 +122,31 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	
 	g_pWorld->Init();
 
-	
-	g_pMainActor = g_pWorld->SpawnActor<Character>(	nullptr,
-																									"rex_norm.obj", 
-																									"Rex_C.bmp", 
-																									Vector3(0.0f, 0.0f,0.0f),
-																									Vector3(1.0f,1.0f,1.0f),
-																									"Rex_N.bmp",
-																									"Rex_R.bmp",
-																									"Rex_M.bmp");
-	g_pMainActor->SetName("Dinosaur");
+	g_pSeventhActor = g_pWorld->SpawnActor<Character>(nullptr,
+		"D:/Models3D/RexTestModel/Rex_mat.obj",
+		Vector3(0.0f, 0.0f, 0.0f),
+		Vector3(1.0f, 1.0f, 1.0f));
 
-	
+	g_pSeventhActor->SetName("REX");
 
 	g_pFourthActor = g_pWorld->SpawnActor<Character>(nullptr,
-																									 "discBetterF.obj",
-																									 "tex4.bmp",
+																									 "D:/Coding/C++/SimpleRasterizer/Models/DiscFloor/Disc.obj",
 																									 Vector3(0.0f, 0.0f, 0.0f),
 																									 Vector3(6.0f, 6.0f, 6.0f));
 	g_pFourthActor->SetName("Floor");
 	
 	g_pSecondaryActor = g_pWorld->SpawnActor<Character>(nullptr,
-																								 "D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/BrainRot.obj",
-																								 "D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/textures/Patapim_baseColor.bmp",
-																								 Vector3(3.0f, 0.0f, 0.0f),
-																								 Vector3(0.5f, 0.5f, 0.5f),
-																								 "D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/textures/Patapim_normal.bmp",
-																								 "D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/textures/Patapim_metallicRoughness.bmp",
-																								 "D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/textures/Patapim_metallicRoughness.bmp");
+																											"D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/BrainRot.obj",
+																											Vector3(3.0f, 0.0f, 0.0f),
+																											Vector3(0.5f, 0.5f, 0.5f));
 	g_pSecondaryActor->SetName("Patapim");
-	g_pSecondaryActor->setShadingState(ShadingState::FORWARD);
-	
 
-	
-	g_pThirdActor = g_pWorld->SpawnActor<Character>(nullptr,
-																								 "rex_norm.obj",
-																								 "Rex_C.bmp",
-																								 Vector3(5.0f, 0.0f, 2.0f),
-																								 Vector3(0.6f, 0.6f, 0.6f),
-																								 "Rex_N.bmp",
-																								 "Rex_R.bmp",
-																								 "Rex_M.bmp");
 
-	g_pThirdActor->SetName("Dino Small");
-	
-	
-	g_pFourthActor = g_pWorld->SpawnActor<Character>(nullptr,
-
-																									"discBetterF.obj",
-																									"tex4.bmp",
-																									Vector3(0.0f, 0.0f, 0.0f),
-																									Vector3(6.0f, 6.0f, 6.0f));
-	g_pFourthActor->SetName("Floor");
-
-	g_pFifthActor = g_pWorld->SpawnActor<Character>(nullptr,
-
-																									"ManNormals.obj",
-																									"manText.bmp",
-																									Vector3(3.0f, 0.0f, 5.0f),
-																									Vector3(1.0f, 1.0f, 1.0f));
-	g_pFifthActor->SetName("Man");
-	
-	
-	
-	g_pSixthActor = g_pWorld->SpawnActor<Character>(nullptr,
-																									
-																									"D:/Models3D/sewing-machine/source/SewingMachine/sewing8.obj",
-																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_BaseColor_A.bmp",
-																									Vector3(-2.0f, 0.0f, 0.0f),
-																									Vector3(0.3f, 0.3f, 0.3f),
-																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_Normal.bmp",
-																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_Roughness.bmp",
-																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_Metallic.bmp");
-
-  g_pSixthActor->SetName("Sewing Machine");
-	g_pSixthActor->setShadingState(ShadingState::FORWARD);
-
-	/*g_pSeventhActor = g_pWorld->SpawnActor<Character>(nullptr,
-
-																									"D:/Models3D/San_Miguel/san-miguel-low-poly.obj",
-																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_BaseColor_A.bmp",
-																									Vector3(-2.0f, 0.0f, 0.0f),
-																									Vector3(0.3f, 0.3f, 0.3f),
-																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_Normal.bmp",
-																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_Roughness.bmp",
-																									"D:/Models3D/sewing-machine/source/SewingMachine/22_sewing_machine_3SG_Metallic.bmp");
-
-	g_pSeventhActor->SetName("San Miguel");*/
+	g_pSecondaryActor = g_pWorld->SpawnActor<Character>(nullptr,
+																											"D:/Models3D/PlayStation 2 - Silent Hill 2 - Pyramid Head/PyramidHead.obj",
+																											Vector3(-3.0f, 0.0f, 0.0f),
+																											Vector3(1.0f, 1.0f, 1.0f));
+	g_pSecondaryActor->SetName("Pyramid Head");
 
 	ImGuiAPI::StartUp(g_pWindow, g_pWorld, g_pCamera);
 
@@ -258,8 +188,6 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	SDL_SetCursor(g_pCursor);
 
 	
-	//Model model;
-	//model.LoadWithAssimp("D:/Models3D/sewing-machine/source/SewingMachine/sewing8.obj");
 
 	return SDL_APP_CONTINUE;
 }

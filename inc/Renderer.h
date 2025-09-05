@@ -12,7 +12,18 @@
 #include "Texture.h"
 #include "Module.h"
 
+struct MatrixCollection
+{
+  Matrix4 world;
+  Matrix4 view;
+  Matrix4 projection;
 
+  Matrix4 ligthView;
+  Matrix4 lightProjection;
+
+  Vector3 viewDir;
+  float time;
+};
 
 namespace ShadingState{
   enum E {
@@ -103,9 +114,6 @@ public:
   }
 
 private:
-
-  
-  
 
   void OnStartUp() override;
 

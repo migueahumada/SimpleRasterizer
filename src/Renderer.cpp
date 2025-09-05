@@ -443,7 +443,7 @@ void Renderer::RenderActor(const WPtr<Character>& character)
 	g_graphicsAPI().m_pDeviceContext->PSSetSamplers(1, 1, &m_SamplerStates.at(SamplerStates::LINEAR));
 	g_graphicsAPI().m_pDeviceContext->PSSetSamplers(2, 1, &m_SamplerStates.at(SamplerStates::ANISOTROPIC));
 
-
+	//Se podría hacer esto dentro del renderer normal
 	m_WVP.world = CHAR->getLocalTransform().getMatrix();
 	m_WVP.view = CAMERA->getViewMatrix();
 	m_WVP.projection = CAMERA->getProjectionMatrix();
@@ -464,39 +464,50 @@ void Renderer::RenderActor(const WPtr<Character>& character)
 	g_graphicsAPI().m_pDeviceContext->RSSetState(m_RasterStates.at(RasterStates::DEFAULT));
 	g_graphicsAPI().writeToBuffer(m_pCB_WVP, matrix_data);
 
-
-	//Color
-	g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(0, 1, &CHAR->m_texture->m_pSRV);
-
-	//Normal
-	if (!CHAR->m_normalTextureName.empty())
-	{
-		g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(1, 1, &CHAR->m_normalTexture->m_pSRV);
-	}
-	else
-		g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(1, 1, &m_DefaultTextures.at(DefaultTextures::NORMAL));
-
-	//Roughness
-	if (!CHAR->m_roughnessTextureName.empty())
-	{
-		g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(2, 1, &CHAR->m_roughnessTexture->m_pSRV);
-	}
-	else
-		g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(2, 1, &m_DefaultTextures.at(DefaultTextures::BLACK));
-
-	//Metallic
-	if (!CHAR->m_metallicTextureName.empty())
-	{
-		g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(3, 1, &CHAR->m_metallicTexture->m_pSRV);
-	}
-	else
-		g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(3, 1, &m_DefaultTextures.at(DefaultTextures::WHITE));
-
 	for (size_t i = 0; i < CHAR->m_model->m_meshes.size(); ++i)
 	{
-		g_graphicsAPI().m_pDeviceContext->DrawIndexed(CHAR->m_model->m_meshes[i].numIndices,
-																									CHAR->m_model->m_meshes[i].baseIndex,
-																									CHAR->m_model->m_meshes[i].baseVertex);
+		//ALBEDO
+		if (CHAR->m_model->m_meshes[i].material.m_filePaths.at(TextureType::ALBEDO).empty())
+		{
+			g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(0, 1, &g_renderer().m_DefaultTextures.at(DefaultTextures::WHITE));
+		}else
+		{
+			g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(0, 1, &CHAR->m_model->m_meshes[i].material.getAlbedo()->m_pSRV);
+		}
+		
+		//NORMAL
+		if (CHAR->m_model->m_meshes[i].material.m_filePaths.at(TextureType::NORMALS).empty())
+		{
+			g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(1, 1, &g_renderer().m_DefaultTextures.at(DefaultTextures::NORMAL));
+		}else
+		{
+			g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(1, 1, &CHAR->m_model->m_meshes[i].material.getNormals()->m_pSRV);
+		}
+
+		//ROUGHNESS
+		if (CHAR->m_model->m_meshes[i].material.m_filePaths.at(TextureType::ROUGHNESS).empty())
+		{
+			g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(2, 1, &g_renderer().m_DefaultTextures.at(DefaultTextures::BLACK));
+			
+		}else
+		{
+			g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(2, 1, &CHAR->m_model->m_meshes[i].material.getRoughness()->m_pSRV);
+		}
+		
+		//METALLIC
+		if (CHAR->m_model->m_meshes[i].material.m_filePaths.at(TextureType::METALLIC).empty())
+		{
+			g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(3, 1, &g_renderer().m_DefaultTextures.at(DefaultTextures::WHITE));
+		}
+		else
+		{
+			g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(3, 1, &CHAR->m_model->m_meshes[i].material.getMetallic()->m_pSRV);
+		}
+		
+		
+		g_graphicsAPI().m_pDeviceContext->DrawIndexed( CHAR->m_model->m_meshes[i].numIndices,
+																									 CHAR->m_model->m_meshes[i].baseIndex,
+																									 CHAR->m_model->m_meshes[i].baseVertex);
 	}
 
 }
@@ -554,6 +565,7 @@ void Renderer::RenderShadows(const WPtr<Character>& character)
 	}
 }
 
+//Se podría pasarse como
 void Renderer::CreateDefaultSRV(UINT value, DefaultTextures::E defaultTextureType, DXGI_FORMAT format)
 {
 

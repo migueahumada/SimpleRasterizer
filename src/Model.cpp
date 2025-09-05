@@ -3,7 +3,8 @@
 #include <fstream>
 #include "GraphicsAPI.h"
 #include <iostream>
-#include <assimp/DefaultLogger.hpp>
+#include <utility>
+
 
 using std::fstream;
 using std::ios;
@@ -248,6 +249,8 @@ void Model::ComputeTangentSpace()
 
 bool Model::LoadWithAssimp(const char* filePath)
 {
+  m_modelPath = std::string(filePath);
+  
   /*Assimp::DefaultLogger::create("asdfasdf.txt", Assimp::Logger::VERBOSE);*/
   Assimp::Importer importer;
 
@@ -270,10 +273,24 @@ bool Model::LoadWithAssimp(const char* filePath)
   
   int accumVertex = 0;
   int accumIndex = 0;
+  
+  
+  printf("Num meshes: %s\n", scene->GetShortFilename(filePath));
+  printf("\tMaterials:\n");
+
+  for (size_t i = 0; i < scene->mNumMaterials; ++i)
+  {
+    printf("\t\t-Index %d %s\n",static_cast<int>(i), scene->mMaterials[i]->GetName().C_Str());
+    
+  }
+
+  uint32 matIndex = 0;
 
   //MESHES
   for (size_t i = 0; i < scene->mNumMeshes; ++i)
   { 
+    matIndex = scene->mMeshes[i]->mMaterialIndex;
+
     //VERTICES
     for (size_t j = 0; j < scene->mMeshes[i]->mNumVertices; ++j)
     { 
@@ -287,6 +304,7 @@ bool Model::LoadWithAssimp(const char* filePath)
       modelVertex.color.x = 1.0f;
       modelVertex.color.y = 1.0f;
       modelVertex.color.z = 1.0f;
+      
 
       modelVertex.normal.x = scene->mMeshes[i]->mNormals[j].x;
       modelVertex.normal.y = scene->mMeshes[i]->mNormals[j].y;
@@ -318,6 +336,42 @@ bool Model::LoadWithAssimp(const char* filePath)
     currentMesh.baseVertex = accumVertex;
     currentMesh.baseIndex = accumIndex;
     currentMesh.numIndices = scene->mMeshes[i]->mNumFaces * 3;
+    
+    aiMaterial* currentMaterial = scene->mMaterials[matIndex];
+
+    //ALBEDO
+    String albedoTexturePath = GetTextureFullPath(currentMaterial,
+                                                  aiTextureType_DIFFUSE, 
+                                                  0);
+    
+    
+    currentMesh.material.SetMaterialTexture(albedoTexturePath,
+                                            TextureType::ALBEDO);
+
+
+    //NORMALS
+    String normalTexturePath = GetTextureFullPath(currentMaterial,
+                                                  aiTextureType_HEIGHT,
+                                                  0);
+
+    currentMesh.material.SetMaterialTexture(normalTexturePath, 
+                                            TextureType::NORMALS);
+
+    //ROUGHNESS
+    String roughnessTexturePath = GetTextureFullPath(currentMaterial,
+                                                     aiTextureType_SHININESS,
+                                                     0);
+
+    currentMesh.material.SetMaterialTexture(roughnessTexturePath, 
+                                            TextureType::ROUGHNESS);
+
+    //METALLIC
+    String metallicTexturePath = GetTextureFullPath(currentMaterial,
+                                                    aiTextureType_METALNESS,
+                                                    0);
+
+    currentMesh.material.SetMaterialTexture(metallicTexturePath, 
+                                            TextureType::METALLIC);
 
     accumVertex += scene->mMeshes[i]->mNumVertices;
 
@@ -349,10 +403,44 @@ bool Model::LoadWithAssimp(const char* filePath)
     return false;
   }
   
+  
+
   //__debugbreak();
   //Assimp::DefaultLogger::kill;
 
   return true;
+}
+
+String Model::GetTextureFullPath( aiMaterial* material,
+                                  aiTextureType textureType, 
+                                  uint32 textureIndex)
+{
+  aiString texturePath;
+
+  assert(material);
+
+  if (material->GetTextureCount(textureType) < 0)
+  {
+    return "";
+  }
+
+  aiReturn ret = material->GetTexture(textureType, textureIndex, &texturePath);
+
+  if (ret == aiReturn_FAILURE)
+  {
+    return "";
+  }
+
+  std::size_t found = m_modelPath.find_last_of("/");
+
+  
+
+  String fullPath = m_modelPath.substr(0, found + 1) + texturePath.C_Str();
+
+  std::cout << "\tThe full path of model" << aiTextureTypeToString(textureType) << " texture is: " << fullPath << std::endl;
+  ;
+
+  return fullPath;
 }
 
 
