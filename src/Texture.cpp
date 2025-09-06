@@ -12,9 +12,15 @@ Texture::~Texture()
 
 void Texture::createFromFile(const String& filePath)
 {
+	if (filePath.empty())
+	{
+		return;
+	}
+
 	Image localImage;
 	localImage.decode(filePath.c_str());
 	createImage(localImage);
+
 
 	//printf("Texture was loaded from path: %s\n", filePath.c_str());
 }

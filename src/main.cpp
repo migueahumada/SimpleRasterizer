@@ -137,7 +137,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	
 	g_pSecondaryActor = g_pWorld->SpawnActor<Character>(nullptr,
 																											"D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/BrainRot.obj",
-																											Vector3(3.0f, 0.0f, 0.0f),
+																											Vector3(6.0f, 0.0f, 0.0f),
 																											Vector3(0.5f, 0.5f, 0.5f));
 	g_pSecondaryActor->SetName("Patapim");
 

@@ -26,9 +26,17 @@ cbuffer MatrixCollection : register(b0)
     float4x4 World;
     float4x4 View;
     float4x4 Projection;
+    
     float4x4 lightView;
     float4x4 lightProjection;
+    
     float3 viewPos;
+    
+    float3 lightPosition;
+    float3 placeHolder;
+    float3 placeHolder2;
+    //float3 lightPosition;
+    //float3 placeholder;
     //float time;
 }
 
@@ -265,6 +273,7 @@ float4 pixel_main(PixelInput Input) : SV_Target
     float4 color = gbuffer_Color.Sample(samLinear, Input.texCoord);
     float4 ao = gbuffer_AO.Sample(samLinear, Input.texCoord);
     
+    
     float4 posInLightVP = mul(float4(position.xyz,1), lightView);
     
     posInLightVP = mul(posInLightVP, lightProjection);
@@ -293,9 +302,10 @@ float4 pixel_main(PixelInput Input) : SV_Target
     
     clip(color.w < 1.0f ? -1 : 1);
     
-    float3 lightPos = float3(20.0f, 20.0f, 5.0f);
-    //float3 lightPos = float3(20.0f, 2000.0f, 5.0f);
+    //float3 lightPosVP = mul(position.xyz, lightPosition);
+    //float3 lightPos = float3(0.0f, 0.0f, 0.0f);
     
+    float3 lightPos = lightPosition;
     float3 lightDir = normalize(lightPos - position.xyz);
     
     //el 0.04 es un promedio de los objetos dieléctricos

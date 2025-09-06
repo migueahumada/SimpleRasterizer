@@ -34,7 +34,6 @@ private:
 	SDL_Window* m_pWindow;
 	WPtr<World> m_pWorld;
 	WPtr<Camera> m_pCamera;
-
 };
 
 ImGuiAPI& g_imguiAPI();

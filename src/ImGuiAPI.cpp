@@ -79,6 +79,7 @@ void ImGuiAPI::Render()
 
 	ImGui::ShowDemoWindow();
 
+
 	ImGui::SetNextWindowBgAlpha(0.2f);
 	ImGui::Begin("Scene Graph");
 	if (ImGui::TreeNode("Scene"))
@@ -92,6 +93,14 @@ void ImGuiAPI::Render()
 		ImGui::TreePop();
 	}
 	ImGui::End();
+
+	ImGui::Begin("Properties");
+		ImGui::Text("Light Position:");
+
+		Vector3 asdfadsf = g_renderer().GetWVP().lightPosition;
+		ImGui::DragFloat3("Light Position X: ", &g_renderer().GetWVP().lightPosition.x);
+	ImGui::End();	
+
 
 	ImGui::SetNextWindowBgAlpha(0.2f);
 	ImGui::Begin("Camera", (bool*)1, ImGuiWindowFlags_AlwaysAutoResize);

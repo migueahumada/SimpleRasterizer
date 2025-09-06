@@ -51,11 +51,17 @@ cbuffer MatrixCollection : register(b0)
     float4x4 World;
     float4x4 View;
     float4x4 Projection;
-        
+    
     float4x4 lightView;
     float4x4 lightProjection;
     
     float3 viewPos;
+    
+    float3 lightPosition;
+    float3 placeHolder;
+    float3 placeHolder2;
+    //float3 lightPosition;
+    //float3 placeholder;
     //float time;
 }
 
@@ -76,6 +82,7 @@ PixelInput gbuffer_vertex_main(VertexInput Input)
     
     Output.color = Input.color;
     Output.texCoord = Input.texCoord;
+    
     
     return Output;
 }
@@ -118,5 +125,4 @@ ShadowPixel shadow_map_vertex_main(VertexInput Input)
 float4 shadow_map_pixel_main(ShadowPixel Input) : SV_Target
 {
     return float4(0.0f, 0.0f, 0.0f, 1.0f);
-
 }

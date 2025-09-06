@@ -15,7 +15,7 @@ Submix::Submix(unsigned int inputChannels, unsigned int inputSampleRate)
 
 Submix::~Submix()
 {
-  m_pSubmixVoice->DestroyVoice();
+  //m_pSubmixVoice->DestroyVoice();
 }
 
 void Submix::RouteToSubmix(const WPtr<Submix>& destSubmix, unsigned int flags)

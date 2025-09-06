@@ -22,7 +22,11 @@ struct MatrixCollection
   Matrix4 lightProjection;
 
   Vector3 viewDir;
-  float time;
+
+  Vector3 lightPosition;
+  Vector3 placeholder;
+  Vector3 placeholder2;
+  //float time;
 };
 
 namespace ShadingState{
@@ -100,8 +104,8 @@ public:
   //iF PARA forward O DEFERRED.
   //Scene Graph para decir qué es lo que tengo que dibujar.
   //Def -> Opacos y después alpha testing. Alpha testing en el shader de las sombras
+  
   //Sombras
-
   //Primero alpha tsitng de opacos->
   //Todo de transparencia se tiene que hacer pase depsués de los opacos.
 
@@ -113,18 +117,23 @@ public:
     return m_dsShadowMap;
   }
 
+  MatrixCollection& GetWVP() {
+    return m_WVP;
+  }
+
 private:
 
   void OnStartUp() override;
 
   void OnShutdown() override;
 
-  void RenderActor(const WPtr<Character>& character);
+  void RenderActor(const WPtr<Character>& character, bool bDrawWithTextures);
   void RenderShadows(const WPtr<Character>& character);
   void CreateDefaultSRV(UINT color, 
                         DefaultTextures::E defaultTextureType, DXGI_FORMAT format = DXGI_FORMAT_B8G8R8A8_UNORM);
 
-  
+ 
+
 private:
   
   WPtr<Camera> m_pCamera;

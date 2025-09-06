@@ -140,12 +140,14 @@ void Renderer::InitWVP()
 	auto CAMERA = m_pCamera.lock();
 
 	//---------------WORLD SETUP---------------
-	m_WVP.world.Identity();															//Matriz de mundo se hace identidad
+													//Matriz de mundo se hace identidad
 	m_WVP.view = CAMERA->getViewMatrix();											//Matriz de vista se obtiene de cámara
 	m_WVP.projection = CAMERA->getProjectionMatrix();								//Matriz de proyección se obtiene de cámara
 	m_WVP.viewDir = CAMERA->GetViewDir();
 
-	m_WVP.ligthView.Identity();
+	
+
+
 	m_WVP.ligthView.LookAt(Vector3(20.0f,20.0f, 5.0f),Vector3(0, 0, 0),Vector3(0, 1, 0));
 	m_WVP.lightProjection.SetOrthographic(-5.0f, 5.0f, -5.0f, 5.0f, 0.1f, 100.0f);
 
@@ -154,14 +156,16 @@ void Renderer::InitWVP()
 	m_WVP.projection.Transpose();													//Se transpone
 	m_WVP.ligthView.Transpose();
 	m_WVP.lightProjection.Transpose();
+	
+	m_WVP.lightPosition = Vector3(3.0f, 3.0f, 3.0f);
 }
 
 void Renderer::InitConstantBuffer()
 {
 
 	Vector<char> matrix_data;
-	matrix_data.resize(sizeof(m_WVP));
-	memcpy(matrix_data.data(),&m_WVP,sizeof(m_WVP));
+	matrix_data.resize(sizeof(MatrixCollection));
+	memcpy(matrix_data.data(),&m_WVP,sizeof(MatrixCollection));
 
 	m_pCB_WVP = g_graphicsAPI().CreateConstantBuffer(matrix_data);
 	if (!m_pCB_WVP)
@@ -412,12 +416,12 @@ void Renderer::SetForwardPass()
 
 		if (character)
 		{
-			RenderActor(character);
+			RenderActor(character, true);
 		}
 	}
 }
 
-void Renderer::RenderActor(const WPtr<Character>& character)
+void Renderer::RenderActor(const WPtr<Character>& character, bool bDrawWithTextures)
 {
 	
 	auto CHAR = character.lock();
@@ -445,18 +449,11 @@ void Renderer::RenderActor(const WPtr<Character>& character)
 
 	//Se podría hacer esto dentro del renderer normal
 	m_WVP.world = CHAR->getLocalTransform().getMatrix();
-	m_WVP.view = CAMERA->getViewMatrix();
-	m_WVP.projection = CAMERA->getProjectionMatrix();
-	m_WVP.viewDir = CAMERA->GetViewDir();
-
-	//GPASS
-	m_WVP.projection.Transpose();
-	m_WVP.view.Transpose();
 	m_WVP.world.Transpose();
 
 	Vector<char> matrix_data;
-	matrix_data.resize(sizeof(m_WVP));
-	memcpy(matrix_data.data(), &m_WVP, sizeof(m_WVP));
+	matrix_data.resize(sizeof(MatrixCollection));
+	memcpy(matrix_data.data(), &m_WVP, sizeof(MatrixCollection));
 
 	g_graphicsAPI().m_pDeviceContext->VSSetConstantBuffers(0, 1, &m_pCB_WVP->m_pBuffer);
 	g_graphicsAPI().m_pDeviceContext->PSSetConstantBuffers(0, 1, &m_pCB_WVP->m_pBuffer);
@@ -466,50 +463,55 @@ void Renderer::RenderActor(const WPtr<Character>& character)
 
 	for (size_t i = 0; i < CHAR->m_model->m_meshes.size(); ++i)
 	{
-		//ALBEDO
-		if (CHAR->m_model->m_meshes[i].material.m_filePaths.at(TextureType::ALBEDO).empty())
+		if (bDrawWithTextures)
 		{
-			g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(0, 1, &g_renderer().m_DefaultTextures.at(DefaultTextures::WHITE));
-		}else
-		{
-			g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(0, 1, &CHAR->m_model->m_meshes[i].material.getAlbedo()->m_pSRV);
-		}
-		
-		//NORMAL
-		if (CHAR->m_model->m_meshes[i].material.m_filePaths.at(TextureType::NORMALS).empty())
-		{
-			g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(1, 1, &g_renderer().m_DefaultTextures.at(DefaultTextures::NORMAL));
-		}else
-		{
-			g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(1, 1, &CHAR->m_model->m_meshes[i].material.getNormals()->m_pSRV);
+			//ALBEDO
+			if (CHAR->m_model->m_meshes[i].material.m_filePaths.at(TextureType::ALBEDO).empty())
+			{
+				g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(0, 1, &g_renderer().m_DefaultTextures.at(DefaultTextures::WHITE));
+			}
+			else
+			{
+				g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(0, 1, &CHAR->m_model->m_meshes[i].material.getAlbedo()->m_pSRV);
+			}
+
+			//NORMAL
+			if (CHAR->m_model->m_meshes[i].material.m_filePaths.at(TextureType::NORMALS).empty())
+			{
+				g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(1, 1, &g_renderer().m_DefaultTextures.at(DefaultTextures::NORMAL));
+			}
+			else
+			{
+				g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(1, 1, &CHAR->m_model->m_meshes[i].material.getNormals()->m_pSRV);
+			}
+
+			//ROUGHNESS
+			if (CHAR->m_model->m_meshes[i].material.m_filePaths.at(TextureType::ROUGHNESS).empty())
+			{
+				g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(2, 1, &g_renderer().m_DefaultTextures.at(DefaultTextures::BLACK));
+
+			}
+			else
+			{
+				g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(2, 1, &CHAR->m_model->m_meshes[i].material.getRoughness()->m_pSRV);
+			}
+
+			//METALLIC
+			if (CHAR->m_model->m_meshes[i].material.m_filePaths.at(TextureType::METALLIC).empty())
+			{
+				g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(3, 1, &g_renderer().m_DefaultTextures.at(DefaultTextures::WHITE));
+			}
+			else
+			{
+				g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(3, 1, &CHAR->m_model->m_meshes[i].material.getMetallic()->m_pSRV);
+			}
 		}
 
-		//ROUGHNESS
-		if (CHAR->m_model->m_meshes[i].material.m_filePaths.at(TextureType::ROUGHNESS).empty())
-		{
-			g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(2, 1, &g_renderer().m_DefaultTextures.at(DefaultTextures::BLACK));
-			
-		}else
-		{
-			g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(2, 1, &CHAR->m_model->m_meshes[i].material.getRoughness()->m_pSRV);
-		}
-		
-		//METALLIC
-		if (CHAR->m_model->m_meshes[i].material.m_filePaths.at(TextureType::METALLIC).empty())
-		{
-			g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(3, 1, &g_renderer().m_DefaultTextures.at(DefaultTextures::WHITE));
-		}
-		else
-		{
-			g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(3, 1, &CHAR->m_model->m_meshes[i].material.getMetallic()->m_pSRV);
-		}
-		
-		
-		g_graphicsAPI().m_pDeviceContext->DrawIndexed( CHAR->m_model->m_meshes[i].numIndices,
-																									 CHAR->m_model->m_meshes[i].baseIndex,
-																									 CHAR->m_model->m_meshes[i].baseVertex);
+		g_graphicsAPI().m_pDeviceContext->DrawIndexed(CHAR->m_model->m_meshes[i].numIndices,
+			CHAR->m_model->m_meshes[i].baseIndex,
+			CHAR->m_model->m_meshes[i].baseVertex);
 	}
-
+	
 }
 
 void Renderer::RenderShadows(const WPtr<Character>& character)
@@ -538,18 +540,11 @@ void Renderer::RenderShadows(const WPtr<Character>& character)
 																					 DXGI_FORMAT_R32_UINT, 0);
 
 	m_WVP.world = CHAR->getLocalTransform().getMatrix();
-	m_WVP.view = CAMERA->getViewMatrix();
-	m_WVP.projection = CAMERA->getProjectionMatrix();
-	m_WVP.viewDir = CAMERA->GetViewDir();
-
-	//GPASS
-	m_WVP.projection.Transpose();
-	m_WVP.view.Transpose();
 	m_WVP.world.Transpose();
 
 	Vector<char> matrix_data;
-	matrix_data.resize(sizeof(m_WVP));
-	memcpy(matrix_data.data(), &m_WVP, sizeof(m_WVP));
+	matrix_data.resize(sizeof(MatrixCollection));
+	memcpy(matrix_data.data(), &m_WVP, sizeof(MatrixCollection));
 
 	g_graphicsAPI().m_pDeviceContext->VSSetConstantBuffers(0, 1, &m_pCB_WVP->m_pBuffer);
 	g_graphicsAPI().m_pDeviceContext->PSSetConstantBuffers(0, 1, &m_pCB_WVP->m_pBuffer);
@@ -688,13 +683,23 @@ void Renderer::SetShadowPass()
 																						 renderTargets.data(),
 																						 m_dsShadowMap.m_pDSV);
 
+	auto CAMERA = m_pCamera.lock();
+
+	m_WVP.view = CAMERA->getViewMatrix();
+	m_WVP.projection = CAMERA->getProjectionMatrix();
+	m_WVP.viewDir = CAMERA->GetViewDir();
+
+	//GPASS
+	m_WVP.projection.Transpose();
+	m_WVP.view.Transpose();
+
 	for (auto& actor : WORLD->getActors())
 	{
 		auto character = std::dynamic_pointer_cast<Character>(actor);
 
 		if (character)
 		{
-			RenderShadows(character);
+			RenderActor(character,false);
 		}
 	}
 	
@@ -750,7 +755,7 @@ void Renderer::SetGeometryPass()
 			g_graphicsAPI().m_pDeviceContext->PSSetShader(m_pGBuffer_PS->m_pPixelShader,
 				nullptr,
 				0);
-			RenderActor(character);
+			RenderActor(character, true);
 		}
 	}
 }
