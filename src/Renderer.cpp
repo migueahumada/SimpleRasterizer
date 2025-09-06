@@ -453,7 +453,7 @@ void Renderer::RenderActor(const WPtr<Character>& character, bool bDrawWithTextu
 
 	Vector<char> matrix_data;
 	matrix_data.resize(sizeof(MatrixCollection));
-	memcpy(matrix_data.data(), &m_WVP, sizeof(MatrixCollection));
+	memcpy(&matrix_data[0], &m_WVP, sizeof(MatrixCollection));
 
 	g_graphicsAPI().m_pDeviceContext->VSSetConstantBuffers(0, 1, &m_pCB_WVP->m_pBuffer);
 	g_graphicsAPI().m_pDeviceContext->PSSetConstantBuffers(0, 1, &m_pCB_WVP->m_pBuffer);

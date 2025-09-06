@@ -12,7 +12,8 @@
 #include "Texture.h"
 #include "Module.h"
 
-struct MatrixCollection
+
+struct __declspec(align(16)) MatrixCollection
 {
   Matrix4 world;
   Matrix4 view;
@@ -22,12 +23,19 @@ struct MatrixCollection
   Matrix4 lightProjection;
 
   Vector3 viewDir;
-
+  float pl1;
   Vector3 lightPosition;
+  float pl2;
+  
   Vector3 placeholder;
+  float pl3;
   Vector3 placeholder2;
+  float pl4;
   //float time;
 };
+
+
+
 
 namespace ShadingState{
   enum E {

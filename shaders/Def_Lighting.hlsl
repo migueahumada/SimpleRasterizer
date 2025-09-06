@@ -303,9 +303,11 @@ float4 pixel_main(PixelInput Input) : SV_Target
     clip(color.w < 1.0f ? -1 : 1);
     
     //float3 lightPosVP = mul(position.xyz, lightPosition);
-    //float3 lightPos = float3(0.0f, 0.0f, 0.0f);
+    
     
     float3 lightPos = lightPosition;
+    //float3 lightPos = float3(0.0f, 6.0f, 0.0f);
+  
     float3 lightDir = normalize(lightPos - position.xyz);
     
     //el 0.04 es un promedio de los objetos dieléctricos

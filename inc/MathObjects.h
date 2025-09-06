@@ -202,7 +202,7 @@ struct Vector3
 
 };
 
-struct Matrix4
+struct __declspec(align(16)) Matrix4
 {
 	Matrix4() {
 		Identity();
