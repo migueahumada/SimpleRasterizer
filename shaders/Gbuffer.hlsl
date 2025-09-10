@@ -82,6 +82,19 @@ PixelInput gbuffer_vertex_main(VertexInput Input)
     
     Output.color = Input.color;
     Output.texCoord = Input.texCoord;
+  
+    //
+    /*
+      - Primero las cordenadas mouse  -> (230, 560)
+      - Normalizamos coordenadas      -> (0.233,0.4556)
+      - Las pasamos a con signo.      -> (-0.4345, 0.15)
+      - Se normaliza a clip space en valor en z = 0.
+      - Se agarra el mismo punto en el max z = 1.
+      - Transformadas inversas y llegas a espacio de world, INVERSA DE VISTA PROYECCIÓN.
+      - Rayo en espacio de mundo.
+      - Se filta con el que tenga la menor distancia.
+  
+  */
     
     
     return Output;

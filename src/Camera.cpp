@@ -1,4 +1,9 @@
 #include "Camera.h"
+#include <iostream>
+#include "Renderer.h"
+
+#define WIDTH 1280
+#define HEIGHT 720
 
 void Camera::SetLookAt(	const Vector3& eyePos, 
 												const Vector3& targetPos, 
@@ -33,6 +38,26 @@ void Camera::SetOrthographic(float left, float right, float bottom, float top, f
 void Camera::SetAudioListener()
 {
 	
+}
+
+void Camera::SelectObjectOnScreen(float mouseX, float mouseY)
+{
+	
+	//Screen Space Coords
+	float clipX = 0.0f, clipY = 0.0f;
+
+	//NDC Space Coords
+	clipX = ((mouseX / WIDTH) * 2.0f) - 1.0f;
+	clipY = ((mouseY / HEIGHT) * 2.0f) - 1.0f;
+	
+	m_mouseVector.x = clipX;
+	m_mouseVector.y = -clipY;
+	m_mouseVector.z = m_minZ;
+
+	m_viewInv = g_renderer().GetWVP().view.Inverse();
+
+	m_mouseVecW = Matrix4::VectorMultiplication(m_mouseVector,m_viewInv);
+
 }
 
 

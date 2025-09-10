@@ -95,10 +95,22 @@ void ImGuiAPI::Render()
 	ImGui::End();
 
 	ImGui::Begin("Properties");
-		ImGui::Text("Light Position:");
-
-		Vector3 asdfadsf = g_renderer().GetWVP().lightPosition;
+		ImGui::Text("Directional Light");
 		ImGui::DragFloat3("Light Position X: ", &g_renderer().GetWVP().lightPosition.x);
+
+		ImGui::Text("-----View-----");
+		ImGui::DragFloat4("ViewInv1", &CAMERA->m_viewInv.m[0][0]);
+		ImGui::DragFloat4("ViewInv2", &CAMERA->m_viewInv.m[1][0]);
+		ImGui::DragFloat4("ViewInv3", &CAMERA->m_viewInv.m[2][0]);
+		ImGui::DragFloat4("ViewInv4", &CAMERA->m_viewInv.m[3][0]);
+
+		ImGui::Text("-----Mouse Vector Screen Space-----");
+		ImGui::DragFloat3("Mouse Vector: ", &CAMERA->m_mouseVector.x);
+
+		ImGui::Text("-----Mouse Vector World-----");
+		ImGui::DragFloat3("Mouse World Vector: ", &CAMERA->m_mouseVecW.x);
+
+
 	ImGui::End();	
 
 

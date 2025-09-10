@@ -238,18 +238,23 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 			break;
 
 		case SDL_EVENT_MOUSE_MOTION:
+
 			
+
 			if (g_pCamera->canRotate() && SDL_GetWindowRelativeMouseMode(g_pWindow))
 			{
 				g_pCamera->Rotate(event->motion.xrel * g_pCamera->getRotSpeed(),
 					event->motion.yrel * g_pCamera->getRotSpeed());
 			}
 			break;
+
 		case SDL_EVENT_MOUSE_BUTTON_DOWN:
 			g_pCamera->enableRotation();
 			if (event->button.button == SDL_BUTTON_RIGHT) 
 				SDL_SetWindowRelativeMouseMode(g_pWindow, true);
 			
+			
+
 			break;
 
 		case SDL_EVENT_MOUSE_BUTTON_UP:
@@ -257,6 +262,11 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 			if (event->button.button == SDL_BUTTON_RIGHT) 
 				SDL_SetWindowRelativeMouseMode(g_pWindow, false);
 			
+			if (event->button.button == SDL_BUTTON_LEFT)
+			{
+				g_pCamera->SelectObjectOnScreen(event->motion.x, event->motion.y);
+			}
+
 			break;
 
 	}

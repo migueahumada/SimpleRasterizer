@@ -19,7 +19,7 @@ Audio::~Audio()
 		delete[] m_pDataBuffer;
 		m_pDataBuffer = nullptr;
 	}
-	m_pSourceVoice->DestroyVoice();
+	//m_pSourceVoice->DestroyVoice();
 }
 
 void Audio::load(const char* filename)

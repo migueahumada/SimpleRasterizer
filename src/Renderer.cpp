@@ -452,8 +452,8 @@ void Renderer::RenderActor(const WPtr<Character>& character, bool bDrawWithTextu
 	m_WVP.world.Transpose();
 
 	Vector<char> matrix_data;
-	matrix_data.resize(sizeof(MatrixCollection));
-	memcpy(&matrix_data[0], &m_WVP, sizeof(MatrixCollection));
+	matrix_data.resize(sizeof(m_WVP));
+	memcpy(&matrix_data[0], &m_WVP, sizeof(m_WVP));
 
 	g_graphicsAPI().m_pDeviceContext->VSSetConstantBuffers(0, 1, &m_pCB_WVP->m_pBuffer);
 	g_graphicsAPI().m_pDeviceContext->PSSetConstantBuffers(0, 1, &m_pCB_WVP->m_pBuffer);

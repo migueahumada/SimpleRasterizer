@@ -12,6 +12,18 @@
 #include "Texture.h"
 #include "Module.h"
 
+#define NUM_LIGHTS 64
+struct __declspec(align(16)) LightData
+{
+  Vector3 lightPosition;
+  float p1;
+};
+
+struct __declspec(align(16)) LightsConstantBuffer
+{
+
+
+};
 
 struct __declspec(align(16)) MatrixCollection
 {
@@ -26,11 +38,15 @@ struct __declspec(align(16)) MatrixCollection
   float pl1;
   Vector3 lightPosition;
   float pl2;
-  
   Vector3 placeholder;
   float pl3;
   Vector3 placeholder2;
   float pl4;
+
+  Vector3 rayVector;
+  float pl5;
+
+  //LightData lightArray [NUM_LIGHTS];
   //float time;
 };
 

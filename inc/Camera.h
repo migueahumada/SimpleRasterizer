@@ -47,6 +47,8 @@ public:
 	
 	void SetAudioListener();
 
+	void SelectObjectOnScreen(float mouseX, float mouseY);
+
 	inline Vector3 GetForwardVector() {
 		return (m_target - m_position).normalize();
 	}
@@ -164,6 +166,10 @@ public:
 
 
 	void Update();
+
+	Vector3 m_mouseVector;
+	Matrix4 m_viewInv;
+	Vector3 m_mouseVecW;
 
 private:
 
