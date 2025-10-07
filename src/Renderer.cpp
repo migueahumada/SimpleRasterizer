@@ -461,9 +461,15 @@ void Renderer::RenderActor(const WPtr<Character>& character, bool bDrawWithTextu
 	g_graphicsAPI().m_pDeviceContext->RSSetState(m_RasterStates.at(RasterStates::DEFAULT));
 	g_graphicsAPI().writeToBuffer(m_pCB_WVP, matrix_data);
 
-	for (size_t i = 0; i < CHAR->m_model->m_meshes.size(); ++i)
+
+	Vector<Mesh>& vMeshes = CHAR->m_model->m_meshes;
+	Vector<MODEL_VERTEX>& vVertices = CHAR->m_model->m_vertices;
+	Vector<uint32>& vIndices = CHAR->m_model->m_indices;
+
+	for (size_t i = 0; i < vMeshes.size(); ++i)
 	{
-		if (bDrawWithTextures)
+
+		if(bDrawWithTextures)
 		{
 			//ALBEDO
 			if (CHAR->m_model->m_meshes[i].material.m_filePaths.at(TextureType::ALBEDO).empty())
@@ -506,13 +512,14 @@ void Renderer::RenderActor(const WPtr<Character>& character, bool bDrawWithTextu
 				g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(3, 1, &CHAR->m_model->m_meshes[i].material.getMetallic()->m_pSRV);
 			}
 		}
-
 		g_graphicsAPI().m_pDeviceContext->DrawIndexed(CHAR->m_model->m_meshes[i].numIndices,
-			CHAR->m_model->m_meshes[i].baseIndex,
-			CHAR->m_model->m_meshes[i].baseVertex);
+																									CHAR->m_model->m_meshes[i].baseIndex,
+																									CHAR->m_model->m_meshes[i].baseVertex);
+		
 	}
-	
 }
+	
+
 
 void Renderer::RenderShadows(const WPtr<Character>& character)
 {
@@ -561,7 +568,9 @@ void Renderer::RenderShadows(const WPtr<Character>& character)
 }
 
 //Se podría pasarse como
-void Renderer::CreateDefaultSRV(UINT value, DefaultTextures::E defaultTextureType, DXGI_FORMAT format)
+void Renderer::CreateDefaultSRV(UINT value, 
+																DefaultTextures::E defaultTextureType, 
+																DXGI_FORMAT format)
 {
 
 	HRESULT hr;
@@ -608,6 +617,134 @@ void Renderer::CreateDefaultSRV(UINT value, DefaultTextures::E defaultTextureTyp
 	}
 
 	m_DefaultTextures.insert({ defaultTextureType, pSRV });
+}
+
+
+//Ray Triangle Intersection
+/*
+	*		Fórmula
+	*		##### e + td = a + beta(b-a) + gamma(c-a) #####
+	*
+	*		e	= eyePosition
+	*		d	= rayDirection
+	*		a	= vertex1
+	*		b	= vertex2
+	*		c	= vertex3
+	*		beta	= factor de cercanía al vértice b
+	*		gamma = factor de cercanía al vértice c
+	*
+	*
+	*/
+
+	//q uqr regrese el booleano
+void Renderer::Pick()
+{
+
+	auto CAMERA = m_pCamera.lock();
+	auto WORLD = m_pWorld.lock();
+
+	m_hit = false;
+
+	//Calcular el ray Dir aquii
+
+	//Pintar el rayo para debug
+
+	for (const auto& pActor : WORLD->getActors())
+	{
+		auto character = std::dynamic_pointer_cast<Character>(pActor);
+
+		if (pActor)
+		{
+			const Vector<Mesh>& vMeshes = character->m_model->m_meshes;
+			const Vector<MODEL_VERTEX>& vVertices = character->m_model->m_vertices;
+			const Vector<uint32>& vIndices = character->m_model->m_indices;
+
+			for (size_t i = 0; i < vMeshes.size(); ++i)
+			{
+				
+
+				//Triangle Loop
+				for (size_t j = 0; j < vMeshes[i].numIndices; j += 3)
+				{
+					uint32 index0 = vIndices[vMeshes[i].baseIndex + j];
+					uint32 index1 = vIndices[vMeshes[i].baseIndex + j + 1];
+					uint32 index2 = vIndices[vMeshes[i].baseIndex + j + 2];
+
+					Vector3 v0 = vVertices[index0].position;
+					Vector3 v1 = vVertices[index1].position;
+					Vector3 v2 = vVertices[index2].position;
+
+					Vector3 eyePos(CAMERA->m_rayOrigin.x,
+												 CAMERA->m_rayOrigin.y,
+												 CAMERA->m_rayOrigin.z);
+					Vector3 rayDir = Vector3(CAMERA->m_rayDir.x,
+													 CAMERA->m_rayDir.y,
+													 CAMERA->m_rayDir.z).normalize(); // Esto podría no estar normalizado
+
+					float t;
+					Matrix4 characterMat = character->getLocalTransform().getMatrix();
+
+					Vector4 v0W = characterMat * Vector4(v0, 1.0f);
+					Vector4 v1W = characterMat * Vector4(v1, 1.0f);
+					Vector4 v2W = characterMat * Vector4(v2, 1.0f);
+
+					v0 = Vector3(v0W.x, v0W.y, v0W.z);
+					v1 = Vector3(v1W.x, v1W.y, v1W.z);
+					v2 = Vector3(v2W.x, v2W.y, v2W.z);
+
+					
+					//Reproyectar, está proyectada 
+					if (RayTriangle(eyePos, rayDir, v0, v1, v2, t))
+					{
+						m_hit = true;
+						return;
+					}
+				}
+			}
+
+		}
+	}
+}
+
+bool Renderer::RayTriangle(const Vector3& rayOrigin,
+													 const Vector3& rayDir,
+													 const Vector3& v0,
+													 const Vector3& v1,
+													 const Vector3& v2,
+													 float& t)
+{
+	//Qué tan paralelos están???
+	Vector3 edge1 = v1 - v0;
+	Vector3 edge2 = v2 - v0;
+	Vector3 normal = rayDir.cross(edge2);
+	float det = edge1.dot(normal);
+
+	// Si no son paralelos entonces bai
+	if (fabs(det) < 1e-8f)
+	{
+		return false;
+	}
+	
+	// Solución por Cramer
+	const float invDet = 1.0f/det;
+
+	const Vector3 tv = rayOrigin - v0;
+	float u = tv.dot(normal) * invDet;
+
+	if (u < 0.0f || u > 1.0f)
+	{
+		return false;
+	}
+
+	const Vector3 q = tv.cross(edge1);
+	float v = rayDir.dot(q) * invDet;
+	if (v < 0.0f || u + v > 1.0f) //gamma y beta
+	{
+		return false;
+	}
+
+	t = edge2.dot(q) * invDet;
+	return t >= 0.0f && t <= 1e6f;
 }
 
 // 

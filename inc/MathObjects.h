@@ -110,10 +110,42 @@ struct Vector2
 {
 
 	Vector2() = default;
-	Vector2(float _x, float _y = 0.0f) :
-		x(_x),
-		y(_y){}
+	Vector2(float _x, 
+					float _y = 0.0f) :
+					x(_x),
+					y(_y){}
 	
+	inline Vector2 operator+(const Vector2& v) const 
+	{
+		return { x + v.x, y + v.y};
+	}
+
+	inline Vector2 operator-(const Vector2& v) const
+	{
+		return { x - v.x, y - v.y };
+	}
+
+	inline Vector2 operator*(float scalar) const
+	{
+		return { x * scalar, y * scalar };
+	}
+
+	inline Vector2 operator-() const
+	{
+		return { -x , -y };
+	}
+
+	inline float size() const
+	{
+		return std::sqrtf(x*x + y*y);
+	}
+
+	inline Vector2 normalize() const
+	{
+		float invLength = 1.0f / size();
+		return Vector2{x * invLength, y * invLength};
+	}
+
 	float x;
 	float y;
 };
@@ -202,17 +234,14 @@ struct Vector3
 	inline float operator|(const Vector3& v) const {
 		return dot(v);
 	}
-
 	
-
-	
-
 };
 
 struct Vector4
 {
 
 	Vector4() = default;
+
 	Vector4(float _x = 0.0f, 
 					float _y = 0.0f, 
 					float _z = 0.0f, 
@@ -221,6 +250,13 @@ struct Vector4
 						y(_y), 
 						z(_z), 
 						w(_w){}
+	Vector4(const Vector3& _v = Vector3(0.0f,0.0f, 0.0f), 
+					float _w = 1.0f)
+					: x(_v.x),
+					  y(_v.y),
+						z(_v.z),
+						w(_w){}
+	~Vector4() = default;
 
 	inline Vector4 operator+(const Vector4& rhs) const
 	{
@@ -239,9 +275,13 @@ struct Vector4
 
 	inline float size() const
 	{
-		return std::sqrt((x * x) + (y * y) + (z * z) + (w * w));
+		// TODO: Vectores4 poner función de size3 u normalize3, para que ignore w
+		//return std::sqrtf((x * x) + (y * y) + (z * z) + (w * w));
+		return std::sqrtf((x * x) + (y * y) + (z * z));
 	}
 
+	//pROBABLEMENTE regresa un Vector3 en este
+	//Normalize significa que ese se afecte TODO:CAMBIAR ESTEEE
 	inline Vector4 normalize() const
 	{
 		float invLength = 1.0f / size();
@@ -830,28 +870,24 @@ struct __declspec(align(16)) Matrix4
 		return result;
 	}
 
-	static Vector3 VectorMultiplication(const Vector3& v, const Matrix4& m)
+	inline Vector4 operator*(const Vector4& v)
 	{
 		/*
-											[][][][]
-			  [][][][]  x		[][][][]
-											[][][][]
-											[][][][]
+			[x][x][x][x]   *	[x][x][x][x]
+												[x][x][x][x]
+												[x][x][x][x]
+												[x][x][x][x]
+
 		*/
-		float x = v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0] + 1.0f * m.m[3][0];
-		float y = v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1] + 1.0f * m.m[3][1];
-		float z = v.x * m.m[0][2] + v.y * m.m[1][2] + v.z * m.m[2][2] + 1.0f * m.m[3][2];
-		float w = v.x * m.m[0][3] + v.y * m.m[1][3] + v.z * m.m[2][3] + 1.0f * m.m[3][3];
+		return Vector4
+		{
+			v.x * m[0][0] + v.x * m[1][0] + v.x * m[2][0] + v.x * m[3][0],
+			v.y * m[0][1] + v.y * m[1][1] + v.y * m[2][1] + v.y * m[3][1],
+			v.z * m[0][2] + v.z * m[1][2] + v.z * m[2][2] + v.z * m[3][2],
+			v.w * m[0][3] + v.w * m[1][3] + v.w * m[2][3] + v.w * m[3][3],
 
-		return Vector3{ x, y, z };
-	}
-
-	Vector3 operator*(const Vector3& v) const{
-		return Vector3{
-			v.x * m[0][0] + v.y * m[0][1] + v.z * m[0][2],
-			v.x * m[1][0] + v.y * m[1][1] + v.z * m[1][2],
-			v.x * m[2][0] + v.y * m[2][1] + v.z * m[2][2],
 		};
+
 	}
 
 	float m[4][4];

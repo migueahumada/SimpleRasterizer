@@ -42,21 +42,67 @@ void Camera::SetAudioListener()
 
 void Camera::SelectObjectOnScreen(float mouseX, float mouseY)
 {
+
+	// Clip Space Coords
+
+	float clipX = ((mouseX / WIDTH) * 2.0f) - 1.0f;
+	float clipY = ((mouseY / HEIGHT) * 2.0f) - 1.0f;
+
+	// Se hace el punto de origen en coordenadas de clip.
+	m_rayOrigin.x = clipX;
+	m_rayOrigin.y = -clipY;
+	m_rayOrigin.z = 0.0f; // profunidad 0 del frustrum, el near.
+	m_rayOrigin.w = 1.0f;
+
+
+	// Se hace el punto de objetivo en coordenadas de clip.
+	m_rayTarget.x = clipX;
+	m_rayTarget.y = -clipY;
+	m_rayTarget.z = 1.0f; // profunidad de 1.0f, el far.
+	m_rayTarget.w = 1.0f;
+
+	// Calculamos la inversa de la vista proyección
+
+	Matrix4 viewProjection = g_renderer().GetWVP().view *
+													 g_renderer().GetWVP().projection;
+	Matrix4 invViewProjection = viewProjection.Inverse();
+
+	m_rayTarget = invViewProjection * m_rayTarget;
+	m_rayOrigin = invViewProjection * m_rayOrigin;
+
+	//Se proyecta
+	m_rayOrigin.x = m_rayOrigin.x / m_rayOrigin.w;
+	m_rayOrigin.y = m_rayOrigin.y / m_rayOrigin.w;
+	m_rayOrigin.z = m_rayOrigin.z / m_rayOrigin.w;
+
+	// Se proyecta
+	m_rayTarget.x = m_rayTarget.x / m_rayTarget.w;
+	m_rayTarget.y = m_rayTarget.y / m_rayTarget.w;
+	m_rayTarget.z = m_rayTarget.z / m_rayTarget.w;
 	
-	//Screen Space Coords
-	float clipX = 0.0f, clipY = 0.0f;
+	m_rayDir = (m_rayTarget - m_rayOrigin).normalize();
 
-	//NDC Space Coords
-	clipX = ((mouseX / WIDTH) * 2.0f) - 1.0f;
-	clipY = ((mouseY / HEIGHT) * 2.0f) - 1.0f;
+	/*
+	* ######################################
+	*	############### TASK #################
+	*	######################################
+	*/
+	//PASE CON UN PLANO EN LA PANTALLA PARA DIBUJAR CADA PIXEL DE LA PANTALLA
+	//OBTENIENDO EL ESPACIO DEL RAYO Y PINTEN PIXEL SI HAY UN
+	//CUANDO PASE EL PIXEL SHADER SE DIBUJE NE LA PANTALLA.
+	//PONER LA GEOMETRÍA DE UN MODELO
+
+	// SI EL PIXEL HACE EL HIT QUE SE DIBUJE ESE PIXEL EN LA PANTALLA SI NO, NO.
+
+	/*
+		sEA POR PIXEL Y DIBJUE TODO LO QUE SEA QUE CHOQUE.
+		hÁGANLO EN SOFTWARE.
+	*/
+
+	// REIVSAR PIXEL POR PIXEL Y EN CAD APIXEL TIRAR DE LA PANTALLA, 
+	// SI EL RAYO CHOCA CON LA GEOMETRÍA PONLO EN COLOR, SINO PONLO EN NEGRO.
+
 	
-	m_mouseVector.x = clipX;
-	m_mouseVector.y = -clipY;
-	m_mouseVector.z = m_minZ;
-
-	m_viewInv = g_renderer().GetWVP().view.Inverse();
-
-	m_mouseVecW = Matrix4::VectorMultiplication(m_mouseVector,m_viewInv);
 
 }
 

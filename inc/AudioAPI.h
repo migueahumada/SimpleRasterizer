@@ -10,6 +10,7 @@ class Submix;
 class Master;
 class Camera;
 class VoiceCallback;
+class Actor;
 
 class AudioAPI : public Module<AudioAPI>
 {
@@ -34,6 +35,8 @@ public:
   void RouteTo(const WPtr<T>& from, const WPtr<S>& to, unsigned int flags);
   
   void Init3DAudio(WPtr<Master> pMaster);
+
+  void SetListener(WPtr<Actor> lsitenerActor);
 
   void Play(const WPtr<Audio>& audio, float volume);
 

@@ -122,6 +122,12 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	
 	g_pWorld->Init();
 
+	g_pFourthActor = g_pWorld->SpawnActor<Character>(nullptr,
+		"D:/Coding/C++/SimpleRasterizer/Models/DiscFloor/Disc.obj",
+		Vector3(0.0f, 0.0f, 0.0f),
+		Vector3(4.0f, 4.0f, 4.0f));
+	g_pFourthActor->SetName("Floor");
+
 	g_pSeventhActor = g_pWorld->SpawnActor<Character>(nullptr,
 		"D:/Models3D/RexTestModel/Rex_mat.obj",
 		Vector3(0.0f, 0.0f, 0.0f),
@@ -129,16 +135,12 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
 	g_pSeventhActor->SetName("REX");
 
-	g_pFourthActor = g_pWorld->SpawnActor<Character>(nullptr,
-																									 "D:/Coding/C++/SimpleRasterizer/Models/DiscFloor/Disc.obj",
-																									 Vector3(0.0f, 0.0f, 0.0f),
-																									 Vector3(6.0f, 6.0f, 6.0f));
-	g_pFourthActor->SetName("Floor");
+	
 	
 	g_pSecondaryActor = g_pWorld->SpawnActor<Character>(nullptr,
 																											"D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/BrainRot.obj",
 																											Vector3(6.0f, 0.0f, 0.0f),
-																											Vector3(0.5f, 0.5f, 0.5f));
+																											Vector3(1.0f, 1.0f, 1.0f));
 	g_pSecondaryActor->SetName("Patapim");
 
 
@@ -175,7 +177,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	g_pSound2->RouteTo(g_pSubmix);
 
 	g_pSound->getSourceVoice()->SetFrequencyRatio(1.2f);
-	g_pSubmix->getSubmixVoice()->SetVolume(0.0f);
+	g_pSubmix->getSubmixVoice()->SetVolume(1.0f);
 	g_audioAPI().Play(g_pSound, 0.8f);
 	g_audioAPI().Play(g_pSound2, 0.3f);
 
@@ -238,22 +240,23 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 			break;
 
 		case SDL_EVENT_MOUSE_MOTION:
-
 			
+			g_pCamera->SelectObjectOnScreen(event->motion.x, event->motion.y);
+			
+			//std::cout << event->motion.x << " " << event->motion.y << std::endl;
 
 			if (g_pCamera->canRotate() && SDL_GetWindowRelativeMouseMode(g_pWindow))
 			{
 				g_pCamera->Rotate(event->motion.xrel * g_pCamera->getRotSpeed(),
 					event->motion.yrel * g_pCamera->getRotSpeed());
 			}
+			
 			break;
 
 		case SDL_EVENT_MOUSE_BUTTON_DOWN:
 			g_pCamera->enableRotation();
 			if (event->button.button == SDL_BUTTON_RIGHT) 
-				SDL_SetWindowRelativeMouseMode(g_pWindow, true);
-			
-			
+				SDL_SetWindowRelativeMouseMode(g_pWindow, true);		
 
 			break;
 
@@ -264,7 +267,17 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 			
 			if (event->button.button == SDL_BUTTON_LEFT)
 			{
-				g_pCamera->SelectObjectOnScreen(event->motion.x, event->motion.y);
+				g_renderer().Pick();
+
+				if (g_renderer().m_hit)
+				{
+					std::cout << "Actor hit ray" << std::endl;
+				}
+				else
+				{
+					std::cout << "NO HIT" << std::endl;
+				}
+
 			}
 
 			break;

@@ -192,6 +192,12 @@
     <ClCompile Include="src\ResourceManager.cpp">
       <Filter>Source Files\Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="src\Component.cpp">
+      <Filter>Source Files\GameFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SoundEngine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\imgui\imconfig.h">
@@ -328,6 +334,12 @@
     </ClInclude>
     <ClInclude Include="inc\ResourceManager.h">
       <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\Component.h">
+      <Filter>Header Files\GameFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\SoundEngine.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -148,6 +148,7 @@
     <ClCompile Include="src\Bus.cpp" />
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\Character.cpp" />
+    <ClCompile Include="src\Component.cpp" />
     <ClCompile Include="src\EngineCallback.cpp" />
     <ClCompile Include="src\GraphicsAPI.cpp" />
     <ClCompile Include="src\GraphicsBuffer.cpp" />
@@ -189,6 +190,7 @@
     <ClCompile Include="src\SceneGraph.cpp" />
     <ClCompile Include="src\SceneObject.cpp" />
     <ClCompile Include="src\Shader.cpp" />
+    <ClCompile Include="src\SoundEngine.cpp" />
     <ClCompile Include="src\Submix.cpp" />
     <ClCompile Include="src\Texture.cpp" />
     <ClCompile Include="src\VoiceCallback.cpp" />
@@ -203,6 +205,7 @@
     <ClInclude Include="inc\Bus.h" />
     <ClInclude Include="inc\Camera.h" />
     <ClInclude Include="inc\Character.h" />
+    <ClInclude Include="inc\Component.h" />
     <ClInclude Include="inc\EngineCallback.h" />
     <ClInclude Include="inc\GraphicsAPI.h" />
     <ClInclude Include="inc\GraphicsBuffer.h" />
@@ -236,6 +239,7 @@
     <ClInclude Include="inc\SceneGraph.h" />
     <ClInclude Include="inc\SceneObject.h" />
     <ClInclude Include="inc\Shader.h" />
+    <ClInclude Include="inc\SoundEngine.h" />
     <ClInclude Include="inc\Submix.h" />
     <ClInclude Include="inc\Texture.h" />
     <ClInclude Include="inc\VoiceCallback.h" />

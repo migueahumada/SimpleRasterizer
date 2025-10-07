@@ -43,9 +43,6 @@ struct __declspec(align(16)) MatrixCollection
   Vector3 placeholder2;
   float pl4;
 
-  Vector3 rayVector;
-  float pl5;
-
   //LightData lightArray [NUM_LIGHTS];
   //float time;
 };
@@ -69,6 +66,8 @@ class Texture;
 class World;
 class Camera;
 class Character;
+struct Mesh;
+struct MODEL_VERTEX;
 
 namespace RasterStates{
   enum E {
@@ -145,6 +144,10 @@ public:
     return m_WVP;
   }
 
+  bool m_bGeometryHit;
+
+  bool m_hit{ false };
+  void Pick();
 private:
 
   void OnStartUp() override;
@@ -155,9 +158,20 @@ private:
   void RenderShadows(const WPtr<Character>& character);
   void CreateDefaultSRV(UINT color, 
                         DefaultTextures::E defaultTextureType, DXGI_FORMAT format = DXGI_FORMAT_B8G8R8A8_UNORM);
+  
+  
+  
 
- 
+  bool RayTriangle(const Vector3& rayOrigin,
+    const Vector3& rayDir,
+    const Vector3& v0,
+    const Vector3& v1,
+    const Vector3& v2,
+    float& t);
 
+
+
+  
 private:
   
   WPtr<Camera> m_pCamera;
@@ -194,8 +208,6 @@ private:
   Texture m_forwardRTV;
 
   ShadingState::E m_currentShadingState{ShadingState::DEFERRED};
-
-  
 
 
 };

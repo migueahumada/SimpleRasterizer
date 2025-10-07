@@ -86,7 +86,7 @@ public:
 		return m_projectionMatrix; 
 	}
 	
-	inline Vector3 getEyePosition() const
+	inline Vector3 getEyePosition()
 	{ 
 		return m_position;
 	}
@@ -115,6 +115,7 @@ public:
 	{
 		return m_rotSpeed;
 	}
+
 	inline X3DAUDIO_LISTENER getCameraListener() const{
 		return m_cameraListener;
 	}
@@ -164,12 +165,13 @@ public:
 	  return m_bCanRotate;
 	}
 
-
 	void Update();
 
-	Vector3 m_mouseVector;
-	Matrix4 m_viewInv;
-	Vector3 m_mouseVecW;
+	Vector4 m_rayOrigin{0.0f,0.0f,0.0f};
+	Vector4 m_rayTarget{ 0.0f,0.0f,0.0f };
+	Vector4 m_rayDir{ 0.0f,0.0f,0.0f };
+	
+	//Vector4 m_mouseVecW;
 
 private:
 
