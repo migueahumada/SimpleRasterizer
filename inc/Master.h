@@ -8,7 +8,10 @@ class Master
 
 public:
   Master();
-  ~Master() = default;
+  virtual ~Master()
+  {
+    m_pMasterVoice->DestroyVoice();
+  }
   
   IXAudio2MasteringVoice* getMasterVoice()
   {

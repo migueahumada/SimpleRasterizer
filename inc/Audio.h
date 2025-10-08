@@ -23,10 +23,8 @@
 #include "HelperMacros.h"
 
 using std::fstream;
-using String = std::string;
 
-class Submix;
-class VoiceCallback;
+
 
 class Audio
 {
@@ -37,30 +35,19 @@ public:
 
 	void load(const char* filename);
 
-	void RouteTo(const WPtr<Submix>& submix, unsigned int flags = 0);
-
-	IXAudio2SourceVoice* getSourceVoice() const{
-		return m_pSourceVoice;
+	XAUDIO2_BUFFER getAudioBuffer() const{
+		return m_buffer;
 	}
 
 protected:
 	friend class AudioAPI;
+	friend class SoundEngine;
 
 	WAVEFORMATEXTENSIBLE m_waveFile{ 0 };
 	XAUDIO2_BUFFER m_buffer{ 0 };
 
 	String m_name;
+	String m_filePath;
 	unsigned char* m_pDataBuffer = nullptr;
-	IXAudio2SourceVoice* m_pSourceVoice = nullptr;
-
-
-
-	//Sends
-	XAUDIO2_VOICE_SENDS m_sends{0};
-	Vector<XAUDIO2_SEND_DESCRIPTOR> m_sendList{0};
-
-	//Effects
-	XAUDIO2_EFFECT_CHAIN m_effects{0};
-	Vector<XAUDIO2_EFFECT_DESCRIPTOR> m_effectList{0};
 };
 

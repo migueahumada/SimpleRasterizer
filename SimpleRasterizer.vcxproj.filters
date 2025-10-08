@@ -195,8 +195,14 @@
     <ClCompile Include="src\Component.cpp">
       <Filter>Source Files\GameFramework</Filter>
     </ClCompile>
-    <ClCompile Include="src\SoundEngine.cpp">
+    <ClCompile Include="src\AudioDevice.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SoundEngine.cpp">
+      <Filter>Source Files\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Channel.cpp">
+      <Filter>Source Files\Audio</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -338,8 +344,14 @@
     <ClInclude Include="inc\Component.h">
       <Filter>Header Files\GameFramework</Filter>
     </ClInclude>
-    <ClInclude Include="inc\SoundEngine.h">
+    <ClInclude Include="inc\AudioDevice.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\SoundEngine.h">
+      <Filter>Header Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\Channel.h">
+      <Filter>Header Files\Audio</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -22,6 +22,7 @@
 #include "ImGuiAPI.h"
 #include "Model.h"
 #include "ResourceManager.h"
+#include "SoundEngine.h"
 
 
 SDL_Window* g_pWindow = nullptr;
@@ -60,6 +61,7 @@ void Update(float deltaTime)
 	g_pCamera->Update();
 	g_pWorld->Update(deltaTime);
 	g_imguiAPI().Update();
+	g_soundEngine().Update();
 }
 
 void FixedUpdate(){
@@ -156,30 +158,31 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	
 	
 	AudioAPI::StartUp();
-	
-	g_audioAPI().Init();
+	SoundEngine::StartUp();
 
-	g_pCallback = make_shared<VoiceCallback>();
+	//g_audioAPI().Init();
 
-	g_pMaster = g_audioAPI().CreateMaster();
+	//g_pCallback = make_shared<VoiceCallback>();
 
-	g_audioAPI().Init3DAudio(g_pMaster);
+	//g_pMaster = g_audioAPI().CreateMaster();
 
-	g_pSubmix = g_audioAPI().CreateSubmix(2, 48000);
-	
-	g_pSound = g_audioAPI().CreateSoundEffect("Mark",
-																						"./audio/MX_Menu_Loop.wav", g_pCallback);
-	
-	g_pSound2 = g_audioAPI().CreateSoundEffect("Woosh",
-																						"./audio/Audio_001.wav");
+	//g_audioAPI().Init3DAudio(g_pMaster);
 
-	g_pSound->RouteTo(g_pSubmix);
-	g_pSound2->RouteTo(g_pSubmix);
+	//g_pSubmix = g_audioAPI().CreateSubmix(2, 48000);
+	//
+	//g_pSound = g_audioAPI().CreateSoundEffect("Mark",
+	//																					"./audio/MX_Menu_Loop.wav", g_pCallback);
+	//
+	//g_pSound2 = g_audioAPI().CreateSoundEffect("Woosh",
+	//																					"./audio/Audio_001.wav");
 
-	g_pSound->getSourceVoice()->SetFrequencyRatio(1.2f);
-	g_pSubmix->getSubmixVoice()->SetVolume(1.0f);
-	g_audioAPI().Play(g_pSound, 0.8f);
-	g_audioAPI().Play(g_pSound2, 0.3f);
+	//g_pSound->RouteTo(g_pSubmix);
+	//g_pSound2->RouteTo(g_pSubmix);
+
+	//g_pSound->getSourceVoice()->SetFrequencyRatio(1.2f);
+	//g_pSubmix->getSubmixVoice()->SetVolume(1.0f);
+	//g_audioAPI().Play(g_pSound, 0.8f);
+	//g_audioAPI().Play(g_pSound2, 0.3f);
 
 	
 
@@ -339,9 +342,11 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
 	AudioAPI::Shutdown();
+	SoundEngine::Shutdown();
 	ImGuiAPI::Shutdown();
 	Renderer::Shutdown();
 	GraphicsAPI::Shutdown();
+
 	
 
 	if (g_pWindow)

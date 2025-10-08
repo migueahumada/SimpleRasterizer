@@ -11,6 +11,8 @@
 #define SAFE_RELEASE(p) { if(p){p->Release(); p = nullptr;} }
 #define SHOW_ERROR(msg) {MessageBox(nullptr,msg, L"Error",MB_OK);}
 
+#define XAUDIO
+
 //SMART POINTERS
 template <typename T>
 using UPtr = std::unique_ptr<T>;

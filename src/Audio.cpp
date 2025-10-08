@@ -1,15 +1,12 @@
 #include "Audio.h"
 #include "Submix.h"
 
-Audio::Audio(const String& name, const String& filePath) : m_name(name)
+Audio::Audio(const String& name, 
+						 const String& filePath) 
+	: m_name(name), 
+		m_filePath(filePath)
 {
 	load(filePath.c_str());
-
-	m_sends.pSends = m_sendList.data();
-	m_sends.SendCount = m_sendList.size();
-
-	m_effects.pEffectDescriptors = m_effectList.data();
-	m_effects.EffectCount = m_effectList.size();
 }
 
 Audio::~Audio()
@@ -19,7 +16,7 @@ Audio::~Audio()
 		delete[] m_pDataBuffer;
 		m_pDataBuffer = nullptr;
 	}
-	//m_pSourceVoice->DestroyVoice();
+
 }
 
 void Audio::load(const char* filename)
@@ -74,37 +71,6 @@ void Audio::load(const char* filename)
 	m_buffer.Flags = XAUDIO2_END_OF_STREAM;
 
 	file.close();
-}
-
-void Audio::RouteTo(const WPtr<Submix>& submix, unsigned int flags)
-{
-
-	if (submix.expired())
-	{
-		MessageBox(nullptr, L"Routing couldn't be done. submix is nullptr",
-			L"ERROR", S_OK);
-		return;
-	}
-
-	auto SUBMIX = submix.lock();
-
-	XAUDIO2_SEND_DESCRIPTOR sendDesc{0};
-	memset(&sendDesc,0,sizeof(XAUDIO2_SEND_DESCRIPTOR));
-	
-	sendDesc.Flags = flags;
-	sendDesc.pOutputVoice = SUBMIX->getSubmixVoice();
-
-	m_sendList.push_back(sendDesc);
-	m_sends.SendCount = m_sendList.size();
-	m_sends.pSends = m_sendList.data();
-	
-	HRESULT hr = m_pSourceVoice->SetOutputVoices(&m_sends);
-	if (FAILED(hr))
-	{
-		MessageBox(nullptr, L"Error setting updating output voices", L"ERROR", S_OK);
-		return;
-	}
-
 }
 
 

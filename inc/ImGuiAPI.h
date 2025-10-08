@@ -26,6 +26,9 @@ public:
 	void Update();
 	void Render();
 
+	void SetSoundEngineUI(bool bSet);
+	void SetSceneGraphUI(bool bSet);
+
 private:
 
 	void OnShutdown() override;

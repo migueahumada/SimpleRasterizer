@@ -2,6 +2,8 @@
 #include "World.h"
 #include "Camera.h"
 #include "Renderer.h"
+#include "SoundEngine.h"
+#include "Channel.h"
 
 ImGuiAPI::ImGuiAPI(SDL_Window* pWindow, 
 									 const WPtr<World>& pWorld, 
@@ -81,28 +83,7 @@ void ImGuiAPI::Render()
 
 
 	ImGui::SetNextWindowBgAlpha(0.2f);
-	ImGui::Begin("Scene Graph");
-	if (ImGui::TreeNode("Scene"))
-	{
-		ImGui::SetNextItemOpen(true, ImGuiCond_Once);
-
-		for (const auto& actor : WORLD->getActors())
-		{
-			ImGui::Text(actor->GetName().c_str());
-		}
-		ImGui::TreePop();
-	}
-	ImGui::End();
-
-	ImGui::Begin("Properties");
-
-		ImGui::Text("Directional Light");
-		ImGui::DragFloat3("Light Position X: ", &g_renderer().GetWVP().lightPosition.x);
-
-		ImGui::Text("Mouse Vector4");
-		ImGui::DragFloat4("Vec4: ", &CAMERA->m_rayDir.x);
-
-	ImGui::End();	
+	SetSceneGraphUI(true);
 
 
 	ImGui::SetNextWindowBgAlpha(0.2f);
@@ -176,6 +157,9 @@ void ImGuiAPI::Render()
 			ImVec2(320, 180));
 	ImGui::End();
 
+	SetSoundEngineUI(true);
+	
+
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
@@ -184,6 +168,76 @@ void ImGuiAPI::Render()
 		ImGui::UpdatePlatformWindows();
 		ImGui::RenderPlatformWindowsDefault();
 	}
+}
+
+void ImGuiAPI::SetSoundEngineUI(bool bSet)
+{
+	if (bSet == false)
+	{
+		return;
+	}
+
+	ImGui::Begin("Sound Engine");
+	
+	if (ImGui::BeginTable("Active Channels", 1))
+	{
+		ImGui::TableSetupColumn("Channels", ImGuiTableColumnFlags_WidthFixed);
+		ImGui::TableHeadersRow();
+
+		for (auto it = g_soundEngine().GetChannels().begin(),
+			itEnd = g_soundEngine().GetChannels().end();
+			it != itEnd;
+			++it)
+		{
+				ImGui::TableNextColumn();
+				ImGui::Text(it->first.c_str());
+				
+		}
+		ImGui::EndTable();
+	}
+
+	
+
+	ImGui::End();
+}
+
+void ImGuiAPI::SetSceneGraphUI(bool bSet)
+{
+	if (!bSet)
+	{
+		return;
+	}
+
+	if (m_pWorld.expired() || m_pCamera.expired())
+	{
+		return;
+	}
+
+	auto WORLD = m_pWorld.lock();
+	auto CAMERA = m_pCamera.lock();
+
+	ImGui::Begin("Scene Graph");
+	if (ImGui::TreeNode("Scene"))
+	{
+		ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+
+		for (const auto& actor : WORLD->getActors())
+		{
+			ImGui::Text(actor->GetName().c_str());
+		}
+		ImGui::TreePop();
+	}
+	ImGui::End();
+
+	ImGui::Begin("Properties");
+
+	ImGui::Text("Directional Light");
+	ImGui::DragFloat3("Light Position X: ", &g_renderer().GetWVP().lightPosition.x);
+
+	ImGui::Text("Mouse Vector4");
+	ImGui::DragFloat4("Vec4: ", &CAMERA->m_rayDir.x);
+
+	ImGui::End();
 }
 
 void ImGuiAPI::OnShutdown()
