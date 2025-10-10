@@ -21,9 +21,14 @@ class SoundEngine : public Module<SoundEngine>
 
   void Update();
 
-  ChannelMap& GetChannels()
+  const ChannelMap& GetChannels() const
   {
     return m_mapChannels;
+  }
+
+  const AudioMap& GetAudios() const
+  {
+    return m_mapAudios;
   }
 
  protected:

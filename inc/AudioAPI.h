@@ -1,6 +1,6 @@
 #pragma once
-#include "HelperMacros.h"
 
+#include "HelperMacros.h"
 #include <xaudio2.h>
 #include "Module.h"
 #include "AudioDevice.h"
@@ -51,6 +51,8 @@ public:
   void Init3DAudio(WPtr<Master> pMaster);
 
   void SetListener(WPtr<Actor> lsitenerActor);
+
+  
 
   void Update();
 

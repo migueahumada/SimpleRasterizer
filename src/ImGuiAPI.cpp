@@ -4,6 +4,9 @@
 #include "Renderer.h"
 #include "SoundEngine.h"
 #include "Channel.h"
+#include "Audio.h"
+#include <xaudio2.h>
+
 
 ImGuiAPI::ImGuiAPI(SDL_Window* pWindow, 
 									 const WPtr<World>& pWorld, 
@@ -179,23 +182,66 @@ void ImGuiAPI::SetSoundEngineUI(bool bSet)
 
 	ImGui::Begin("Sound Engine");
 	
-	if (ImGui::BeginTable("Active Channels", 1))
+	if (ImGui::CollapsingHeader("Channels", ImGuiTreeNodeFlags_SpanAvailWidth))
 	{
-		ImGui::TableSetupColumn("Channels", ImGuiTableColumnFlags_WidthFixed);
-		ImGui::TableHeadersRow();
-
-		for (auto it = g_soundEngine().GetChannels().begin(),
-			itEnd = g_soundEngine().GetChannels().end();
-			it != itEnd;
-			++it)
+		if (ImGui::BeginTable("Active Channels", 1))
 		{
+			ImGui::TableSetupColumn("Channels", ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableHeadersRow();
+
+			for (auto it = g_soundEngine().GetChannels().begin(),
+				itEnd = g_soundEngine().GetChannels().end();
+				it != itEnd;
+				++it)
+			{
 				ImGui::TableNextColumn();
 				ImGui::Text(it->first.c_str());
-				
+			}
+			ImGui::EndTable();
 		}
-		ImGui::EndTable();
 	}
+	
 
+	
+	//ImGui::Text("%f", g_soundEngine().GetAudios().find("Audio2")->second->getSample(122));
+	if (ImGui::CollapsingHeader("AudioSettings",ImGuiTreeNodeFlags_SpanAvailWidth))
+	{
+		
+		ImGuiStyle* style = &ImGui::GetStyle();
+		
+		ImGui::SliderFloat4("Waveform Color", reinterpret_cast<float*>(&style->Colors[ImGuiCol_PlotLines]), 0.0f, 1.0f);
+		
+		ImVec4 LastColor = style->Colors[ImGuiCol_FrameBg];
+		
+		ImGui::SliderFloat4("Frame Background", reinterpret_cast<float*>(&m_BgWaveformColor), 0.0f, 1.0f);
+
+		style->Colors[ImGuiCol_FrameBg] = m_BgWaveformColor;
+		
+		ImGui::PlotLines(g_soundEngine().GetAudios().find("Audio1")->first.c_str(),
+			g_soundEngine().GetAudios().find("Audio1")->second->getAmplitudeSamples().data(),
+			g_soundEngine().GetAudios().find("Audio1")->second->getAmplitudeSamples().size(),
+			0,
+			g_soundEngine().GetAudios().find("Audio1")->first.c_str(),
+			-1.0f, 1.0f, ImVec2(ImGui::GetWindowSize().x, 150.0f), 4);
+			
+
+		ImGui::PlotLines(g_soundEngine().GetAudios().find("Audio2")->first.c_str(),
+			g_soundEngine().GetAudios().find("Audio2")->second->getAmplitudeSamples().data(),
+			g_soundEngine().GetAudios().find("Audio2")->second->getAmplitudeSamples().size(),
+			0,
+			g_soundEngine().GetAudios().find("Audio2")->first.c_str(),
+			-1.0f, 1.0f, ImVec2(ImGui::GetWindowSize().x, 150.0f), 4);
+
+		ImGui::PlotLines(g_soundEngine().GetAudios().find("Audio3")->first.c_str(),
+			g_soundEngine().GetAudios().find("Audio3")->second->getAmplitudeSamples().data(),
+			g_soundEngine().GetAudios().find("Audio3")->second->getAmplitudeSamples().size(),
+			0,
+			g_soundEngine().GetAudios().find("Audio3")->first.c_str(),
+			-1.0f, 1.0f, ImVec2(ImGui::GetWindowSize().x, 150.0f), 4);
+
+		style->Colors[ImGuiCol_FrameBg] = LastColor;
+	}
+	
 	
 
 	ImGui::End();

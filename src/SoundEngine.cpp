@@ -12,40 +12,24 @@ void SoundEngine::OnStartUp()
 
   //Start Main Output
   m_pMasterOutput = g_audioAPI().CreateMaster(32,48000);
+
   if (!m_pMasterOutput)
   {
     return;
   }
 
-  SPtr<Audio> pAudio = g_audioAPI().CreateAudio("Sounds",
+  SPtr<Audio> pAudio = g_audioAPI().CreateAudio("Audio x",
     "D:/Coding/C++/SimpleRasterizer/audio/Audio_001.wav");
-  if (!pAudio)
-  {
-    return;
-  }
-  SPtr<Audio> pAudio2 = g_audioAPI().CreateAudio("Sounds",
-    "D:/Coding/C++/SimpleRasterizer/audio/MX_Menu_Loop.wav");
-  if (!pAudio2)
-  {
-    return;
-  }
+  SPtr<Audio> pAudio2 = g_audioAPI().CreateAudio("Draggin Rock",
+    "D:/Coding/C++/SimpleRasterizer/audio/DraggingRock.wav");
+  SPtr<Audio> pAudio3 = g_audioAPI().CreateAudio("Laser Gun",
+    "D:/Coding/C++/SimpleRasterizer/audio/LaserGun.wav");
 
   SPtr<Channel> pChannel = g_audioAPI().CreateChannel(pAudio, 2, 48000);
-  if (!pChannel)
-  {
-    return;
-  }
   SPtr<Channel> pChannel2 = g_audioAPI().CreateChannel(pAudio2, 2, 48000);
-  if (!pChannel2)
-  {
-    return;
-  }
+  SPtr<Channel> pChannel3 = g_audioAPI().CreateChannel(pAudio3, 2, 48000);
 
   SPtr<Submix> pSubmix = g_audioAPI().CreateSubmix();
-  if (!pSubmix)
-  {
-    return;
-  }
 
   //SPtr<Channel> pEmptyChannel = g_audioAPI().CreateChannel(2, 48000);
   //if (!pEmptyChannel)
@@ -57,20 +41,25 @@ void SoundEngine::OnStartUp()
 
   m_mapChannels.insert({"Channel1", pChannel});
   m_mapChannels.insert({ "Channel2", pChannel2 });
+  m_mapChannels.insert({ "Channel3", pChannel3 });
 
   m_mapAudios.insert({ "Audio1", pAudio });
   m_mapAudios.insert({ "Audio2", pAudio2 });
+  m_mapAudios.insert({ "Audio3", pAudio3 });
 
   m_mapSubmixes.insert({"Submix1", pSubmix});
 
   m_mapChannels.find("Channel1")->second->Route(m_mapSubmixes.find("Submix1")->second);
   m_mapChannels.find("Channel2")->second->Route(m_mapSubmixes.find("Submix1")->second);
+  m_mapChannels.find("Channel3")->second->Route(m_mapSubmixes.find("Submix1")->second);
   
   m_mapSubmixes.find("Submix1")->second->m_pSubmixVoice->SetVolume(5.0f);
 
   Play(m_mapChannels.find("Channel1")->second, 0.2f);
   Play(m_mapChannels.find("Channel2")->second,0.2f);
+  Play(m_mapChannels.find("Channel3")->second, 0.2f);
 
+  //float add = m_mapAudios.find("Audio1")->second->getSample(450);
 }
 
 void SoundEngine::OnShutdown()

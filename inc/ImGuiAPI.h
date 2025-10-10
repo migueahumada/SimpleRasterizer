@@ -34,6 +34,8 @@ private:
 	void OnShutdown() override;
 	void OnStartUp() override;
 
+	ImVec4 m_BgWaveformColor{1.0f,1.0f,1.0f,0.2f};
+
 	SDL_Window* m_pWindow;
 	WPtr<World> m_pWorld;
 	WPtr<Camera> m_pCamera;
