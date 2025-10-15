@@ -84,7 +84,7 @@ public:
 	//Frame: frame = numSamples / numChannels
 	inline const uint32 getNumFrames() const
 	{
-		return getNumSamples() / getNumChannels();
+		return static_cast<uint32>(getNumSamples() / getNumChannels());
 	}
 
 	const size_t& getDataBufferSize() const

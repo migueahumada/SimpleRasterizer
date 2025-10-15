@@ -4,6 +4,7 @@
 
 class Component : public Object
 {
+ public:
   Component() = default;
   virtual ~Component() = default;
 

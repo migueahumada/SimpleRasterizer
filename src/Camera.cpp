@@ -35,9 +35,23 @@ void Camera::SetOrthographic(float left, float right, float bottom, float top, f
 	m_projectionMatrix.SetOrthographic(left, right, bottom, top, nearZ, farZ);
 }
 
-void Camera::SetAudioListener()
+void Camera::UpdateAudioListener()
 {
-	
+	m_Listener.OrientTop.x = m_up.x;
+	m_Listener.OrientTop.y = m_up.y;
+	m_Listener.OrientTop.z = m_up.z;
+
+	m_Listener.OrientFront.x = -m_forward.x;
+	m_Listener.OrientFront.y = -m_forward.y;
+	m_Listener.OrientFront.z = -m_forward.z;
+
+	m_Listener.Position.x = m_position.x;
+	m_Listener.Position.y = m_position.y;
+	m_Listener.Position.z = m_position.z;
+
+	m_Listener.Velocity.x = m_velocity.x;
+	m_Listener.Velocity.y = m_velocity.y;
+	m_Listener.Velocity.z = m_velocity.z;
 }
 
 void Camera::SelectObjectOnScreen(float mouseX, float mouseY)
@@ -145,6 +159,8 @@ void Camera::Update()
 	
 	m_viewMatrix.LookAt(m_position, m_forward + m_position, m_up);
 	m_projectionMatrix.Perspective(m_fov, m_width, m_height, m_minZ, m_maxZ);
+
+	
 
 	bIsDirty = false;
 

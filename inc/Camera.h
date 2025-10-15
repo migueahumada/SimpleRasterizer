@@ -45,7 +45,7 @@ public:
 											float nearZ, 
 											float farZ);
 	
-	void SetAudioListener();
+	void UpdateAudioListener();
 
 	void SelectObjectOnScreen(float mouseX, float mouseY);
 
@@ -114,15 +114,6 @@ public:
 	inline float getRotSpeed() const
 	{
 		return m_rotSpeed;
-	}
-
-	inline X3DAUDIO_LISTENER getCameraListener() const{
-		return m_cameraListener;
-	}
-
-	inline void setCameraListener(X3DAUDIO_LISTENER& listener)
-	{
-		memcpy(&m_cameraListener, &listener, sizeof(X3DAUDIO_LISTENER));
 	}
 
 	inline Vector3 GetViewDir() const{
@@ -207,6 +198,6 @@ private:
 	bool bIsDirty = false;
 	bool m_bCanRotate = false;
 
-	X3DAUDIO_LISTENER m_cameraListener = {};
+	X3DAUDIO_LISTENER m_Listener;
 };
 

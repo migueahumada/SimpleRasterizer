@@ -45,7 +45,7 @@ void Channel::Route(const WPtr<Submix>& submix, unsigned int flags)
 	sendDesc.pOutputVoice = SUBMIX->m_pSubmixVoice;
 
 	m_sendList.push_back(sendDesc);
-	m_sends.SendCount = m_sendList.size();
+	m_sends.SendCount = static_cast<uint32>(m_sendList.size());
 	m_sends.pSends = m_sendList.data();
 	
 	HRESULT hr = m_pSourceVoice->SetOutputVoices(&m_sends);

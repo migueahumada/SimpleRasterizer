@@ -6,6 +6,7 @@
 #include "Channel.h"
 #include "Audio.h"
 #include <xaudio2.h>
+#include "UUID.h"
 
 
 ImGuiAPI::ImGuiAPI(SDL_Window* pWindow, 
@@ -269,7 +270,8 @@ void ImGuiAPI::SetSceneGraphUI(bool bSet)
 
 		for (const auto& actor : WORLD->getActors())
 		{
-			ImGui::Text(actor->GetName().c_str());
+			ImGui::Text("%s %s",actor->GetName().c_str(), std::to_string(actor->GetUUID().getUUID()).c_str());
+			
 		}
 		ImGui::TreePop();
 	}

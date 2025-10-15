@@ -58,6 +58,12 @@
     <Filter Include="Source Files\Utilities">
       <UniqueIdentifier>{e87380e4-98bc-4f9b-a69a-7ddeabb677da}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\GameFramework\Components">
+      <UniqueIdentifier>{d7f8c77c-779e-4d93-84f1-05a26e979342}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GameFramework\Components">
+      <UniqueIdentifier>{1a1c0cbd-5e7f-4885-99ed-7ea191c5376b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp.bak">
@@ -189,20 +195,26 @@
     <ClCompile Include="src\Material.cpp">
       <Filter>Source Files\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="src\ResourceManager.cpp">
-      <Filter>Source Files\Graphics</Filter>
-    </ClCompile>
     <ClCompile Include="src\Component.cpp">
       <Filter>Source Files\GameFramework</Filter>
-    </ClCompile>
-    <ClCompile Include="src\AudioDevice.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\SoundEngine.cpp">
       <Filter>Source Files\Audio</Filter>
     </ClCompile>
     <ClCompile Include="src\Channel.cpp">
       <Filter>Source Files\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UUID.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AudioComponent.cpp">
+      <Filter>Source Files\GameFramework\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AudioDevice.cpp">
+      <Filter>Source Files\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ResourceManager.cpp">
+      <Filter>Source Files\Utilities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -338,20 +350,26 @@
     <ClInclude Include="inc\Material.h">
       <Filter>Header Files\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="inc\ResourceManager.h">
-      <Filter>Header Files\Graphics</Filter>
-    </ClInclude>
     <ClInclude Include="inc\Component.h">
       <Filter>Header Files\GameFramework</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\AudioDevice.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="inc\SoundEngine.h">
       <Filter>Header Files\Audio</Filter>
     </ClInclude>
     <ClInclude Include="inc\Channel.h">
       <Filter>Header Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\UUID.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\AudioComponent.h">
+      <Filter>Header Files\GameFramework\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\AudioDevice.h">
+      <Filter>Header Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ResourceManager.h">
+      <Filter>Header Files\Utilities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

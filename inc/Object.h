@@ -1,5 +1,6 @@
 #pragma once
 #include "HelperMacros.h"
+#include "UUID.h"
 
 class Object
 {
@@ -8,14 +9,14 @@ public:
   virtual ~Object() = default;
 
   void SetName(const String& name){m_name = name;}
-  void SetId(unsigned int id) { m_id= id; }
 
   String GetName() const {return m_name; }
-  unsigned int GetId() const { return m_id; }
+
+  const MKEngine::UUID GetUUID() const { return m_objectUUID; }
 
 
 protected:
   String m_name = "Default Name";
-  unsigned int m_id;
+  MKEngine::UUID m_objectUUID;
 };
 

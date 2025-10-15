@@ -10,6 +10,7 @@ class Texture;
 class GraphicsAPI;
 class Camera;
 class GraphicsBuffer;
+class AudioComponent;
 
 
 class Character : public Actor
@@ -36,6 +37,8 @@ public:
 
   Vector<char> m_matrixData;
 
+  SPtr<AudioComponent> m_audioComponent;
+  
   String m_modelName;
 };
 

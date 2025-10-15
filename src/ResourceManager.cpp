@@ -9,6 +9,7 @@ void ResourceManager::OnShutdown()
 {
 }
 
+
 ResourceManager& g_resourceManager()
 {
   return ResourceManager::GetInstance();

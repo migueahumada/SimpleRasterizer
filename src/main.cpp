@@ -12,8 +12,6 @@
 #include "Camera.h"
 #include "GraphicsAPI.h"
 #include "AudioAPI.h"
-#include "Submix.h"
-#include "Audio.h"
 #include "Character.h"
 #include "World.h"
 #include "Actor.h"
@@ -23,6 +21,7 @@
 #include "Model.h"
 #include "ResourceManager.h"
 #include "SoundEngine.h"
+#include "UUID.h"
 
 
 SDL_Window* g_pWindow = nullptr;
@@ -105,6 +104,12 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	g_pWorld = make_shared<World>();
 
 	Renderer::StartUp(g_pCamera, g_pWorld);
+	AudioAPI::StartUp();
+	SoundEngine::StartUp();
+	ResourceManager::StartUp();
+	ImGuiAPI::StartUp(g_pWindow, g_pWorld, g_pCamera);
+
+	g_imguiAPI().Init(g_graphicsAPI().m_pDevice, g_graphicsAPI().m_pDeviceContext);
 
 	SDL_ShowCursor();
 
@@ -151,14 +156,9 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																											Vector3(-3.0f, 0.0f, 0.0f),
 																											Vector3(1.0f, 1.0f, 1.0f));
 	g_pSecondaryActor->SetName("Pyramid Head");
-
-	ImGuiAPI::StartUp(g_pWindow, g_pWorld, g_pCamera);
-
-	g_imguiAPI().Init(g_graphicsAPI().m_pDevice, g_graphicsAPI().m_pDeviceContext);
 	
 	
-	AudioAPI::StartUp();
-	SoundEngine::StartUp();
+	
 
 	//g_audioAPI().Init();
 
@@ -192,7 +192,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																8, 8, 4, 4);
 	SDL_SetCursor(g_pCursor);
 
-	
+
 
 	return SDL_APP_CONTINUE;
 }
@@ -341,9 +341,12 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 
 void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
+	
 	AudioAPI::Shutdown();
 	SoundEngine::Shutdown();
+	
 	ImGuiAPI::Shutdown();
+	ResourceManager::Shutdown();
 	Renderer::Shutdown();
 	GraphicsAPI::Shutdown();
 

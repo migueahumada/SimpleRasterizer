@@ -10,6 +10,8 @@ void SoundEngine::OnStartUp()
   //Init Audio Device
   g_audioAPI().Init();
 
+  
+
   //Start Main Output
   m_pMasterOutput = g_audioAPI().CreateMaster(32,48000);
 
@@ -17,6 +19,9 @@ void SoundEngine::OnStartUp()
   {
     return;
   }
+
+  //Init3DAudio
+  g_audioAPI().Init3DAudio(m_pMasterOutput);
 
   SPtr<Audio> pAudio = g_audioAPI().CreateAudio("Audio x",
     "D:/Coding/C++/SimpleRasterizer/audio/Audio_001.wav");
@@ -89,7 +94,7 @@ void SoundEngine::Update()
        itEnd = m_mapChannels.end(); 
        it != itEnd; ++it)
   {
-    
+    int asdf = it->second.use_count();
     if (!it->second->isPlaying())
     {
       pStoppedChannels.push_back(it);
@@ -103,6 +108,39 @@ void SoundEngine::Update()
     m_mapChannels.erase(it);
   }
   
+}
+
+bool SoundEngine::CreateAudio(const String& name, 
+                              const String& filePath)
+{
+  SPtr<Audio> pAudio = g_audioAPI().CreateAudio(name,filePath);
+  if (!pAudio)
+  {
+    return false;
+  }
+
+  m_mapAudios.insert({name,pAudio});
+
+  return true;
+
+}
+
+bool SoundEngine::CreateChannel(const String& name,
+                                const SPtr<Audio>& pAudio,
+                                int32 numChannels,
+                                int32 inSampleRate)
+{
+  SPtr<Channel> pChannel = g_audioAPI().CreateChannel(pAudio,
+                                                      numChannels, 
+                                                      inSampleRate);
+  if (!pChannel)
+  {
+    return false;
+  }
+
+  m_mapChannels.insert({name, pChannel});
+
+  return true;
 }
 
 SoundEngine& g_soundEngine()

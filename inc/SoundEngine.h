@@ -31,6 +31,14 @@ class SoundEngine : public Module<SoundEngine>
     return m_mapAudios;
   }
 
+  bool CreateAudio(const String& name,
+                   const String& filePath);
+  
+  bool CreateChannel(const String& name,
+                     const SPtr<Audio>& pAudio,
+                     int32 numChannels,
+                     int32 inSampleRate);
+
  protected:
 
   SPtr<Master> m_pMasterOutput;

@@ -145,6 +145,7 @@
     <ClCompile Include="src\App.cpp" />
     <ClCompile Include="src\Audio.cpp" />
     <ClCompile Include="src\AudioAPI.cpp" />
+    <ClCompile Include="src\AudioComponent.cpp" />
     <ClCompile Include="src\AudioDevice.cpp" />
     <ClCompile Include="src\Bus.cpp" />
     <ClCompile Include="src\Camera.cpp" />
@@ -195,6 +196,7 @@
     <ClCompile Include="src\SoundEngine.cpp" />
     <ClCompile Include="src\Submix.cpp" />
     <ClCompile Include="src\Texture.cpp" />
+    <ClCompile Include="src\UUID.cpp" />
     <ClCompile Include="src\VoiceCallback.cpp" />
     <ClCompile Include="src\World.cpp" />
     <ClCompile Include="src\WorldManager.cpp" />
@@ -204,6 +206,7 @@
     <ClInclude Include="inc\App.h" />
     <ClInclude Include="inc\Audio.h" />
     <ClInclude Include="inc\AudioAPI.h" />
+    <ClInclude Include="inc\AudioComponent.h" />
     <ClInclude Include="inc\AudioDevice.h" />
     <ClInclude Include="inc\Bus.h" />
     <ClInclude Include="inc\Camera.h" />
@@ -246,6 +249,7 @@
     <ClInclude Include="inc\SoundEngine.h" />
     <ClInclude Include="inc\Submix.h" />
     <ClInclude Include="inc\Texture.h" />
+    <ClInclude Include="inc\UUID.h" />
     <ClInclude Include="inc\VoiceCallback.h" />
     <ClInclude Include="inc\World.h" />
     <ClInclude Include="inc\WorldManager.h" />

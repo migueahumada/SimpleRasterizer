@@ -5,15 +5,21 @@
 
 class ResourceManager : public Module<ResourceManager>
 {
-  ResourceManager();
+ public:
+  ResourceManager() = default;
   virtual ~ResourceManager() = default;
 
-public:
+ public:
   void OnStartUp() override;
 
   void OnShutdown() override;
+ 
+ private:
+  friend class MKEngine::UUID;
+  Map<MKEngine::UUID, String> m_appUUID;
 
 };
+
 
 //Vector<SPtr<Object>> m_resources;
 
