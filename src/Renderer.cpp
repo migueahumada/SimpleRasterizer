@@ -7,27 +7,27 @@
 #include "GraphicsBuffer.h"
 #include "Actor.h"
 #include "Camera.h"
+#include "GraphicsAPI.h"
 
-Renderer::Renderer(const WPtr<GraphicsAPI>& pGraphicsAPI,
-									 const WPtr<Camera>& pCamera,
+Renderer::Renderer(const WPtr<Camera>& pCamera,
 									 const WPtr<World>& pWorld) : 
-									 m_pGraphicsAPI(pGraphicsAPI), 
 									 m_pCamera(pCamera), 
 									 m_pWorld(pWorld)
 {
 }
 
+void Renderer::OnStartUp()
+{
+}
+
+void Renderer::OnShutdown()
+{
+}
+
 void Renderer::CompileShaders()
 {
-	if (m_pGraphicsAPI.expired())
-	{
-		SHOW_ERROR(L"Couldn't compile shaders :(")
-		return;
-	}
 
-	auto GAPI = m_pGraphicsAPI.lock();
-
-	auto pDefVertexShader = GAPI->CreateVertexShader(L"./shaders/Gbuffer.hlsl",
+	auto pDefVertexShader = g_graphicsAPI().CreateVertexShader(L"./shaders/Gbuffer.hlsl",
 		"gbuffer_vertex_main");
 	if (pDefVertexShader)
 	{
@@ -35,7 +35,7 @@ void Renderer::CompileShaders()
 	}
 
 
-	auto pDefPixelShader = GAPI->CreatePixelShader(L"./shaders/Gbuffer.hlsl",
+	auto pDefPixelShader = g_graphicsAPI().CreatePixelShader(L"./shaders/Gbuffer.hlsl",
 		"gbuffer_pixel_main");
 	if (pDefPixelShader)
 	{
@@ -43,47 +43,53 @@ void Renderer::CompileShaders()
 	}
 
 
-	auto pVS_DefLighting = GAPI->CreateVertexShader(L"./shaders/Def_Lighting.hlsl", "vertex_main");
+	auto pVS_DefLighting = g_graphicsAPI().CreateVertexShader(L"./shaders/Def_Lighting.hlsl", "vertex_main");
 	if (pVS_DefLighting)
 	{
 		m_pVS_SSFS = pVS_DefLighting;
 	}
 
-	auto pPS_DefLighting = GAPI->CreatePixelShader(L"./shaders/Def_Lighting.hlsl", "pixel_main");
+	auto pPS_DefLighting = g_graphicsAPI().CreatePixelShader(L"./shaders/Def_Lighting.hlsl", "pixel_main");
 	if (pPS_DefLighting)
 	{
 		m_pPS_DefLighting = pPS_DefLighting;
 	}
 
-	auto pPS_AO = GAPI->CreatePixelShader(L"./shaders/Def_Lighting.hlsl","ao_main");
+	auto pPS_AO = g_graphicsAPI().CreatePixelShader(L"./shaders/Def_Lighting.hlsl","ao_main");
 	if (pPS_AO)
 	{
 		m_pPS_AO = pPS_AO;
 	}
 
-	auto pVS_ShadowMap = GAPI->CreateVertexShader(L"./shaders/Gbuffer.hlsl", "shadow_map_vertex_main");
+	auto pVS_ShadowMap = g_graphicsAPI().CreateVertexShader(L"./shaders/Gbuffer.hlsl", "shadow_map_vertex_main");
 	if (pVS_ShadowMap)
 	{
 		m_pVS_ShadowMap = pVS_ShadowMap;
 	}
 
-	auto pPS_ShadowMap = GAPI->CreatePixelShader(L"./shaders/Gbuffer.hlsl", "shadow_map_pixel_main");
+	auto pPS_ShadowMap = g_graphicsAPI().CreatePixelShader(L"./shaders/Gbuffer.hlsl", "shadow_map_pixel_main");
 	if (pPS_ShadowMap)
 	{
 		m_pPS_ShadowMap = pPS_ShadowMap;
+	}
+
+	//FORWARD SHADER
+	auto pVS_Forward = g_graphicsAPI().CreateVertexShader(L"./shaders/ForwardShading.hlsl", "vertex_main");
+	if (pVS_Forward)
+	{
+		m_pVS_Forward = pVS_Forward;
+	}
+
+	auto pPS_Forward = g_graphicsAPI().CreatePixelShader(L"./shaders/ForwardShading.hlsl", "pixel_main");
+	if (pPS_Forward)
+	{
+		m_pPS_Forward = pPS_Forward;
 	}
 
 }
 
 void Renderer::InitInputLayout()
 {
-	if (m_pGraphicsAPI.expired())
-	{
-		SHOW_ERROR(L"Couldn't set input layout :(")
-		return;
-	}
-
-	auto GAPI = m_pGraphicsAPI.lock();
 
 	Vector<D3D11_INPUT_ELEMENT_DESC> inputElementDesc = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,	0,  0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -93,14 +99,14 @@ void Renderer::InitInputLayout()
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT   ,	0, 48,	D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 
-	m_pInputLayout = GAPI->CreateInputLayout(inputElementDesc, m_pGBuffer_VS);
+	m_pInputLayout = g_graphicsAPI().CreateInputLayout(inputElementDesc, m_pGBuffer_VS);
 	if (!m_pInputLayout)
 	{
 		SHOW_ERROR(L"Couldn't create input layout for gbuffer");
 		return;
 	}
 
-	m_pDefLightingInputLayout = GAPI->CreateInputLayout(inputElementDesc, m_pVS_SSFS);
+	m_pDefLightingInputLayout = g_graphicsAPI().CreateInputLayout(inputElementDesc, m_pVS_SSFS);
 	if (!m_pDefLightingInputLayout)
 	{
 		SHOW_ERROR(L"Couldn't create input layout for lighting");
@@ -134,12 +140,14 @@ void Renderer::InitWVP()
 	auto CAMERA = m_pCamera.lock();
 
 	//---------------WORLD SETUP---------------
-	m_WVP.world.Identity();															//Matriz de mundo se hace identidad
+													//Matriz de mundo se hace identidad
 	m_WVP.view = CAMERA->getViewMatrix();											//Matriz de vista se obtiene de cámara
 	m_WVP.projection = CAMERA->getProjectionMatrix();								//Matriz de proyección se obtiene de cámara
 	m_WVP.viewDir = CAMERA->GetViewDir();
 
-	m_WVP.ligthView.Identity();
+	
+
+
 	m_WVP.ligthView.LookAt(Vector3(20.0f,20.0f, 5.0f),Vector3(0, 0, 0),Vector3(0, 1, 0));
 	m_WVP.lightProjection.SetOrthographic(-5.0f, 5.0f, -5.0f, 5.0f, 0.1f, 100.0f);
 
@@ -148,23 +156,18 @@ void Renderer::InitWVP()
 	m_WVP.projection.Transpose();													//Se transpone
 	m_WVP.ligthView.Transpose();
 	m_WVP.lightProjection.Transpose();
+	
+	m_WVP.lightPosition = Vector3(3.0f, 3.0f, 3.0f);
 }
 
 void Renderer::InitConstantBuffer()
 {
-	if (m_pGraphicsAPI.expired())
-	{
-		SHOW_ERROR(L"Couldn't set constant buffer :(")
-			return;
-	}
-
-	auto GAPI = m_pGraphicsAPI.lock();
 
 	Vector<char> matrix_data;
-	matrix_data.resize(sizeof(m_WVP));
-	memcpy(matrix_data.data(),&m_WVP,sizeof(m_WVP));
+	matrix_data.resize(sizeof(MatrixCollection));
+	memcpy(matrix_data.data(),&m_WVP,sizeof(MatrixCollection));
 
-	m_pCB_WVP = GAPI->CreateConstantBuffer(matrix_data);
+	m_pCB_WVP = g_graphicsAPI().CreateConstantBuffer(matrix_data);
 	if (!m_pCB_WVP)
 	{
 		SHOW_ERROR(L"Couldn't constant buffer");
@@ -175,13 +178,6 @@ void Renderer::InitConstantBuffer()
 
 void Renderer::InitRasterizerStates()
 {
-	if (m_pGraphicsAPI.expired())
-	{
-		SHOW_ERROR(L"Couldn't set rasterizer states :(")
-			return;
-	}
-
-	auto GAPI = m_pGraphicsAPI.lock();
 
 	ID3D11RasterizerState1* pRasterState = nullptr;
 
@@ -193,7 +189,7 @@ void Renderer::InitRasterizerStates()
 	
 	
 	HRESULT hr;
-	hr = GAPI->m_pDevice->CreateRasterizerState1(&descRD, 
+	hr = g_graphicsAPI().m_pDevice->CreateRasterizerState1(&descRD,
 																							 &m_RasterStates.at(RasterStates::DEFAULT));
 	if (FAILED(hr))
 	{
@@ -203,7 +199,7 @@ void Renderer::InitRasterizerStates()
 
 	descRD = CD3D11_RASTERIZER_DESC1 (D3D11_DEFAULT);
 	descRD.FillMode = D3D11_FILL_WIREFRAME;
-	hr = GAPI->m_pDevice->CreateRasterizerState1(&descRD, 
+	hr = g_graphicsAPI().m_pDevice->CreateRasterizerState1(&descRD,
 																							 &m_RasterStates.at(RasterStates::WIREFRAME));
 	if (FAILED(hr))
 	{
@@ -213,7 +209,7 @@ void Renderer::InitRasterizerStates()
 
 	descRD = CD3D11_RASTERIZER_DESC1(D3D11_DEFAULT);
 	descRD.CullMode = D3D11_CULL_NONE;
-	hr = GAPI->m_pDevice->CreateRasterizerState1(&descRD, 
+	hr = g_graphicsAPI().m_pDevice->CreateRasterizerState1(&descRD,
 																						   &m_RasterStates.at(RasterStates::NO_CULLING));
 	if (FAILED(hr))
 	{
@@ -224,13 +220,6 @@ void Renderer::InitRasterizerStates()
 
 void Renderer::InitSampleFilters()
 {
-	if (m_pGraphicsAPI.expired())
-	{
-		SHOW_ERROR(L"Couldn't set sampler states :(")
-			return;
-	}
-
-	auto GAPI = m_pGraphicsAPI.lock();
 
 	ID3D11SamplerState* pSamplerState = nullptr;
 
@@ -245,7 +234,7 @@ void Renderer::InitSampleFilters()
 	descSS.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
 	
 	HRESULT hr;
-	hr = GAPI->m_pDevice->CreateSamplerState(&descSS, 
+	hr = g_graphicsAPI().m_pDevice->CreateSamplerState(&descSS,
 																					 &m_SamplerStates.at(SamplerStates::POINT));
 	if (FAILED(hr))
 	{
@@ -254,7 +243,7 @@ void Renderer::InitSampleFilters()
 	}
 
 	descSS.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	hr = GAPI->m_pDevice->CreateSamplerState(&descSS, 
+	hr = g_graphicsAPI().m_pDevice->CreateSamplerState(&descSS,
 																					 &m_SamplerStates.at(SamplerStates::LINEAR));
 	if (FAILED(hr))
 	{
@@ -264,7 +253,7 @@ void Renderer::InitSampleFilters()
 
 	descSS.Filter = D3D11_FILTER_ANISOTROPIC;
 	descSS.MaxAnisotropy = 16;
-	hr = GAPI->m_pDevice->CreateSamplerState(&descSS, 
+	hr = g_graphicsAPI().m_pDevice->CreateSamplerState(&descSS,
 																					 &m_SamplerStates.at(SamplerStates::ANISOTROPIC));
 	if (FAILED(hr))
 	{
@@ -275,18 +264,11 @@ void Renderer::InitSampleFilters()
 
 void Renderer::InitGBuffer(int width, int height)
 {
-	if (m_pGraphicsAPI.expired())
-	{
-		SHOW_ERROR(L"Couldn't init GBuffer:(")
-			return;
-	}
-
-	auto GAPI = m_pGraphicsAPI.lock();
 
 	m_GBuffer.resize(4);
 
 	//Position texture
-	m_GBuffer[0].m_pTexture = GAPI->CreateTexture(width,
+	m_GBuffer[0].m_pTexture = g_graphicsAPI().CreateTexture(width,
 																							  height,
 																							  DXGI_FORMAT_R32G32B32A32_FLOAT,
 																							  D3D11_USAGE_DEFAULT,
@@ -297,7 +279,7 @@ void Renderer::InitGBuffer(int width, int height)
 																							  &m_GBuffer[0].m_pSRV,
 																							  &m_GBuffer[0].m_pRTV);
 	//Normal texture
-	m_GBuffer[1].m_pTexture = GAPI->CreateTexture(width,
+	m_GBuffer[1].m_pTexture = g_graphicsAPI().CreateTexture(width,
 																								height,
 																								DXGI_FORMAT_R8G8B8A8_UNORM,
 																								D3D11_USAGE_DEFAULT,
@@ -308,7 +290,7 @@ void Renderer::InitGBuffer(int width, int height)
 																								&m_GBuffer[1].m_pSRV,
 																								&m_GBuffer[1].m_pRTV);
 	//Color texture
-	m_GBuffer[2].m_pTexture = GAPI->CreateTexture(width,
+	m_GBuffer[2].m_pTexture = g_graphicsAPI().CreateTexture(width,
 																								height,
 																								DXGI_FORMAT_R8G8B8A8_UNORM,
 																								D3D11_USAGE_DEFAULT,
@@ -319,7 +301,7 @@ void Renderer::InitGBuffer(int width, int height)
 																								&m_GBuffer[2].m_pSRV,
 																								&m_GBuffer[2].m_pRTV);
 	//Ambient Occlusion
-	m_GBuffer[3].m_pTexture = GAPI->CreateTexture(width,
+	m_GBuffer[3].m_pTexture = g_graphicsAPI().CreateTexture(width,
 																								height,
 																								DXGI_FORMAT_R16_UNORM,
 																								D3D11_USAGE_DEFAULT,
@@ -329,8 +311,8 @@ void Renderer::InitGBuffer(int width, int height)
 																								1,
 																								&m_GBuffer[3].m_pSRV,
 																								&m_GBuffer[3].m_pRTV);
-
-	m_dsShadowMap.m_pTexture = GAPI->CreateTexture(width,
+	//ShadowMap
+	m_dsShadowMap.m_pTexture = g_graphicsAPI().CreateTexture(width,
 																								 height,
 																								 DXGI_FORMAT_D32_FLOAT,
 																								 D3D11_USAGE_DEFAULT,
@@ -352,152 +334,244 @@ void Renderer::SetDefaultTextures()
 	CreateDefaultSRV(0xFF8080, DefaultTextures::NORMAL, DXGI_FORMAT_R8G8B8A8_UNORM);
 }
 
-void Renderer::RenderActor(const WPtr<Character>& character)
+
+void Renderer::SetPasses()
+{
+	//Todo lo que se podría renderizar aquí de los RTV puede ir aquí.
+	
+	//Primero Opacos
+	//Luego objetos transparentes
+	//´Primero el personaje, luego sus lentes y se ve bien perfecto
+
+	// Primero -> !!!!!!!!!!!Opacos
+	// Transparentes -> ->SEGUNDOOOOOOOOOOOOOOO -> CULLING ATRÁS Y LUEGO ADELANTE.
+	// Atrás -> pa adelante.
+
+	// Pase de transmisión tal vez.
+
+	// Propiedad del material -> PONERSELO Y DE ACUERDO AL TIPO DE OPACO O TRANSPARENCIA.
+	// Por ejemplo -> Si la textura tiene un nivel de alpha diferente de 1.
+	// 
+	// DIBUJALS TODOS PRIMERO Y LUEGO LO DIBUJAS DESPUÉS LOS OTROS.
+	// OPACOS.
+	// TRANSPARENTES.
+	
+	//Una manera puede ser checando la textura.
+
+	//Opacos.
+	//Transmisión. .-> qué tanto permito que pase la luz. -> similar a la refracción.
+	//Transparente.
+
+	SetShadowPass();
+	
+	if (m_currentShadingState == ShadingState::DEFERRED)
+	{
+		SetGeometryPass();
+		SetSSAOPass();
+		SetLightingPass();
+	}
+
+	// Definir la cámara que se va a usar.
+	if (m_currentShadingState == ShadingState::FORWARD)
+	{
+		SetForwardPass();
+	}
+}
+
+void Renderer::SetForwardPass()
+{
+	if (m_pWorld.expired())
+	{
+		SHOW_ERROR(L"Couldn't set Geometry Pass :(")
+			return;
+	}
+
+	auto WORLD = m_pWorld.lock();
+
+	FloatColor tempColor = Color{ 0, 0, 0, 0 };
+	float clearColor[4] = { tempColor.r,tempColor.g , tempColor.b,tempColor.a };
+
+	g_graphicsAPI().m_pDeviceContext->ClearRenderTargetView(g_graphicsAPI().m_pBackBufferRTV,
+																													clearColor);
+
+	g_graphicsAPI().m_pDeviceContext->ClearDepthStencilView(g_graphicsAPI().m_pBackBufferDSV,
+																													D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
+																													1.0f, 0);
+	
+	g_graphicsAPI().m_pDeviceContext->OMSetRenderTargets(1,
+		&g_graphicsAPI().m_pBackBufferRTV,
+		g_graphicsAPI().m_pBackBufferDSV);
+	
+	g_graphicsAPI().m_pDeviceContext->VSSetShader(m_pVS_Forward->m_pVertexShader,
+		nullptr,
+		0);
+	
+	g_graphicsAPI().m_pDeviceContext->PSSetShader(m_pPS_Forward->m_pPixelShader,
+		nullptr,
+		0);
+
+	for (const auto& actor : WORLD->getActors())
+	{
+		auto character = std::dynamic_pointer_cast<Character>(actor);
+
+		if (character)
+		{
+			RenderActor(character, true);
+		}
+	}
+}
+
+void Renderer::RenderActor(const WPtr<Character>& character, bool bDrawWithTextures)
 {
 	
-	if (m_pGraphicsAPI.expired() || character.expired() || m_pCamera.expired())
-	{
-		SHOW_ERROR(L"Couldn't render Actor :(")
-		return;
-	}
 	auto CHAR = character.lock();
-	auto GAPI = m_pGraphicsAPI.lock();
 	auto CAMERA = m_pCamera.lock();
 
 	ID3D11ShaderResourceView* pNullSRV = nullptr;
 
-	GAPI->m_pDeviceContext->IASetInputLayout(m_pInputLayout);
+	g_graphicsAPI().m_pDeviceContext->IASetInputLayout(m_pInputLayout);
 
-	GAPI->m_pDeviceContext->IASetPrimitiveTopology(
+	g_graphicsAPI().m_pDeviceContext->IASetPrimitiveTopology(
 		static_cast<D3D11_PRIMITIVE_TOPOLOGY>(CHAR->m_model->m_meshes[0].topology));
 
 	UINT stride = sizeof(MODEL_VERTEX);
 	UINT offset = 0;
 
-	GAPI->m_pDeviceContext->IASetVertexBuffers(0,1,
-																							&CHAR->m_model->m_pVertexBuffer->m_pBuffer, 
-																							&stride, &offset);
-	GAPI->m_pDeviceContext->IASetIndexBuffer(CHAR->m_model->m_pIndexBuffer->m_pBuffer,
-																						DXGI_FORMAT_R16_UINT,0);
+	g_graphicsAPI().m_pDeviceContext->IASetVertexBuffers(0, 1,
+		&CHAR->m_model->m_pVertexBuffer->m_pBuffer,
+		&stride, &offset);
+	g_graphicsAPI().m_pDeviceContext->IASetIndexBuffer(CHAR->m_model->m_pIndexBuffer->m_pBuffer,
+		DXGI_FORMAT_R32_UINT, 0);
 
-	GAPI->m_pDeviceContext->PSSetSamplers(0, 1, &m_SamplerStates.at(SamplerStates::POINT));
-	GAPI->m_pDeviceContext->PSSetSamplers(1, 1, &m_SamplerStates.at(SamplerStates::LINEAR));
-	GAPI->m_pDeviceContext->PSSetSamplers(2, 1, &m_SamplerStates.at(SamplerStates::ANISOTROPIC));
-	
+	g_graphicsAPI().m_pDeviceContext->PSSetSamplers(0, 1, &m_SamplerStates.at(SamplerStates::POINT));
+	g_graphicsAPI().m_pDeviceContext->PSSetSamplers(1, 1, &m_SamplerStates.at(SamplerStates::LINEAR));
+	g_graphicsAPI().m_pDeviceContext->PSSetSamplers(2, 1, &m_SamplerStates.at(SamplerStates::ANISOTROPIC));
 
+	//Se podría hacer esto dentro del renderer normal
 	m_WVP.world = CHAR->getLocalTransform().getMatrix();
-	m_WVP.view = CAMERA->getViewMatrix();
-	m_WVP.projection = CAMERA->getProjectionMatrix();
-	m_WVP.viewDir = CAMERA->GetViewDir();
-
-	//GPASS
-	m_WVP.projection.Transpose();
-	m_WVP.view.Transpose();
 	m_WVP.world.Transpose();
 
 	Vector<char> matrix_data;
 	matrix_data.resize(sizeof(m_WVP));
-	memcpy(matrix_data.data(), &m_WVP, sizeof(m_WVP));
+	memcpy(&matrix_data[0], &m_WVP, sizeof(m_WVP));
 
-	GAPI->m_pDeviceContext->VSSetConstantBuffers(0, 1, &m_pCB_WVP->m_pBuffer);
-	GAPI->m_pDeviceContext->PSSetConstantBuffers(0, 1, &m_pCB_WVP->m_pBuffer);
+	g_graphicsAPI().m_pDeviceContext->VSSetConstantBuffers(0, 1, &m_pCB_WVP->m_pBuffer);
+	g_graphicsAPI().m_pDeviceContext->PSSetConstantBuffers(0, 1, &m_pCB_WVP->m_pBuffer);
 
-	GAPI->m_pDeviceContext->RSSetState(m_RasterStates.at(RasterStates::DEFAULT));
-	GAPI->writeToBuffer(m_pCB_WVP, matrix_data);
+	g_graphicsAPI().m_pDeviceContext->RSSetState(m_RasterStates.at(RasterStates::DEFAULT));
+	g_graphicsAPI().writeToBuffer(m_pCB_WVP, matrix_data);
 
-	
 
-	GAPI->m_pDeviceContext->PSSetShaderResources(0, 1, &CHAR->m_texture->m_pSRV);
+	Vector<Mesh>& vMeshes = CHAR->m_model->m_meshes;
+	Vector<MODEL_VERTEX>& vVertices = CHAR->m_model->m_vertices;
+	Vector<uint32>& vIndices = CHAR->m_model->m_indices;
 
-	if (!CHAR->m_normalTextureName.empty())
+	for (size_t i = 0; i < vMeshes.size(); ++i)
 	{
-		GAPI->m_pDeviceContext->PSSetShaderResources(1, 1, &CHAR->m_normalTexture->m_pSRV);
+
+		if(bDrawWithTextures)
+		{
+			//ALBEDO
+			if (CHAR->m_model->m_meshes[i].material.m_filePaths.at(TextureType::ALBEDO).empty())
+			{
+				g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(0, 1, &g_renderer().m_DefaultTextures.at(DefaultTextures::WHITE));
+			}
+			else
+			{
+				g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(0, 1, &CHAR->m_model->m_meshes[i].material.getAlbedo()->m_pSRV);
+			}
+
+			//NORMAL
+			if (CHAR->m_model->m_meshes[i].material.m_filePaths.at(TextureType::NORMALS).empty())
+			{
+				g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(1, 1, &g_renderer().m_DefaultTextures.at(DefaultTextures::NORMAL));
+			}
+			else
+			{
+				g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(1, 1, &CHAR->m_model->m_meshes[i].material.getNormals()->m_pSRV);
+			}
+
+			//ROUGHNESS
+			if (CHAR->m_model->m_meshes[i].material.m_filePaths.at(TextureType::ROUGHNESS).empty())
+			{
+				g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(2, 1, &g_renderer().m_DefaultTextures.at(DefaultTextures::BLACK));
+
+			}
+			else
+			{
+				g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(2, 1, &CHAR->m_model->m_meshes[i].material.getRoughness()->m_pSRV);
+			}
+
+			//METALLIC
+			if (CHAR->m_model->m_meshes[i].material.m_filePaths.at(TextureType::METALLIC).empty())
+			{
+				g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(3, 1, &g_renderer().m_DefaultTextures.at(DefaultTextures::WHITE));
+			}
+			else
+			{
+				g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(3, 1, &CHAR->m_model->m_meshes[i].material.getMetallic()->m_pSRV);
+			}
+		}
+		g_graphicsAPI().m_pDeviceContext->DrawIndexed(CHAR->m_model->m_meshes[i].numIndices,
+																									CHAR->m_model->m_meshes[i].baseIndex,
+																									CHAR->m_model->m_meshes[i].baseVertex);
+		
 	}
-	else
-		GAPI->m_pDeviceContext->PSSetShaderResources(1, 1, &m_DefaultTextures.at(DefaultTextures::NORMAL));
-
-	if (!CHAR->m_roughnessTextureName.empty())
-	{
-		GAPI->m_pDeviceContext->PSSetShaderResources(2, 1, &CHAR->m_roughnessTexture->m_pSRV);
-	}
-	else
-		GAPI->m_pDeviceContext->PSSetShaderResources(2, 1, &m_DefaultTextures.at(DefaultTextures::BLACK));
-
-	if (!CHAR->m_metallicTextureName.empty())
-	{
-		GAPI->m_pDeviceContext->PSSetShaderResources(3, 1, &CHAR->m_metallicTexture->m_pSRV);
-	}
-	else
-		GAPI->m_pDeviceContext->PSSetShaderResources(3, 1, &m_DefaultTextures.at(DefaultTextures::WHITE));
-
-	GAPI->m_pDeviceContext->DrawIndexed(CHAR->m_model->m_meshes[0].numIndices,
-																			CHAR->m_model->m_meshes[0].baseIndex,
-																			CHAR->m_model->m_meshes[0].baseVertex);
-	
-	
-	
-
 }
+	
+
 
 void Renderer::RenderShadows(const WPtr<Character>& character)
 {
-	if (m_pGraphicsAPI.expired() || character.expired() || m_pCamera.expired())
+	if (character.expired() || m_pCamera.expired())
 	{
 		SHOW_ERROR(L"Couldn't render Actor :(")
 			return;
 	}
 	auto CHAR = character.lock();
-	auto GAPI = m_pGraphicsAPI.lock();
+
 	auto CAMERA = m_pCamera.lock();
 
-	GAPI->m_pDeviceContext->IASetInputLayout(m_pInputLayout);
+	g_graphicsAPI().m_pDeviceContext->IASetInputLayout(m_pInputLayout);
 
-	GAPI->m_pDeviceContext->IASetPrimitiveTopology(
+	g_graphicsAPI().m_pDeviceContext->IASetPrimitiveTopology(
 		static_cast<D3D11_PRIMITIVE_TOPOLOGY>(CHAR->m_model->m_meshes[0].topology));
 
 	UINT stride = sizeof(MODEL_VERTEX);
 	UINT offset = 0;
 
-	GAPI->m_pDeviceContext->IASetVertexBuffers(0, 1,
+	g_graphicsAPI().m_pDeviceContext->IASetVertexBuffers(0, 1,
 																						 &CHAR->m_model->m_pVertexBuffer->m_pBuffer,
 																						 &stride, &offset);
-	GAPI->m_pDeviceContext->IASetIndexBuffer(CHAR->m_model->m_pIndexBuffer->m_pBuffer,
-																					 DXGI_FORMAT_R16_UINT, 0);
+	g_graphicsAPI().m_pDeviceContext->IASetIndexBuffer(CHAR->m_model->m_pIndexBuffer->m_pBuffer,
+																					 DXGI_FORMAT_R32_UINT, 0);
 
 	m_WVP.world = CHAR->getLocalTransform().getMatrix();
-	m_WVP.view = CAMERA->getViewMatrix();
-	m_WVP.projection = CAMERA->getProjectionMatrix();
-	m_WVP.viewDir = CAMERA->GetViewDir();
-
-	////GPASS
-	m_WVP.projection.Transpose();
-	m_WVP.view.Transpose();
 	m_WVP.world.Transpose();
 
 	Vector<char> matrix_data;
-	matrix_data.resize(sizeof(m_WVP));
-	memcpy(matrix_data.data(), &m_WVP, sizeof(m_WVP));
+	matrix_data.resize(sizeof(MatrixCollection));
+	memcpy(matrix_data.data(), &m_WVP, sizeof(MatrixCollection));
 
-	GAPI->m_pDeviceContext->VSSetConstantBuffers(0, 1, &m_pCB_WVP->m_pBuffer);
-	GAPI->m_pDeviceContext->PSSetConstantBuffers(0, 1, &m_pCB_WVP->m_pBuffer);
+	g_graphicsAPI().m_pDeviceContext->VSSetConstantBuffers(0, 1, &m_pCB_WVP->m_pBuffer);
+	g_graphicsAPI().m_pDeviceContext->PSSetConstantBuffers(0, 1, &m_pCB_WVP->m_pBuffer);
 
-	GAPI->m_pDeviceContext->RSSetState(m_RasterStates.at(RasterStates::DEFAULT));
-	GAPI->writeToBuffer(m_pCB_WVP, matrix_data);
+	g_graphicsAPI().m_pDeviceContext->RSSetState(m_RasterStates.at(RasterStates::DEFAULT));
+	g_graphicsAPI().writeToBuffer(m_pCB_WVP, matrix_data);
 
-	GAPI->m_pDeviceContext->DrawIndexed(CHAR->m_model->m_meshes[0].numIndices,
-																			CHAR->m_model->m_meshes[0].baseIndex,
-																			CHAR->m_model->m_meshes[0].baseVertex);
+	for (size_t i = 0; i < CHAR->m_model->m_meshes.size(); ++i)
+	{
+		g_graphicsAPI().m_pDeviceContext->DrawIndexed(CHAR->m_model->m_meshes[i].numIndices,
+			CHAR->m_model->m_meshes[i].baseIndex,
+			CHAR->m_model->m_meshes[i].baseVertex);
+	}
 }
 
-void Renderer::CreateDefaultSRV(UINT value, DefaultTextures::E defaultTextureType, DXGI_FORMAT format)
+//Se podría pasarse como
+void Renderer::CreateDefaultSRV(UINT value, 
+																DefaultTextures::E defaultTextureType, 
+																DXGI_FORMAT format)
 {
-	if (m_pGraphicsAPI.expired())
-	{
-		SHOW_ERROR(L"Couldn't set Default Textures :(")
-			return;
-	}
-
-	auto GAPI = m_pGraphicsAPI.lock();
 
 	HRESULT hr;
 
@@ -519,7 +593,7 @@ void Renderer::CreateDefaultSRV(UINT value, DefaultTextures::E defaultTextureTyp
 
 	ID3D11Texture2D* tex = nullptr;
 
-	hr = GAPI->m_pDevice->CreateTexture2D(&desc, &initData, &tex);
+	hr = g_graphicsAPI().m_pDevice->CreateTexture2D(&desc, &initData, &tex);
 
 	if (FAILED(hr))
 	{
@@ -534,7 +608,7 @@ void Renderer::CreateDefaultSRV(UINT value, DefaultTextures::E defaultTextureTyp
 
 	ID3D11ShaderResourceView* pSRV = nullptr;
 
-	hr = GAPI->m_pDevice->CreateShaderResourceView(tex, &srvDesc, &pSRV);
+	hr = g_graphicsAPI().m_pDevice->CreateShaderResourceView(tex, &srvDesc, &pSRV);
 	if (FAILED(hr))
 	{
 		tex->Release();
@@ -545,18 +619,187 @@ void Renderer::CreateDefaultSRV(UINT value, DefaultTextures::E defaultTextureTyp
 	m_DefaultTextures.insert({ defaultTextureType, pSRV });
 }
 
+
+//Ray Triangle Intersection
+/*
+	*		Fórmula
+	*		##### e + td = a + beta(b-a) + gamma(c-a) #####
+	*
+	*		e	= eyePosition
+	*		d	= rayDirection
+	*		a	= vertex1
+	*		b	= vertex2
+	*		c	= vertex3
+	*		beta	= factor de cercanía al vértice b
+	*		gamma = factor de cercanía al vértice c
+	*
+	*
+	*/
+
+	//q uqr regrese el booleano
+void Renderer::Pick()
+{
+
+	auto CAMERA = m_pCamera.lock();
+	auto WORLD = m_pWorld.lock();
+
+	m_hit = false;
+
+	//Calcular el ray Dir aquii
+
+	//Pintar el rayo para debug
+
+	for (const auto& pActor : WORLD->getActors())
+	{
+		auto character = std::dynamic_pointer_cast<Character>(pActor);
+
+		if (pActor)
+		{
+			const Vector<Mesh>& vMeshes = character->m_model->m_meshes;
+			const Vector<MODEL_VERTEX>& vVertices = character->m_model->m_vertices;
+			const Vector<uint32>& vIndices = character->m_model->m_indices;
+
+			for (size_t i = 0; i < vMeshes.size(); ++i)
+			{
+				
+
+				//Triangle Loop
+				for (size_t j = 0; j < vMeshes[i].numIndices; j += 3)
+				{
+					uint32 index0 = vIndices[vMeshes[i].baseIndex + j];
+					uint32 index1 = vIndices[vMeshes[i].baseIndex + j + 1];
+					uint32 index2 = vIndices[vMeshes[i].baseIndex + j + 2];
+
+					Vector3 v0 = vVertices[index0].position;
+					Vector3 v1 = vVertices[index1].position;
+					Vector3 v2 = vVertices[index2].position;
+
+					Vector3 eyePos(CAMERA->m_rayOrigin.x,
+												 CAMERA->m_rayOrigin.y,
+												 CAMERA->m_rayOrigin.z);
+					Vector3 rayDir = Vector3(CAMERA->m_rayDir.x,
+													 CAMERA->m_rayDir.y,
+													 CAMERA->m_rayDir.z).normalize(); // Esto podría no estar normalizado
+
+					float t;
+					Matrix4 characterMat = character->getLocalTransform().getMatrix();
+
+					Vector4 v0W = characterMat * Vector4(v0, 1.0f);
+					Vector4 v1W = characterMat * Vector4(v1, 1.0f);
+					Vector4 v2W = characterMat * Vector4(v2, 1.0f);
+
+					v0 = Vector3(v0W.x, v0W.y, v0W.z);
+					v1 = Vector3(v1W.x, v1W.y, v1W.z);
+					v2 = Vector3(v2W.x, v2W.y, v2W.z);
+
+					
+					//Reproyectar, está proyectada 
+					if (RayTriangle(eyePos, rayDir, v0, v1, v2, t))
+					{
+						m_hit = true;
+						return;
+					}
+				}
+			}
+
+		}
+	}
+}
+
+bool Renderer::RayTriangle(const Vector3& rayOrigin,
+													 const Vector3& rayDir,
+													 const Vector3& v0,
+													 const Vector3& v1,
+													 const Vector3& v2,
+													 float& t)
+{
+	//Qué tan paralelos están???
+	Vector3 edge1 = v1 - v0;
+	Vector3 edge2 = v2 - v0;
+	Vector3 normal = rayDir.cross(edge2);
+	float det = edge1.dot(normal);
+
+	// Si no son paralelos entonces bai
+	if (fabs(det) < 1e-8f)
+	{
+		return false;
+	}
+	
+	// Solución por Cramer
+	const float invDet = 1.0f/det;
+
+	const Vector3 tv = rayOrigin - v0;
+	float u = tv.dot(normal) * invDet;
+
+	if (u < 0.0f || u > 1.0f)
+	{
+		return false;
+	}
+
+	const Vector3 q = tv.cross(edge1);
+	float v = rayDir.dot(q) * invDet;
+	if (v < 0.0f || u + v > 1.0f) //gamma y beta
+	{
+		return false;
+	}
+
+	t = edge2.dot(q) * invDet;
+	return t >= 0.0f && t <= 1e6f;
+}
+
+// 
+// Indice asociado a cual hueso está ligado
+// Y un peso flotatnte que indica el porcentaje de cambio que se aplica el movimiento de hueso al movimiento del vértices.
+// Cinemática directa e inversa.
+// Cinemática directa es el brazo de robot.
+// 
+// Cinemática Inversa
+// La resolución de los huesos se hace del final hacia atrás.
+// 
+// Constraints
+// Ejemplo-> se le ponen limitantes.
+// 
+// Esqueleto: Tendrá constraints para tener la solución correcta al final del IK. 
+//						Se ve como si fuera 2D.
+//						Máximo de 4 huesos.
+//						Skinning, Pesos, Joints. 
+//						En un modelo, limitamos el número de huesos que pueden afectar a unvértice.
+//						Tradicionalmente 4 huesos por vértices.
+//						Cada vértices puede ser por 4 huesos.
+// 
+// La base de cómo construir la estructura del esqueleto. Cómo estar ligado.
+// 
+// La animación -> Es como tener un timeline, es como un pentagrama. De música. Por cada hueso en el modelos
+//								 Se pondrá una línea en este timeline. Es un poligrama. Las notas son los keyframes. 
+//								 Este hueso tien esta posición y giro.
+//								 La curva es como una interpolación.
+//								 A + (B - A) * T
+//								 Interpolación:
+//								 Interpolación esférica -> son las curvas
+//								 Interpolación lineal para posición.
+//								 Quaterniones para interpolaciónes esféricas.
+// 
+// Crystal Dynamics -> Tomb Raider el I -> Legacy of Kane Soul River
+// 
+// Así es una mezcla de animación con collider.
+// 
+// Esto viene de la robótica.
+// 
+// Sistemas de parkour son IKs y ligados a mecanismos de animación.
+// 
+// Assimp tiene para la animación
+
+
 void Renderer::SetShadowPass()
 {
-	if (m_pGraphicsAPI.expired() || m_pWorld.expired())
+	if (m_pWorld.expired())
 	{
 		SHOW_ERROR(L"Couldn't set Shadow Pass :(")
 			return;
 	}
-
-	auto GAPI = m_pGraphicsAPI.lock();
 	auto WORLD = m_pWorld.lock();
 
-	GAPI->m_pDeviceContext->ClearDepthStencilView(m_dsShadowMap.m_pDSV,
+	g_graphicsAPI().m_pDeviceContext->ClearDepthStencilView(m_dsShadowMap.m_pDSV,
 		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
 		1.0f, 0);
 
@@ -567,15 +810,25 @@ void Renderer::SetShadowPass()
 		nullptr
 	};
 
-	GAPI->m_pDeviceContext->VSSetShader(m_pVS_ShadowMap->m_pVertexShader,
+	g_graphicsAPI().m_pDeviceContext->VSSetShader(m_pVS_ShadowMap->m_pVertexShader,
 		nullptr,
 		0);
-	GAPI->m_pDeviceContext->PSSetShader(m_pPS_ShadowMap->m_pPixelShader,
+	g_graphicsAPI().m_pDeviceContext->PSSetShader(m_pPS_ShadowMap->m_pPixelShader,
 		nullptr,
 		0);
-	GAPI->m_pDeviceContext->OMSetRenderTargets(renderTargets.size(),
+	g_graphicsAPI().m_pDeviceContext->OMSetRenderTargets(renderTargets.size(),
 																						 renderTargets.data(),
 																						 m_dsShadowMap.m_pDSV);
+
+	auto CAMERA = m_pCamera.lock();
+
+	m_WVP.view = CAMERA->getViewMatrix();
+	m_WVP.projection = CAMERA->getProjectionMatrix();
+	m_WVP.viewDir = CAMERA->GetViewDir();
+
+	//GPASS
+	m_WVP.projection.Transpose();
+	m_WVP.view.Transpose();
 
 	for (auto& actor : WORLD->getActors())
 	{
@@ -583,7 +836,7 @@ void Renderer::SetShadowPass()
 
 		if (character)
 		{
-			RenderShadows(character);
+			RenderActor(character,false);
 		}
 	}
 	
@@ -591,30 +844,29 @@ void Renderer::SetShadowPass()
 
 void Renderer::SetGeometryPass()
 {
-	if (m_pGraphicsAPI.expired() || m_pWorld.expired())
+	if (m_pWorld.expired())
 	{
 		SHOW_ERROR(L"Couldn't set Geometry Pass :(")
 			return;
 	}
 
-	auto GAPI = m_pGraphicsAPI.lock();
 	auto WORLD = m_pWorld.lock();
 	
 	FloatColor tempColor = Color{ 0, 0, 0, 0 };
 	float clearColor2[4] = { tempColor.r,tempColor.g , tempColor.b,tempColor.a };
 	
-	GAPI->m_pDeviceContext->ClearRenderTargetView(GAPI->m_pBackBufferRTV,
+	g_graphicsAPI().m_pDeviceContext->ClearRenderTargetView(g_graphicsAPI().m_pBackBufferRTV,
 																								clearColor2);
-	GAPI->m_pDeviceContext->ClearRenderTargetView(m_GBuffer[0].m_pRTV,
+	g_graphicsAPI().m_pDeviceContext->ClearRenderTargetView(m_GBuffer[0].m_pRTV,
 																								clearColor2);
-	GAPI->m_pDeviceContext->ClearRenderTargetView(m_GBuffer[1].m_pRTV,
+	g_graphicsAPI().m_pDeviceContext->ClearRenderTargetView(m_GBuffer[1].m_pRTV,
 																								clearColor2);
-	GAPI->m_pDeviceContext->ClearRenderTargetView(m_GBuffer[2].m_pRTV,
+	g_graphicsAPI().m_pDeviceContext->ClearRenderTargetView(m_GBuffer[2].m_pRTV,
 																								clearColor2);
-	GAPI->m_pDeviceContext->ClearRenderTargetView(m_GBuffer[3].m_pRTV,
+	g_graphicsAPI().m_pDeviceContext->ClearRenderTargetView(m_GBuffer[3].m_pRTV,
 																								clearColor2);
 
-	GAPI->m_pDeviceContext->ClearDepthStencilView(GAPI->m_pBackBufferDSV,
+	g_graphicsAPI().m_pDeviceContext->ClearDepthStencilView(g_graphicsAPI().m_pBackBufferDSV,
 		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
 		1.0f, 0);
 
@@ -625,48 +877,35 @@ void Renderer::SetGeometryPass()
 		m_GBuffer[2].m_pRTV
 	};
 
-	GAPI->m_pDeviceContext->OMSetRenderTargets(renderTargets.size(),
-																						 renderTargets.data(),
-																						 GAPI->m_pBackBufferDSV);
-
-	GAPI->m_pDeviceContext->VSSetShader(m_pGBuffer_VS->m_pVertexShader,
-																			nullptr,
-																			0);
-	GAPI->m_pDeviceContext->PSSetShader(m_pGBuffer_PS->m_pPixelShader,
-																			nullptr,
-																			0);
-
 	for (const auto& actor : WORLD->getActors())
 	{
 		auto character = std::dynamic_pointer_cast<Character>(actor);
 
 		if (character)
 		{
-			RenderActor(character);
-			//SetShadowPass(character);
-			
-			
+			g_graphicsAPI().m_pDeviceContext->OMSetRenderTargets(renderTargets.size(),
+				renderTargets.data(),
+				g_graphicsAPI().m_pBackBufferDSV);
+			g_graphicsAPI().m_pDeviceContext->VSSetShader(m_pGBuffer_VS->m_pVertexShader,
+				nullptr,
+				0);
+			g_graphicsAPI().m_pDeviceContext->PSSetShader(m_pGBuffer_PS->m_pPixelShader,
+				nullptr,
+				0);
+			RenderActor(character, true);
 		}
 	}
-
 }
 
 void Renderer::SetSSAOPass()
 {
-	if (m_pGraphicsAPI.expired())
-	{
-		SHOW_ERROR(L"Couldn't set Geometry Pass :(")
-			return;
-	}
-
-	auto GAPI = m_pGraphicsAPI.lock();
 
 	ID3D11ShaderResourceView* pNullSRV = nullptr;
 
-	GAPI->m_pDeviceContext->VSSetShader(m_pVS_SSFS->m_pVertexShader,
+	g_graphicsAPI().m_pDeviceContext->VSSetShader(m_pVS_SSFS->m_pVertexShader,
 																			nullptr,
 																			0);
-	GAPI->m_pDeviceContext->PSSetShader(m_pPS_AO->m_pPixelShader,
+	g_graphicsAPI().m_pDeviceContext->PSSetShader(m_pPS_AO->m_pPixelShader,
 																			nullptr,
 																			0);
 
@@ -677,75 +916,71 @@ void Renderer::SetSSAOPass()
 		nullptr
 	};
 	
-	GAPI->m_pDeviceContext->OMSetRenderTargets(renderTargets.size(),
+	g_graphicsAPI().m_pDeviceContext->OMSetRenderTargets(renderTargets.size(),
 																						 renderTargets.data(),
 																						 nullptr);
 	
-	GAPI->m_pDeviceContext->RSSetState(m_RasterStates.at(RasterStates::NO_CULLING));
+	g_graphicsAPI().m_pDeviceContext->RSSetState(m_RasterStates.at(RasterStates::NO_CULLING));
 
-	GAPI->m_pDeviceContext->PSSetShaderResources(0, 1, &m_GBuffer[0].m_pSRV);
-	GAPI->m_pDeviceContext->PSSetShaderResources(1, 1, &m_GBuffer[1].m_pSRV);
-	GAPI->m_pDeviceContext->PSSetShaderResources(2, 1, &m_GBuffer[2].m_pSRV);
-	GAPI->m_pDeviceContext->PSSetShaderResources(3, 1, &pNullSRV);
+	g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(0, 1, &m_GBuffer[0].m_pSRV);
+	g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(1, 1, &m_GBuffer[1].m_pSRV);
+	g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(2, 1, &m_GBuffer[2].m_pSRV);
+	g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(3, 1, &pNullSRV);
 
-	GAPI->m_pDeviceContext->IASetInputLayout(m_pDefLightingInputLayout);
+	g_graphicsAPI().m_pDeviceContext->IASetInputLayout(m_pDefLightingInputLayout);
 	
-	GAPI->m_pDeviceContext->Draw(3, 0);
+	g_graphicsAPI().m_pDeviceContext->Draw(3, 0);
 
-	GAPI->m_pDeviceContext->PSSetShaderResources(0, 1, &pNullSRV);
-	GAPI->m_pDeviceContext->PSSetShaderResources(1, 1, &pNullSRV);
-	GAPI->m_pDeviceContext->PSSetShaderResources(2, 1, &pNullSRV);
-	GAPI->m_pDeviceContext->PSSetShaderResources(3, 1, &pNullSRV);
+	g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(0, 1, &pNullSRV);
+	g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(1, 1, &pNullSRV);
+	g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(2, 1, &pNullSRV);
+	g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(3, 1, &pNullSRV);
 
 }
 
 void Renderer::SetLightingPass()
 {
-	
-	if (m_pGraphicsAPI.expired())
-	{
-		SHOW_ERROR(L"Couldn't set Geometry Pass :(")
-			return;
-	}
-
-	auto GAPI = m_pGraphicsAPI.lock();
 
 	ID3D11ShaderResourceView* pNullSRV = nullptr;
 
-	GAPI->m_pDeviceContext->VSSetShader(m_pVS_SSFS->m_pVertexShader,
+	g_graphicsAPI().m_pDeviceContext->VSSetShader(m_pVS_SSFS->m_pVertexShader,
 		nullptr,
 		0);
-	GAPI->m_pDeviceContext->PSSetShader(m_pPS_DefLighting->m_pPixelShader,
+	g_graphicsAPI().m_pDeviceContext->PSSetShader(m_pPS_DefLighting->m_pPixelShader,
 		nullptr,
 		0);
 
 	const Vector<ID3D11RenderTargetView*> renderTargets =
 	{
-		GAPI->m_pBackBufferRTV,
+		g_graphicsAPI().m_pBackBufferRTV,
 		nullptr,
 		nullptr
 	};
 
-	GAPI->m_pDeviceContext->OMSetRenderTargets(renderTargets.size(),
+	g_graphicsAPI().m_pDeviceContext->OMSetRenderTargets(renderTargets.size(),
 																							renderTargets.data(),
 																							nullptr);
 
-	GAPI->m_pDeviceContext->RSSetState(m_RasterStates.at(RasterStates::NO_CULLING));
+	g_graphicsAPI().m_pDeviceContext->RSSetState(m_RasterStates.at(RasterStates::NO_CULLING));
 
-	GAPI->m_pDeviceContext->PSSetShaderResources(0, 1, &m_GBuffer[0].m_pSRV);
-	GAPI->m_pDeviceContext->PSSetShaderResources(1, 1, &m_GBuffer[1].m_pSRV);
-	GAPI->m_pDeviceContext->PSSetShaderResources(2, 1, &m_GBuffer[2].m_pSRV);
-	GAPI->m_pDeviceContext->PSSetShaderResources(3, 1, &m_GBuffer[3].m_pSRV);
-	GAPI->m_pDeviceContext->PSSetShaderResources(4, 1, &m_dsShadowMap.m_pSRV);
+	g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(0, 1, &m_GBuffer[0].m_pSRV);
+	g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(1, 1, &m_GBuffer[1].m_pSRV);
+	g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(2, 1, &m_GBuffer[2].m_pSRV);
+	g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(3, 1, &m_GBuffer[3].m_pSRV);
+	g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(4, 1, &m_dsShadowMap.m_pSRV);
 
-	GAPI->m_pDeviceContext->IASetInputLayout(m_pDefLightingInputLayout);
-	GAPI->m_pDeviceContext->Draw(3, 0);//DRAWWW
+	g_graphicsAPI().m_pDeviceContext->IASetInputLayout(m_pDefLightingInputLayout);
+	g_graphicsAPI().m_pDeviceContext->Draw(3, 0);//DRAWWW
 
-	GAPI->m_pDeviceContext->PSSetShaderResources(0, 1, &pNullSRV);
-	GAPI->m_pDeviceContext->PSSetShaderResources(1, 1, &pNullSRV);
-	GAPI->m_pDeviceContext->PSSetShaderResources(2, 1, &pNullSRV);
-	GAPI->m_pDeviceContext->PSSetShaderResources(3, 1, &pNullSRV);
-	GAPI->m_pDeviceContext->PSSetShaderResources(4, 1, &pNullSRV);
+	g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(0, 1, &pNullSRV);
+	g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(1, 1, &pNullSRV);
+	g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(2, 1, &pNullSRV);
+	g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(3, 1, &pNullSRV);
+	g_graphicsAPI().m_pDeviceContext->PSSetShaderResources(4, 1, &pNullSRV);
 
 }
 
+Renderer& g_renderer()
+{
+	return Renderer::GetInstance();
+}

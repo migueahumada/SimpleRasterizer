@@ -2,15 +2,19 @@
 #include "World.h"
 #include "Camera.h"
 #include "Renderer.h"
+#include "SoundEngine.h"
+#include "Channel.h"
+#include "Audio.h"
+#include <xaudio2.h>
+#include "UUID.h"
+
 
 ImGuiAPI::ImGuiAPI(SDL_Window* pWindow, 
 									 const WPtr<World>& pWorld, 
-									 const WPtr<Camera>& pCamera, 
-									 const WPtr<Renderer>& pRenderer)
+									 const WPtr<Camera>& pCamera)
 	: m_pWindow(pWindow), 
 		m_pWorld(pWorld), 
-		m_pCamera (pCamera), 
-		m_pRenderer(pRenderer)
+		m_pCamera (pCamera) 
 {
 
 	
@@ -71,31 +75,22 @@ void ImGuiAPI::Update()
 
 void ImGuiAPI::Render()
 {
-	if (m_pWorld.expired() || m_pCamera.expired() || m_pRenderer.expired())
+	if (m_pWorld.expired() || m_pCamera.expired())
 	{
 		return;
 	}
 
 	auto WORLD = m_pWorld.lock();
 	auto CAMERA = m_pCamera.lock();
-	auto RENDERER = m_pRenderer.lock();
 
 	ImGui::ShowDemoWindow();
 
-	ImGui::Begin("Scene Graph");
-	if (ImGui::TreeNode("Scene"))
-	{
-		ImGui::SetNextItemOpen(true, ImGuiCond_Once);
 
-		for (const auto& actor : WORLD->getActors())
-		{
-			ImGui::Text(actor->GetName().c_str());
-		}
-		ImGui::TreePop();
-	}
-	ImGui::End();
+	ImGui::SetNextWindowBgAlpha(0.2f);
+	SetSceneGraphUI(true);
 
-	//bool bIsOpen;
+
+	ImGui::SetNextWindowBgAlpha(0.2f);
 	ImGui::Begin("Camera", (bool*)1, ImGuiWindowFlags_AlwaysAutoResize);
 		
 		ImGui::Text("EyePos");
@@ -130,34 +125,44 @@ void ImGuiAPI::Render()
 	ImGui::End();
 
 
+	
+	//-------Shaders----UI
+	ImGui::Begin("Shaders", (bool*)1);
+		//ImGui::BeginCombo("Shaders",);
+	ImGui::End();
+
+
   ImGui::SetNextWindowBgAlpha(1.0f);
 	ImGui::Begin("GBuffer Images", (bool*)1);
 		
 		ImGui::Text("Position");
 		ImGui::Separator();
-		ImGui::Image((ImTextureID)RENDERER->getGBuffer().at(0).m_pSRV,
+		ImGui::Image((ImTextureID)g_renderer().getGBuffer().at(0).m_pSRV,
 									ImVec2(320, 180));
 		
 		ImGui::Text("Normal");
 		ImGui::Separator();
-		ImGui::Image((ImTextureID)RENDERER->getGBuffer().at(1).m_pSRV,
+		ImGui::Image((ImTextureID)g_renderer().getGBuffer().at(1).m_pSRV,
 									ImVec2(320, 180));
 		
 		ImGui::Text("Color");
 		ImGui::Separator();
-		ImGui::Image((ImTextureID)RENDERER->getGBuffer().at(2).m_pSRV,
+		ImGui::Image((ImTextureID)g_renderer().getGBuffer().at(2).m_pSRV,
 									ImVec2(320, 180));
 		
 		ImGui::Text("SSAO");
 		ImGui::Separator();
-		ImGui::Image((ImTextureID)RENDERER->getGBuffer().at(3).m_pSRV,
+		ImGui::Image((ImTextureID)g_renderer().getGBuffer().at(3).m_pSRV,
 									ImVec2(320, 180));
 		
 		ImGui::Text("Shadow Map");
 		ImGui::Separator();
-		ImGui::Image((ImTextureID)RENDERER->getShadowMap().m_pSRV,
+		ImGui::Image((ImTextureID)g_renderer().getShadowMap().m_pSRV,
 			ImVec2(320, 180));
 	ImGui::End();
+
+	SetSoundEngineUI(true);
+	
 
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
@@ -167,4 +172,124 @@ void ImGuiAPI::Render()
 		ImGui::UpdatePlatformWindows();
 		ImGui::RenderPlatformWindowsDefault();
 	}
+}
+
+void ImGuiAPI::SetSoundEngineUI(bool bSet)
+{
+	if (bSet == false)
+	{
+		return;
+	}
+
+	ImGui::Begin("Sound Engine");
+	
+	if (ImGui::CollapsingHeader("Channels", ImGuiTreeNodeFlags_SpanAvailWidth))
+	{
+		if (ImGui::BeginTable("Active Channels", 1))
+		{
+			ImGui::TableSetupColumn("Channels", ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableHeadersRow();
+
+			for (auto it = g_soundEngine().GetChannels().begin(),
+				itEnd = g_soundEngine().GetChannels().end();
+				it != itEnd;
+				++it)
+			{
+				ImGui::TableNextColumn();
+				ImGui::Text(it->first.c_str());
+			}
+			ImGui::EndTable();
+		}
+	}
+	
+
+	
+	//ImGui::Text("%f", g_soundEngine().GetAudios().find("Audio2")->second->getSample(122));
+	if (ImGui::CollapsingHeader("AudioSettings",ImGuiTreeNodeFlags_SpanAvailWidth))
+	{
+		
+		ImGuiStyle* style = &ImGui::GetStyle();
+		
+		ImGui::SliderFloat4("Waveform Color", reinterpret_cast<float*>(&style->Colors[ImGuiCol_PlotLines]), 0.0f, 1.0f);
+		
+		ImVec4 LastColor = style->Colors[ImGuiCol_FrameBg];
+		
+		ImGui::SliderFloat4("Frame Background", reinterpret_cast<float*>(&m_BgWaveformColor), 0.0f, 1.0f);
+
+		style->Colors[ImGuiCol_FrameBg] = m_BgWaveformColor;
+		
+
+		
+		for ( Map<String, SPtr<Audio>>::const_iterator it = g_soundEngine().GetAudios().begin(),
+					itEnd = g_soundEngine().GetAudios().end();
+				 it != itEnd;
+				 ++it)
+		{
+			ImGui::PlotLines(it->first.c_str(),
+				it->second->getAmplitudeSamples().data(),
+				it->second->getAmplitudeSamples().size(),
+				0,
+				it->first.c_str(),
+				-1.0f, 1.0f, ImVec2(ImGui::GetWindowSize().x, 150.0f), 4);
+		}
+
+		style->Colors[ImGuiCol_FrameBg] = LastColor;
+	}
+	
+	
+
+	ImGui::End();
+}
+
+void ImGuiAPI::SetSceneGraphUI(bool bSet)
+{
+	if (!bSet)
+	{
+		return;
+	}
+
+	if (m_pWorld.expired() || m_pCamera.expired())
+	{
+		return;
+	}
+
+	auto WORLD = m_pWorld.lock();
+	auto CAMERA = m_pCamera.lock();
+
+	ImGui::Begin("Scene Graph");
+	if (ImGui::TreeNode("Scene"))
+	{
+		ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+
+		for (const auto& actor : WORLD->getActors())
+		{
+			ImGui::Text("%s %s",actor->GetName().c_str(), std::to_string(actor->GetUUID().getUUID()).c_str());
+			
+		}
+		ImGui::TreePop();
+	}
+	ImGui::End();
+
+	ImGui::Begin("Properties");
+
+	ImGui::Text("Directional Light");
+	ImGui::DragFloat3("Light Position X: ", &g_renderer().GetWVP().lightPosition.x);
+
+	ImGui::Text("Mouse Vector4");
+	ImGui::DragFloat4("Vec4: ", &CAMERA->m_rayDir.x);
+
+	ImGui::End();
+}
+
+void ImGuiAPI::OnShutdown()
+{
+}
+
+void ImGuiAPI::OnStartUp()
+{
+}
+
+ImGuiAPI& g_imguiAPI()
+{
+	return ImGuiAPI::GetInstance();
 }

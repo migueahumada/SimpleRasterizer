@@ -2,13 +2,15 @@
 #include <cassert>
 #include <fstream>
 #include "GraphicsAPI.h"
+#include <iostream>
+#include <utility>
+
 
 using std::fstream;
 using std::ios;
 
-bool Model::LoadFromFile(const char* filePath, WPtr<GraphicsAPI> pGraphicsAPI)
+bool Model::LoadFromFile(const char* filePath)
 {
-    auto GAPI = pGraphicsAPI.lock();
 
     fstream objFile(filePath, ios::in | ios::ate);
     
@@ -34,7 +36,7 @@ bool Model::LoadFromFile(const char* filePath, WPtr<GraphicsAPI> pGraphicsAPI)
     Vector<float2> temp_tc;
     Vector<Vector3> temp_norm;
 
-    UnorderedMap<FaceVertex, unsigned short> uniqueVertices;
+    UnorderedMap<FaceVertex, uint32> uniqueVertices;
 
     for (const auto& line: lines)
     {
@@ -69,7 +71,7 @@ bool Model::LoadFromFile(const char* filePath, WPtr<GraphicsAPI> pGraphicsAPI)
         }
         else if (tokens[0] == "f")
         {
-            Vector<unsigned short> faceIndex;
+            Vector<uint32> faceIndex;
 
             //assert(tokens.size() == 4);
             for (size_t i = 1; i < tokens.size(); ++i)
@@ -83,7 +85,7 @@ bool Model::LoadFromFile(const char* filePath, WPtr<GraphicsAPI> pGraphicsAPI)
 
                 if (uniqueVertices.find(fv) == uniqueVertices.end())
                 {
-                    uniqueVertices[fv] = static_cast<unsigned short>(m_vertices.size());
+                    uniqueVertices[fv] = static_cast<uint32>(m_vertices.size());
 
                     MODEL_VERTEX mvertex;
                     mvertex.position = temp_pos[fv.vertex_index];
@@ -120,17 +122,17 @@ bool Model::LoadFromFile(const char* filePath, WPtr<GraphicsAPI> pGraphicsAPI)
     vertex_data.resize(m_vertices.size() * sizeof(MODEL_VERTEX));
     memcpy(vertex_data.data(), m_vertices.data(), m_vertices.size() * sizeof(MODEL_VERTEX));
 
-    m_pVertexBuffer = GAPI->CreateVertexBuffer(vertex_data);
+    m_pVertexBuffer = g_graphicsAPI().CreateVertexBuffer(vertex_data);
     if (!m_pVertexBuffer)
     {
         return false;
     }
 
     Vector<char> index_data;
-    index_data.resize(m_indices.size() * sizeof(unsigned short));
-    memcpy(index_data.data(), m_indices.data(), m_indices.size() * sizeof(unsigned short));
+    index_data.resize(m_indices.size() * sizeof(uint32));
+    memcpy(index_data.data(), m_indices.data(), m_indices.size() * sizeof(uint32));
 
-    m_pIndexBuffer = GAPI->CreateIndexBuffer(index_data);
+    m_pIndexBuffer = g_graphicsAPI().CreateIndexBuffer(index_data);
     if (!m_pIndexBuffer)
     {
         return false;
@@ -144,7 +146,7 @@ bool Model::LoadFromFile(const char* filePath, WPtr<GraphicsAPI> pGraphicsAPI)
 void Model::ComputeTangentSpace()
 {
   Vector<MODEL_VERTEX>& vertices  = m_vertices;
-  Vector<unsigned short>& indices = m_indices;
+  Vector<uint32>& indices = m_indices;
 
   //Compute tangents
   Vector<Vector3> tan1(vertices.size(), Vector3(0.0f, 0.0f, 0.0f));
@@ -244,3 +246,204 @@ void Model::ComputeTangentSpace()
     }
   }
 }
+
+bool Model::LoadWithAssimp(const char* filePath)
+{
+  m_modelPath = std::string(filePath);
+  
+  /*Assimp::DefaultLogger::create("asdfasdf.txt", Assimp::Logger::VERBOSE);*/
+  Assimp::Importer importer;
+
+  uint32 flags =       aiProcess_CalcTangentSpace |
+                       aiProcess_Triangulate |
+                       aiProcess_JoinIdenticalVertices |
+                       aiProcess_SortByPType |
+                       aiProcess_ConvertToLeftHanded;
+
+  const aiScene* scene = importer.ReadFile(filePath, flags);
+
+  if (!scene)
+  {
+    //Assimp::DefaultLogger::get()->info("This is a messahe");
+    MessageBox(nullptr, L"Couldn't load model with assimp", L"Error", MB_OK);
+    //Assimp::DefaultLogger::kill;
+    return false;
+  }
+
+  
+  int accumVertex = 0;
+  int accumIndex = 0;
+  
+  
+  printf("Num meshes: %s\n", scene->GetShortFilename(filePath));
+  printf("\tMaterials:\n");
+
+  for (size_t i = 0; i < scene->mNumMaterials; ++i)
+  {
+    printf("\t\t-Index %d %s\n",static_cast<int>(i), scene->mMaterials[i]->GetName().C_Str());
+    
+  }
+
+  uint32 matIndex = 0;
+
+  //MESHES
+  for (size_t i = 0; i < scene->mNumMeshes; ++i)
+  { 
+    matIndex = scene->mMeshes[i]->mMaterialIndex;
+
+    //VERTICES
+    for (size_t j = 0; j < scene->mMeshes[i]->mNumVertices; ++j)
+    { 
+      MODEL_VERTEX modelVertex;
+      memset(&modelVertex, 0, sizeof(MODEL_VERTEX));
+
+      modelVertex.position.x = scene->mMeshes[i]->mVertices[j].x;
+      modelVertex.position.y = scene->mMeshes[i]->mVertices[j].y;
+      modelVertex.position.z = scene->mMeshes[i]->mVertices[j].z;
+
+      modelVertex.color.x = 1.0f;
+      modelVertex.color.y = 1.0f;
+      modelVertex.color.z = 1.0f;
+      
+
+      modelVertex.normal.x = scene->mMeshes[i]->mNormals[j].x;
+      modelVertex.normal.y = scene->mMeshes[i]->mNormals[j].y;
+      modelVertex.normal.z = scene->mMeshes[i]->mNormals[j].z;
+
+      modelVertex.tangent.x = scene->mMeshes[i]->mTangents[j].x;
+      modelVertex.tangent.y = scene->mMeshes[i]->mTangents[j].y;
+      modelVertex.tangent.z = scene->mMeshes[i]->mTangents[j].z;
+
+      modelVertex.u = static_cast<float>(scene->mMeshes[i]->mTextureCoords[0][j].x);
+      modelVertex.v = static_cast<float>(scene->mMeshes[i]->mTextureCoords[0][j].y);
+
+      m_vertices.push_back(modelVertex);
+    }
+
+    //ÍNDICES
+    for (size_t j = 0; j < scene->mMeshes[i]->mNumFaces; ++j)
+    {
+
+      //3 índices por que la cara es de triángulos.
+      m_indices.push_back(scene->mMeshes[i]->mFaces[j].mIndices[0]);
+      m_indices.push_back(scene->mMeshes[i]->mFaces[j].mIndices[1]);
+      m_indices.push_back(scene->mMeshes[i]->mFaces[j].mIndices[2]);
+    } 
+
+    Mesh currentMesh;
+    currentMesh.topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+    currentMesh.numVertices = scene->mMeshes[i]->mNumVertices;
+    currentMesh.baseVertex = accumVertex;
+    currentMesh.baseIndex = accumIndex;
+    currentMesh.numIndices = scene->mMeshes[i]->mNumFaces * 3;
+    
+    aiMaterial* currentMaterial = scene->mMaterials[matIndex];
+
+    //ALBEDO
+    String albedoTexturePath = GetTextureFullPath(currentMaterial,
+                                                  aiTextureType_DIFFUSE, 
+                                                  0);
+    
+    
+    currentMesh.material.SetMaterialTexture(albedoTexturePath,
+                                            TextureType::ALBEDO);
+
+
+    //NORMALS
+    String normalTexturePath = GetTextureFullPath(currentMaterial,
+                                                  aiTextureType_HEIGHT,
+                                                  0);
+
+    currentMesh.material.SetMaterialTexture(normalTexturePath, 
+                                            TextureType::NORMALS);
+
+    //ROUGHNESS
+    String roughnessTexturePath = GetTextureFullPath(currentMaterial,
+                                                     aiTextureType_SHININESS,
+                                                     0);
+
+    currentMesh.material.SetMaterialTexture(roughnessTexturePath, 
+                                            TextureType::ROUGHNESS);
+
+    //METALLIC
+    String metallicTexturePath = GetTextureFullPath(currentMaterial,
+                                                    aiTextureType_METALNESS,
+                                                    0);
+
+    currentMesh.material.SetMaterialTexture(metallicTexturePath, 
+                                            TextureType::METALLIC);
+
+    accumVertex += scene->mMeshes[i]->mNumVertices;
+
+    accumIndex += scene->mMeshes[i]->mNumFaces * 3;
+
+    m_meshes.push_back(currentMesh);
+
+  }
+  
+  Vector<char> vectorData;
+  vectorData.resize(m_vertices.size() * sizeof(MODEL_VERTEX));
+  memcpy(vectorData.data(), m_vertices.data(), m_vertices.size() * sizeof(MODEL_VERTEX));
+
+  m_pVertexBuffer = g_graphicsAPI().CreateVertexBuffer(vectorData);
+  if (!m_pVertexBuffer)
+  {
+    MessageBox(nullptr, L"Couldn't create the vertex buffer with assimp", L"Error", MB_OK);
+    return false;
+  }
+
+  Vector<char> indexData;
+  indexData.resize(m_indices.size() * sizeof(uint32));
+  memcpy(indexData.data(),m_indices.data(),m_indices.size() * sizeof(uint32));
+
+  m_pIndexBuffer = g_graphicsAPI().CreateIndexBuffer(indexData);
+  if (!m_pIndexBuffer)
+  {
+    MessageBox(nullptr, L"Couldn't create the index buffer with assimp", L"Error", MB_OK);
+    return false;
+  }
+  
+  
+
+  //__debugbreak();
+  //Assimp::DefaultLogger::kill;
+
+  return true;
+}
+
+String Model::GetTextureFullPath( aiMaterial* material,
+                                  aiTextureType textureType, 
+                                  uint32 textureIndex)
+{
+  aiString texturePath;
+
+  assert(material);
+
+  if (material->GetTextureCount(textureType) < 0)
+  {
+    return "";
+  }
+
+  aiReturn ret = material->GetTexture(textureType, textureIndex, &texturePath);
+
+  if (ret == aiReturn_FAILURE)
+  {
+    return "";
+  }
+
+  std::size_t found = m_modelPath.find_last_of("/");
+
+  
+
+  String fullPath = m_modelPath.substr(0, found + 1) + texturePath.C_Str();
+
+  std::cout << "\tThe full path of model" << aiTextureTypeToString(textureType) << " texture is: " << fullPath << std::endl;
+  ;
+
+  return fullPath;
+}
+
+
+
+
+

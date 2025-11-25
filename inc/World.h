@@ -13,6 +13,7 @@ public:
   SPtr<Actor> SpawnActor(const SPtr<SceneObject>& parent, Args&&... args);
 
   virtual void Init();
+  virtual void FixedUpdate();
   virtual void Update(float deltaTime);
   virtual void Render();
 

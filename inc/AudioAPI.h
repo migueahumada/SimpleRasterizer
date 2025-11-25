@@ -1,8 +1,9 @@
 #pragma once
+
 #include "HelperMacros.h"
-
 #include <xaudio2.h>
-
+#include "Module.h"
+#include "AudioDevice.h"
 
 
 class Audio;
@@ -10,41 +11,66 @@ class Submix;
 class Master;
 class Camera;
 class VoiceCallback;
+class Actor;
+class AudioDevice;
+class Channel;
 
-class AudioAPI
+class AudioAPI : public Module<AudioAPI>
 {
 public:
   AudioAPI();
-  ~AudioAPI();
+  virtual ~AudioAPI();
 
   void Init();
 
-  SPtr<Audio> CreateSoundEffect(const String& name, 
-                                const String& filepath,
-                                const SPtr<VoiceCallback>& pCallback = nullptr);
+  SPtr<Audio> CreateAudio(const String& name,
+                          const String& filepath,
+                          const SPtr<VoiceCallback>& pCallback = nullptr);
 
-  SPtr<Submix> CreateSubmix(unsigned int inputChannels,
-                            unsigned int inputSampleRate);
+  SPtr<Channel> CreateChannel(const SPtr<Audio>& pAudio = nullptr,
+                              uint32 inputChannels = 2,
+                              uint32 inputSampleRate = 48000);
 
-  SPtr<Master> CreateMaster(unsigned int inChannels = XAUDIO2_DEFAULT_CHANNELS,
-                            unsigned int inSampleRate = XAUDIO2_DEFAULT_SAMPLERATE,
-                            unsigned int flags = 0);
+  SPtr<Channel> CreateChannel(uint32 inputChannels = 2,
+                              uint32 inputSampleRate = 48000);
+  
+  SPtr<Submix> CreateSubmix(uint32 inputChannels = 2,
+                            uint32 inputSampleRate = 48000);
+
+  
+
+  SPtr<Master> CreateMaster(uint32 inChannels = XAUDIO2_DEFAULT_CHANNELS,
+                            uint32 inSampleRate = XAUDIO2_DEFAULT_SAMPLERATE,
+                            uint32 flags = 0);
+
+  void SubmitAudioBuffer(Channel* channel, const WPtr<Audio>& pAudio);
 
   template<typename T, typename S>
-  void RouteTo(const WPtr<T>& from, const WPtr<S>& to, unsigned int flags);
+  void RouteTo(const SPtr<T>& from, const SPtr<S>& to, unsigned int flags);
   
   void Init3DAudio(WPtr<Master> pMaster);
 
-  void Play(const WPtr<Audio>& audio, float volume);
+  void SetListener(WPtr<Actor> lsitenerActor);
+
+  
 
   void Update();
 
 private:
-  
+  void OnStartUp() override;
+  void OnShutdown() override;
   
  // UnorderedMap<String, SPtr<Audio>> m_audioMap;
 
-  IXAudio2* m_pXAudio2 = nullptr;
+#ifdef XAUDIO
+  IXAudio2* m_pAudioDevice = nullptr;
+#endif // XAUDIO
+
+#ifdef OPENAL
+  OPEN_AL m_pAudioDevice;
+#endif // OPENAL
+
+
 
 };
 
@@ -57,45 +83,25 @@ private:
 /// <param name="to">submix destino, no puede ser audio</param>
 /// <param name="flags"> banderas extras de xaudio </param>
 template<typename T, typename S>
-void AudioAPI::RouteTo(const WPtr<T>& from, const WPtr<S>& to, unsigned int flags)
+void AudioAPI::RouteTo(const SPtr<T>& from, const SPtr<S>& to, unsigned int flags)
 {
   static_assert(std::is_base_of<Audio,T>::value || 
                 std::is_base_of<Submix,T>::value,
                 "T must be deribed from Audio or Channel");
   static_assert(std::is_base_of<Submix, S>::value,
                 "S must be deribed from Audio or Channel");
-                
+ 
+
+  auto FROM = from.lock();
+  auto TO = to.lock();
+
+  XAUDIO2_SEND_DESCRIPTOR sendDesc{0};
+  memset(&sendDesc, 0, sizeof(XAUDIO2_SEND_DESCRIPTOR));
+
+  if (typeid(T) == Audio)
+  {
+    printf("This is audio");
+  }
 }
 
-//template <typename T>
-//void Bus::Route(const WPtr<T>& voice, unsigned int flags)
-//{
-//  static_assert(std::is_base_of<Audio, T>::value ||
-//    std::is_base_of<Submix, T>::value,
-//    "T should be Audio or Submix type.");
-//
-//  if (voice.expired())
-//  {
-//    return;
-//  }
-//
-//  SPtr<T> pVoice = voice.lock();
-//
-//  XAUDIO2_SEND_DESCRIPTOR sendDesc;
-//  memset(&sendDesc, 0, XAUDIO2_SEND_DESCRIPTOR);
-//
-//  sendDesc.Flags = flags;
-//  sendDesc.pOutputVoice = pVoice->getSubmixVoice();
-//
-//  m_sendsList.push_back(sendDesc);
-//  m_sends.SendCount = m_sendsList.size();
-//  m_sends.pSends = m_sendsList.data();
-//
-//  HRESULT hr = pVoice->SetOutputVoices(&m_sends);
-//  if (FAILED(hr))
-//  {
-//    MessageBox(nullptr, L"Error routing bus", L"ERROR", S_OK);
-//    return;
-//  }
-//
-//}
+AudioAPI& g_audioAPI();

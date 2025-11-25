@@ -108,13 +108,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\include;$(ProjectDir)inc;$(ProjectDir)inc\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\include;$(ProjectDir)inc;$(ProjectDir)inc\imgui;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\build\include;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\VisualC\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL3.lib;%(AdditionalDependencies);dxguid.lib;dxgi.lib;d3d11.lib;d3dcompiler.lib;XAudio2.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\VisualC\x64\Debug;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\build\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL3.lib;%(AdditionalDependencies);dxguid.lib;dxgi.lib;d3d11.lib;d3dcompiler.lib;XAudio2.lib;assimp-vc143-mtd.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -125,15 +125,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\include;$(ProjectDir)inc;$(ProjectDir)inc\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\include;$(ProjectDir)inc;$(ProjectDir)inc\imgui;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\include;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\build\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\VisualC\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL3.lib;%(AdditionalDependencies);dxguid.lib;dxgi.lib;d3d11.lib;d3dcompiler.lib;XAudio2.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\VisualC\x64\Release;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\build\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL3.lib;%(AdditionalDependencies);dxguid.lib;dxgi.lib;d3d11.lib;d3dcompiler.lib;XAudio2.lib;assimp-vc143-mt.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -145,9 +145,13 @@
     <ClCompile Include="src\App.cpp" />
     <ClCompile Include="src\Audio.cpp" />
     <ClCompile Include="src\AudioAPI.cpp" />
+    <ClCompile Include="src\AudioComponent.cpp" />
+    <ClCompile Include="src\AudioDevice.cpp" />
     <ClCompile Include="src\Bus.cpp" />
     <ClCompile Include="src\Camera.cpp" />
+    <ClCompile Include="src\Channel.cpp" />
     <ClCompile Include="src\Character.cpp" />
+    <ClCompile Include="src\Component.cpp" />
     <ClCompile Include="src\EngineCallback.cpp" />
     <ClCompile Include="src\GraphicsAPI.cpp" />
     <ClCompile Include="src\GraphicsBuffer.cpp" />
@@ -161,30 +165,54 @@
     <ClCompile Include="src\imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="src\imgui\imgui_tables.cpp" />
     <ClCompile Include="src\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Light.cpp" />
+    <ClCompile Include="src\main.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\MainApplication.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\Master.cpp" />
+    <ClCompile Include="src\Material.cpp" />
     <ClCompile Include="src\MK3DGizmo.cpp" />
     <ClCompile Include="src\MKConsole.cpp" />
+    <ClCompile Include="src\MKGraphicsAPI.cpp" />
+    <ClCompile Include="src\MKRenderer.cpp" />
+    <ClCompile Include="src\MKWorldManager.cpp" />
     <ClCompile Include="src\MKWindow.cpp" />
     <ClCompile Include="src\Model.cpp" />
     <ClCompile Include="src\Object.cpp" />
     <ClCompile Include="src\Renderer.cpp" />
+    <ClCompile Include="src\ResourceManager.cpp" />
     <ClCompile Include="src\SceneGraph.cpp" />
     <ClCompile Include="src\SceneObject.cpp" />
     <ClCompile Include="src\Shader.cpp" />
+    <ClCompile Include="src\SoundEngine.cpp" />
     <ClCompile Include="src\Submix.cpp" />
     <ClCompile Include="src\Texture.cpp" />
+    <ClCompile Include="src\UUID.cpp" />
     <ClCompile Include="src\VoiceCallback.cpp" />
     <ClCompile Include="src\World.cpp" />
+    <ClCompile Include="src\WorldManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\Actor.h" />
     <ClInclude Include="inc\App.h" />
     <ClInclude Include="inc\Audio.h" />
     <ClInclude Include="inc\AudioAPI.h" />
+    <ClInclude Include="inc\AudioComponent.h" />
+    <ClInclude Include="inc\AudioDevice.h" />
     <ClInclude Include="inc\Bus.h" />
     <ClInclude Include="inc\Camera.h" />
+    <ClInclude Include="inc\Channel.h" />
     <ClInclude Include="inc\Character.h" />
+    <ClInclude Include="inc\Component.h" />
     <ClInclude Include="inc\EngineCallback.h" />
     <ClInclude Include="inc\GraphicsAPI.h" />
     <ClInclude Include="inc\GraphicsBuffer.h" />
@@ -200,22 +228,31 @@
     <ClInclude Include="inc\imgui\imstb_rectpack.h" />
     <ClInclude Include="inc\imgui\imstb_textedit.h" />
     <ClInclude Include="inc\imgui\imstb_truetype.h" />
+    <ClInclude Include="inc\Light.h" />
     <ClInclude Include="inc\Master.h" />
+    <ClInclude Include="inc\Material.h" />
     <ClInclude Include="inc\MathObjects.h" />
     <ClInclude Include="inc\MK3DGizmo.h" />
     <ClInclude Include="inc\MKConsole.h" />
+    <ClInclude Include="inc\MKGraphicsAPI.h" />
+    <ClInclude Include="inc\MKRenderer.h" />
+    <ClInclude Include="inc\MKWorldManager.h" />
     <ClInclude Include="inc\MKWindow.h" />
     <ClInclude Include="inc\Model.h" />
+    <ClInclude Include="inc\Module.h" />
     <ClInclude Include="inc\Object.h" />
     <ClInclude Include="inc\Renderer.h" />
+    <ClInclude Include="inc\ResourceManager.h" />
     <ClInclude Include="inc\SceneGraph.h" />
     <ClInclude Include="inc\SceneObject.h" />
     <ClInclude Include="inc\Shader.h" />
+    <ClInclude Include="inc\SoundEngine.h" />
     <ClInclude Include="inc\Submix.h" />
     <ClInclude Include="inc\Texture.h" />
+    <ClInclude Include="inc\UUID.h" />
     <ClInclude Include="inc\VoiceCallback.h" />
     <ClInclude Include="inc\World.h" />
-    <ClInclude Include="Module.h" />
+    <ClInclude Include="inc\WorldManager.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\BasicShader.hlsl">
@@ -224,7 +261,19 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
+    <FxCompile Include="Shaders\CelShading.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="Shaders\Def_Lighting.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Shaders\ForwardShading.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

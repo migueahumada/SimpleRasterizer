@@ -12,6 +12,14 @@ void World::Init()
 
 }
 
+void World::FixedUpdate()
+{
+	for (const auto& actor : m_actors)
+	{
+		actor->FixedUpdate();
+	}
+}
+
 void World::Update(float deltaTime)
 {
 	for (const auto& actor : m_actors)

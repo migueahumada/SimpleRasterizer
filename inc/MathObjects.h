@@ -2,7 +2,9 @@
 
 #define M_PI       3.14159265358979323846   // pi
 #include <cmath>
-
+#include <cassert>
+#include "HelperMacros.h"
+#include <stdexcept>
 using std::sqrtf;
 
 
@@ -12,6 +14,7 @@ inline float clamp(float value, float min, float max) {
 	return value;
 }
 
+struct Matrix4;
 
 /*
 *	Para representar color necesitaremos una estructura que
@@ -107,13 +110,47 @@ struct Vector2
 {
 
 	Vector2() = default;
-	Vector2(float _x, float _y = 0.0f) :
-		x(_x),
-		y(_y){}
+	Vector2(float _x, 
+					float _y = 0.0f) :
+					x(_x),
+					y(_y){}
 	
+	inline Vector2 operator+(const Vector2& v) const 
+	{
+		return { x + v.x, y + v.y};
+	}
+
+	inline Vector2 operator-(const Vector2& v) const
+	{
+		return { x - v.x, y - v.y };
+	}
+
+	inline Vector2 operator*(float scalar) const
+	{
+		return { x * scalar, y * scalar };
+	}
+
+	inline Vector2 operator-() const
+	{
+		return { -x , -y };
+	}
+
+	inline float size() const
+	{
+		return std::sqrtf(x*x + y*y);
+	}
+
+	inline Vector2 normalize() const
+	{
+		float invLength = 1.0f / size();
+		return Vector2{x * invLength, y * invLength};
+	}
+
 	float x;
 	float y;
 };
+
+
 
 struct Vector3 
 {
@@ -197,12 +234,257 @@ struct Vector3
 	inline float operator|(const Vector3& v) const {
 		return dot(v);
 	}
-
 	
+};
+
+struct Vector4
+{
+
+	Vector4() = default;
+
+	Vector4(float _x = 0.0f, 
+					float _y = 0.0f, 
+					float _z = 0.0f, 
+					float _w = 0.0f)
+					: x(_x), 
+						y(_y), 
+						z(_z), 
+						w(_w){}
+	Vector4(const Vector3& _v = Vector3(0.0f,0.0f, 0.0f), 
+					float _w = 1.0f)
+					: x(_v.x),
+					  y(_v.y),
+						z(_v.z),
+						w(_w){}
+	~Vector4() = default;
+
+	inline Vector4 operator+(const Vector4& rhs) const
+	{
+		return Vector4{ x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w };
+	}
+
+	inline Vector4 operator-(const Vector4& rhs) const
+	{
+		return Vector4{ x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w };
+	}
+
+	inline Vector4 operator*(float scale) const
+	{
+		return Vector4{ x * scale, y * scale, z * scale, w * scale };
+	}
+
+	inline float size() const
+	{
+		// TODO: Vectores4 poner función de size3 u normalize3, para que ignore w
+		//return std::sqrtf((x * x) + (y * y) + (z * z) + (w * w));
+		return std::sqrtf((x * x) + (y * y) + (z * z));
+	}
+
+	//pROBABLEMENTE regresa un Vector3 en este
+	//Normalize significa que ese se afecte TODO:CAMBIAR ESTEEE
+	inline Vector4 normalize() const
+	{
+		float invLength = 1.0f / size();
+
+		return Vector4
+		{ 
+			x * invLength,
+			y * invLength,
+			z * invLength,
+			w * invLength 
+		};
+	}
+
+	float x;
+	float y;
+	float z;
+	float w;
 
 };
 
-struct Matrix4
+struct Matrix2{
+	Matrix2()
+	{
+		Identity();
+	}
+
+	void Identity()
+	{
+		for (int i = 0; i < 2; ++i)
+		{
+			for (int j = 0; j < 2; ++j)
+			{
+				if (i == j)
+				{
+					m[i][j] = 1.0f;
+					continue;
+				}
+
+				m[i][j] = 0.0f;
+
+			}
+		}
+	}
+
+	float Determinant()
+	{
+		/*    0  1
+			 0 [x][x]
+			 1 [x][x]
+		*/
+
+		return m[0][0] * m[1][0] - m[1][0] * m[1][1];
+	}
+
+	float m[2][2];
+};
+
+template <typename T, uint32 N>
+class Matrix {
+public:
+	Matrix()
+	{
+		static_assert(std::is_integral_v<T> == true);
+		Identity();
+	}
+
+	void Identity()
+	{
+		for (T i = 0; i < N; ++i)
+		{
+			for (T j = 0; j < N; ++j)
+			{
+				if (i == j)
+				{
+					m[i][j] = 1.0f;
+					continue;
+				}
+
+				m[i][j] = 0.0f;
+
+			}
+		}
+	}
+
+	float m[N][N];
+};
+
+
+struct Matrix3 
+{
+	Matrix3()
+	{
+		Identity();
+	}
+
+	void Identity()
+	{
+		for (int i = 0; i < 3; ++i)
+		{
+			for (int j = 0; j < 3; ++j)
+			{
+				if (i == j)
+				{
+					m[i][j] = 1.0f;
+					continue;
+				}
+
+				m[i][j] = 0.0f;
+
+			}
+		}
+	}
+
+	/*
+				0  1  2
+			0[x][x][x]
+			1[x][x][x]
+			2[x][x][x]
+	*/
+	float Determinant()
+	{
+		return	(m[0][0] * m[1][1] * m[2][2]) + 
+						(m[0][1] * m[1][2] * m[2][0]) + 
+						(m[0][2] * m[1][0] * m[2][1]) - 
+						(m[0][2] * m[1][1] * m[2][0]) -
+						(m[0][1] * m[1][0] * m[2][2]) -
+						(m[0][0] * m[1][2] * m[2][1]);
+	}
+
+	void Transpose()
+	{
+		for (int i = 0; i < 3; ++i)
+		{
+			for (int j = i + 1; j < 3; ++j)
+			{
+				float temp = m[i][j];
+				m[i][j] = m[j][i];
+				m[j][i] = temp;
+			}
+		}
+	}
+
+	Matrix3 operator*(float scalar) 
+	{
+		Matrix3 result;
+		for (size_t i = 0; i < 3; ++i)
+		{
+			for (size_t j = 0; j < 3; ++j)
+			{
+				result.m[i][j] = m[i][j] * scalar;
+			}
+		}
+
+		return result;
+	}
+
+	/*
+					0  1  2
+			 0 [x][x][x]
+			 1 [x][x][x]
+			 2 [x][x][x]
+
+			 [1][1][2]
+			 [1][3][4]
+			 [0][2][5]
+
+			 [c1][c1][c2]
+			 [c1][c3][c4]
+			 [c0][c2][c5]
+		*/
+	Matrix3 Inverse()
+	{
+
+		float det = Determinant();
+
+		//Los cofactores de la matriz se calculan como normal
+		Matrix3 mat;
+		mat.m[0][0] = m[1][1] * m[2][2] - m[1][2] * m[2][1];
+		mat.m[0][1] = -(m[1][0] * m[2][2] - m[1][2] * m[2][0]);
+		mat.m[0][2] = m[1][0] * m[2][1] - m[1][1] * m[2][0];
+
+		mat.m[1][0] = -(m[0][1] * m[2][2] - m[0][2] * m[2][1]);
+		mat.m[1][1] = m[0][0] * m[2][2] - m[0][2] * m[2][0];
+		mat.m[1][2] = -(m[0][0] * m[2][1] - m[0][1] * m[2][0]);
+
+		mat.m[2][0] = m[0][1] * m[1][2] - m[0][2] * m[1][1];
+		mat.m[2][1] = -(m[0][0] * m[1][2] - m[0][2] * m[1][0]);
+		mat.m[2][2] = m[0][0] * m[1][1] - m[0][1] * m[1][0];
+
+		//Se transpone
+		mat.Transpose();
+
+		//Se multiplica toda la matriz por el recíproco del valor de la determinante.
+		Matrix3 invMat = mat * (1.0f/det);
+
+		return invMat;
+
+	}
+	
+	float m[3][3];
+};
+
+struct __declspec(align(16)) Matrix4
 {
 	Matrix4() {
 		Identity();
@@ -225,6 +507,185 @@ struct Matrix4
 			}
 		}
 	}
+
+	Matrix4 operator*(float scalar)
+	{
+		Matrix4 result;
+		for (size_t i = 0; i < 4; ++i)
+		{
+			for (size_t j = 0; j < 4; ++j)
+			{
+				result.m[i][j] = m[i][j] * scalar;
+			}
+		}
+
+		return result;
+	}
+
+	Matrix3 GetSubMatrix(uint8 fila, uint8 columna)
+	{
+		Matrix3 subMatrix;
+
+		uint8 r = 0;
+		for (uint8 i = 0; i < 4; ++i)
+		{
+			if (i == fila)
+			{
+				continue;
+			}
+
+			int c = 0;
+			for (uint8 j = 0; j < 4; ++j)
+			{
+				if (j == columna)
+				{
+					continue;
+				}
+
+				subMatrix.m[r][c] = m[i][j];
+				++c;
+			}
+			++r;
+		}
+			
+		return subMatrix;
+	}
+
+	Matrix4 Inverse() 
+	{
+		Matrix4 inv;
+
+		float det = Determinant();
+
+		/*
+					0  1  2  3
+			 0 [x][x][x][x]
+			 1 [x][0][x][x]
+			 2 [x][x][x][x]
+			 3 [x][x][x][x]
+
+
+					0  1  2
+			 0 [x][x][x]
+			 1 [x][x][x]
+			 2 [x][x][x]
+		*/
+
+		Matrix3 m00, m01, m02, m03,
+						m10, m11, m12, m13,
+						m20, m21, m22, m23,
+						m30, m31, m32, m33;
+
+		m00 = GetSubMatrix(0, 0); m01 = GetSubMatrix(0, 1); m02 = GetSubMatrix(0, 2); m03 = GetSubMatrix(0, 3);
+		m10 = GetSubMatrix(1, 0); m11 = GetSubMatrix(1, 1); m12 = GetSubMatrix(1, 2); m13 = GetSubMatrix(1, 3);
+		m20 = GetSubMatrix(2, 0); m21 = GetSubMatrix(2, 1); m22 = GetSubMatrix(2, 2); m23 = GetSubMatrix(2, 3);
+		m30 = GetSubMatrix(3, 0); m31 = GetSubMatrix(3, 1); m32 = GetSubMatrix(3, 2); m33 = GetSubMatrix(3, 3);
+
+		float c00, c01, c02, c03,
+					c10, c11, c12, c13,
+					c20, c21, c22, c23,
+					c30, c31, c32, c33;
+
+		c00 = m00.Determinant(); c01 = m01.Determinant(); c02 = m02.Determinant(); c03 = m03.Determinant();
+		c10 = m10.Determinant(); c11 = m11.Determinant(); c12 = m12.Determinant(); c13 = m13.Determinant();
+		c20 = m20.Determinant(); c21 = m21.Determinant(); c22 = m22.Determinant(); c23 = m23.Determinant();
+		c30 = m30.Determinant(); c31 = m31.Determinant(); c32 = m32.Determinant(); c33 = m33.Determinant();
+
+		inv.m[0][0] =  c00; inv.m[0][1] = -c01; inv.m[0][2] =  c02; inv.m[0][3] = -c03;
+		inv.m[1][0] = -c10; inv.m[1][1] =  c11; inv.m[1][2] = -c12; inv.m[1][3] =  c13;
+		inv.m[2][0] =  c20; inv.m[2][1] = -c21; inv.m[2][2] =  c22; inv.m[2][3] = -c23;
+		inv.m[3][0] = -c30; inv.m[3][1] =  c31; inv.m[3][2] = -c32; inv.m[3][3] =  c33;
+
+		inv.Transpose();
+
+		//Se multiplica toda la matriz por el recíproco del valor de la determinante.
+		Matrix4 invMat = inv * (1.0f / det);
+		
+		return invMat;
+	}
+
+	float Determinant() const
+	{
+		/*	  
+		      0  1  2  3
+			 0 [x][x][x][x]
+			 1 [x][x][x][x]
+			 2 [x][x][x][x]
+			 3 [x][x][x][x]
+
+			    0  1  2
+			 0 [x][x][x]
+			 1 [x][x][x]
+			 2 [x][x][x]
+			 
+		*/
+
+		float e1 = m[0][0];
+		float e2 = m[0][1];
+		float e3 = m[0][2];
+		float e4 = m[0][3];
+
+		Matrix3 m1;
+		m1.m[0][0] = m[1][1];
+		m1.m[0][1] = m[1][2];
+		m1.m[0][2] = m[1][3];
+
+		m1.m[1][0] = m[2][1];
+		m1.m[1][1] = m[2][2];
+		m1.m[1][2] = m[2][3];
+
+		m1.m[2][0] = m[3][1];
+		m1.m[2][1] = m[3][2];
+		m1.m[2][2] = m[3][3];
+
+		Matrix3 m2;
+		m2.m[0][0] = m[1][0];
+		m2.m[0][1] = m[1][2];
+		m2.m[0][2] = m[1][3];
+
+		m2.m[1][0] = m[2][0];
+		m2.m[1][1] = m[2][2];
+		m2.m[1][2] = m[2][3];
+
+		m2.m[2][0] = m[3][0];
+		m2.m[2][1] = m[3][2];
+		m2.m[2][2] = m[3][3];
+
+		Matrix3 m3;
+		m3.m[0][0] = m[1][0];
+		m3.m[0][1] = m[1][1];
+		m3.m[0][2] = m[1][3];
+
+		m3.m[1][0] = m[2][0];
+		m3.m[1][1] = m[2][1];
+		m3.m[1][2] = m[2][3];
+
+		m3.m[2][0] = m[3][0];
+		m3.m[2][1] = m[3][1];
+		m3.m[2][2] = m[3][3];
+
+		Matrix3 m4;
+		m4.m[0][0] = m[1][0];
+		m4.m[0][1] = m[1][1];
+		m4.m[0][2] = m[1][2];
+
+		m4.m[1][0] = m[2][0];
+		m4.m[1][1] = m[2][1];
+		m4.m[1][2] = m[2][2];
+
+		m4.m[2][0] = m[3][0];
+		m4.m[2][1] = m[3][1];
+		m4.m[2][2] = m[3][2];
+
+		
+		return (e1 * m1.Determinant()) - 
+					 (e2 * m2.Determinant()) +
+					 (e3 * m3.Determinant()) - 
+					 (e4 * m4.Determinant());
+		
+	}
+
+
 	//Es un sistema nuevo de coordenadas ltieralmente!!!
 	void LookAt(const Vector3& eyePos, const Vector3& targetPos, const Vector3& upDir) 
 	{
@@ -274,7 +735,7 @@ struct Matrix4
 	{
 		float plane0[4] = { 1.0f / tanf(halfFOV), 0.0f, 0.0f, 0.0f };
 		//Aspectratio-> dformación con respecto a la reosluciónd ela pantalla.
-		float plane1[4] = { 0.0f, widthScreen / tanf(halfFOV) / heightScreen, 0.0f							,0.0f};
+		float plane1[4] = { 0.0f, widthScreen / tanf(halfFOV) / heightScreen, 0.0f ,0.0f};
 		float plane2[4] = { 0.0f, 0.0f										, MaxZ / (MaxZ - MinZ)			,1.0f };
 		float plane3[4] = { 0.0f, 0.0f										,-MinZ * MaxZ / (MaxZ - MinZ)	,0.0f };
 		
@@ -409,12 +870,24 @@ struct Matrix4
 		return result;
 	}
 
-	Vector3 operator*(const Vector3& v) const{
-		return Vector3{
-			v.x * m[0][0] + v.y * m[0][1] + v.z * m[0][2],
-			v.x * m[1][0] + v.y * m[1][1] + v.z * m[1][2],
-			v.x * m[2][0] + v.y * m[2][1] + v.z * m[2][2],
+	inline Vector4 operator*(const Vector4& v)
+	{
+		/*
+			[x][x][x][x]   *	[x][x][x][x]
+												[x][x][x][x]
+												[x][x][x][x]
+												[x][x][x][x]
+
+		*/
+		return Vector4
+		{
+			v.x * m[0][0] + v.x * m[1][0] + v.x * m[2][0] + v.x * m[3][0],
+			v.y * m[0][1] + v.y * m[1][1] + v.y * m[2][1] + v.y * m[3][1],
+			v.z * m[0][2] + v.z * m[1][2] + v.z * m[2][2] + v.z * m[3][2],
+			v.w * m[0][3] + v.w * m[1][3] + v.w * m[2][3] + v.w * m[3][3],
+
 		};
+
 	}
 
 	float m[4][4];
@@ -432,18 +905,7 @@ struct Triangle {
 };
 
 //Para crearlo tiene que sermultiplo de 16
-struct MatrixCollection
-{
-	Matrix4 world;
-	Matrix4 view;
-	Matrix4 projection;
 
-	Matrix4 ligthView;
-	Matrix4 lightProjection;
-
-	Vector3 viewDir;
-	float time;
-};
 
 struct Quaternion
 {

@@ -6,6 +6,7 @@
 #include "Camera.h"
 #include "VoiceCallback.h"
 #include <assert.h>
+#include "Channel.h"
 
 AudioAPI::AudioAPI()
 {
@@ -14,7 +15,7 @@ AudioAPI::AudioAPI()
 
 AudioAPI::~AudioAPI()
 {
-  SAFE_RELEASE(m_pXAudio2);
+  SAFE_RELEASE(m_pAudioDevice);
 }
 
 void AudioAPI::Init()
@@ -27,14 +28,16 @@ void AudioAPI::Init()
   flags |= XAUDIO2_DEBUG_ENGINE;
 #endif // defined (_DEBUG)
 
-  hr = XAudio2Create(&m_pXAudio2, flags);
+  //audioDevice.;
+  
+  hr = XAudio2Create(&m_pAudioDevice, flags);
   if (FAILED(hr))
   {
     MessageBox(nullptr, L"Couldn't create XAudio2", L"Error", MB_OK);
     return;
   }
 
-  hr = m_pXAudio2->StartEngine();
+  hr = m_pAudioDevice->StartEngine();
   if (FAILED(hr))
   {
     MessageBox(nullptr,L"Couldn't start XAudio2", L"Error", MB_OK);
@@ -45,59 +48,127 @@ void AudioAPI::Init()
 
 }
 
-SPtr<Audio> AudioAPI::CreateSoundEffect(const String& name, 
-                                        const String& filepath,
-                                        const SPtr<VoiceCallback>& pCallback)
+SPtr<Audio> AudioAPI::CreateAudio(const String& name, 
+                                  const String& filepath,
+                                  const SPtr<VoiceCallback>& pCallback)
 {
 
-  SPtr<Audio> pSoundEffect = make_shared<Audio>(name, filepath);
-  if (!pSoundEffect)
+  SPtr<Audio> pAudio = make_shared<Audio>(name, filepath);
+  if (!pAudio)
   {
-    MessageBox(nullptr, L"Failed to create Sound Effect", L"Error", MB_OK);
+    MessageBox(nullptr, L"Failed to create Audio", L"Error", MB_OK);
     return nullptr;
   }
 
-  HRESULT hr = m_pXAudio2->CreateSourceVoice(&pSoundEffect->m_pSourceVoice,
-    (WAVEFORMATEX*)&pSoundEffect->m_waveFile, 0, XAUDIO2_DEFAULT_FREQ_RATIO,
-    pCallback.get(), &pSoundEffect->m_sends);
-
-  if (FAILED(hr))
-  {
-    MessageBox(nullptr, L"Failed to create Source Voice ", L"Error", MB_OK);
-    return nullptr;
-  }
-
-  pSoundEffect->m_pSourceVoice->SubmitSourceBuffer(&pSoundEffect->m_buffer);
-
-  return pSoundEffect;
+  return pAudio;
 
 }
 
-//TODO: CHECK THE SUBMIX
-SPtr<Submix> AudioAPI::CreateSubmix(unsigned int inputChannels,
-                                    unsigned int inputSampleRate)
+SPtr<Channel> AudioAPI::CreateChannel(const SPtr<Audio>& pAudio, 
+                                      uint32 inputChannels,
+                                      uint32 inputSampleRate)
+{
+  HRESULT hr;
+
+  SPtr<Channel> pChannel = make_shared<Channel>(inputChannels,
+                                                inputSampleRate);
+
+  if (!pChannel)
+  {
+    MessageBox(nullptr, L"Failed to create Channel", L"Error", MB_OK);
+    return nullptr;
+  }
+
+  hr = m_pAudioDevice->CreateSourceVoice(&pChannel->m_pSourceVoice,
+                                         (WAVEFORMATEX*)&pAudio->m_waveFile,
+                                         0);
+  
+  if (pAudio)
+  {
+    pChannel->m_pSourceVoice->SubmitSourceBuffer(&pAudio->m_buffer);
+  }
+
+  if (FAILED(hr))
+  {
+    MessageBox(nullptr, L"Failed to create Channel SourceVoice", L"Error", MB_OK);
+    return nullptr;
+  }
+
+  return pChannel;
+
+}
+
+SPtr<Channel> AudioAPI::CreateChannel(uint32 inputChannels, uint32 inputSampleRate)
+{
+  HRESULT hr;
+
+  WAVEFORMATEX wfx;
+  wfx.wFormatTag = WAVE_FORMAT_PCM;
+  wfx.nChannels = inputChannels;
+  wfx.nSamplesPerSec = inputSampleRate;
+  wfx.wBitsPerSample = 16;
+  wfx.nBlockAlign = (wfx.wBitsPerSample / 8) * wfx.nChannels;
+  wfx.nAvgBytesPerSec = wfx.nBlockAlign * wfx.nSamplesPerSec;
+
+  SPtr<Channel> pChannel = make_shared<Channel>(inputChannels,
+    inputSampleRate);
+
+  if (!pChannel)
+  {
+    MessageBox(nullptr, L"Failed to create Channel", L"Error", MB_OK);
+    return nullptr;
+  }
+
+  hr = m_pAudioDevice->CreateSourceVoice(&pChannel->m_pSourceVoice,
+                                         &wfx,
+                                         0);
+
+  //hr = pChannel->m_pSourceVoice->SubmitSourceBuffer(&audioBuffer.buffer);
+
+
+  if (FAILED(hr))
+  {
+    MessageBox(nullptr, L"Failed to create empty Channel", L"Error", MB_OK);
+    return nullptr;
+  }
+
+  return pChannel;
+}
+
+//Problem is that you need an existent channel before constructing a submix. 
+SPtr<Submix> AudioAPI::CreateSubmix(uint32 inputChannels,
+                                    uint32 inputSampleRate)
 {
   SPtr<Submix> pSubmix = make_shared<Submix>(inputChannels,inputSampleRate);
 
-  HRESULT hr = m_pXAudio2->CreateSubmixVoice(&pSubmix->m_pSubmixVoice,
-                                              pSubmix->m_inputChannels,
-                                              pSubmix->m_inputSampleRate);
+  if (!pSubmix)
+  {
+    MessageBox(nullptr, L"Failed to create Submix object", L"Error", MB_OK);
+    return nullptr;
+  }
+
+  HRESULT hr = m_pAudioDevice->CreateSubmixVoice(&pSubmix->m_pSubmixVoice,
+                                                 inputChannels,
+                                                 inputSampleRate);
   if (FAILED(hr))
   {
-      MessageBox(nullptr, L"Failed to create Submix Voice", L"Error", MB_OK);
-      return nullptr;
+    MessageBox(nullptr, L"Failed to create XAudio2 Submix Voice", L"Error", MB_OK);
+    return nullptr;
   }
+
   return pSubmix;
 }
 
-SPtr<Master> AudioAPI::CreateMaster(unsigned int inChannels, 
-                                    unsigned int inSampleRate,
-                                    unsigned int flags)
+
+
+SPtr<Master> AudioAPI::CreateMaster(uint32 inChannels, 
+                                    uint32 inSampleRate,
+                                    uint32 flags)
 {
 
   SPtr<Master> pMaster = make_shared<Master>();
 
-  HRESULT hr = m_pXAudio2->CreateMasteringVoice(&pMaster->m_pMasterVoice, 
+  HRESULT hr = m_pAudioDevice->CreateMasteringVoice(&pMaster->m_pMasterVoice,
                                                 inChannels, inSampleRate, 
                                                 flags);
   if (FAILED(hr))
@@ -116,6 +187,28 @@ SPtr<Master> AudioAPI::CreateMaster(unsigned int inChannels,
 
   return pMaster;
 }
+
+void AudioAPI::SubmitAudioBuffer(Channel* channel, const WPtr<Audio>& pAudio)
+{
+  if (pAudio.expired())
+  {
+    return;
+  }
+
+  HRESULT hr;
+
+  auto AUDIO = pAudio.lock();
+  
+  hr = channel->m_pSourceVoice->SubmitSourceBuffer(&AUDIO->m_buffer);
+
+  if (FAILED(hr))
+  {
+    MessageBox(nullptr, L"Failed to Submit Audio Buffer", L"Error", MB_OK);
+    return;
+  }
+}
+
+
 
 void AudioAPI::Init3DAudio(WPtr<Master> pMaster)
 {
@@ -144,22 +237,24 @@ void AudioAPI::Init3DAudio(WPtr<Master> pMaster)
   }
 }
 
-void AudioAPI::Play(const WPtr<Audio>& audio, float volume)
-{
-  if (audio.expired())
-  {
-    return;
-  }
-  
-  auto AUDIO = audio.lock();
- 
-  AUDIO->m_pSourceVoice->SetVolume(volume);
-  AUDIO->m_pSourceVoice->Start(0);
-  
 
-}
+
+
 
 void AudioAPI::Update()
 {
 
+}
+
+void AudioAPI::OnStartUp()
+{
+}
+
+void AudioAPI::OnShutdown()
+{
+}
+
+AudioAPI& g_audioAPI()
+{
+  return AudioAPI::GetInstance();
 }

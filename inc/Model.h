@@ -2,8 +2,11 @@
 
 #include "HelperMacros.h"
 #include "MathObjects.h"
-#include <vector>
-#include <string>
+#include "Material.h"
+#include <assimp/Importer.hpp>      // C++ importer interface
+#include <assimp/scene.h>           // Output data structure
+#include <assimp/postprocess.h>     // Post processing flags
+
 
 class GraphicsAPI;
 class GraphicsBuffer;
@@ -70,8 +73,8 @@ namespace std {
 	};
 }
 
-struct Mesh {
-
+struct Mesh 
+{
 	int topology;
 
 	int baseVertex;
@@ -80,6 +83,7 @@ struct Mesh {
 	int baseIndex;
 	int numIndices;
 
+	Material material;
 };
 
 //TODO: tener un vertexbuffer y un index buffer por modelo.
@@ -91,18 +95,32 @@ public:
 	Model() = default;
 	~Model() = default;
 
-	bool LoadFromFile(const char* filePath, 
-										WPtr<GraphicsAPI> pGraphicsAPI);
+	bool LoadFromFile(const char* filePath);
 	void ComputeTangentSpace();
-	//TODO: Iterar sobre el vector de meshes y ahí estarán los buffer
-	Vector<Mesh> m_meshes;
 
-	Vector<MODEL_VERTEX> m_vertices;
-	Vector<unsigned short> m_indices;
+	bool LoadWithAssimp(const char* filePath);
+
+private:
+	String GetTextureFullPath( aiMaterial* material,
+														 aiTextureType textureType,
+														 uint32 textureIndex);
+
+public:
+	//TODO: Iterar sobre el vector de meshes y ahí estarán los buffer
 	
-	//Cuántos buffers voy a querer generar
+	
+	String m_modelPath;
+
+	//DATA TO DRAW THE 3D MODEL
+	Vector<Mesh> m_meshes;
+	Vector<MODEL_VERTEX> m_vertices;
+	Vector<uint32> m_indices;
+	
+	//BUFFERS
 	SPtr<GraphicsBuffer> m_pVertexBuffer;
 	SPtr<GraphicsBuffer> m_pIndexBuffer;
+	
+
 
 };
 

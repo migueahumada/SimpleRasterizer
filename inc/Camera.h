@@ -45,7 +45,9 @@ public:
 											float nearZ, 
 											float farZ);
 	
-	void SetAudioListener();
+	void UpdateAudioListener();
+
+	void SelectObjectOnScreen(float mouseX, float mouseY);
 
 	inline Vector3 GetForwardVector() {
 		return (m_target - m_position).normalize();
@@ -84,7 +86,7 @@ public:
 		return m_projectionMatrix; 
 	}
 	
-	inline Vector3 getEyePosition() const
+	inline Vector3 getEyePosition()
 	{ 
 		return m_position;
 	}
@@ -112,14 +114,6 @@ public:
 	inline float getRotSpeed() const
 	{
 		return m_rotSpeed;
-	}
-	inline X3DAUDIO_LISTENER getCameraListener() const{
-		return m_cameraListener;
-	}
-
-	inline void setCameraListener(X3DAUDIO_LISTENER& listener)
-	{
-		memcpy(&m_cameraListener, &listener, sizeof(X3DAUDIO_LISTENER));
 	}
 
 	inline Vector3 GetViewDir() const{
@@ -162,8 +156,13 @@ public:
 	  return m_bCanRotate;
 	}
 
-
 	void Update();
+
+	Vector4 m_rayOrigin{0.0f,0.0f,0.0f};
+	Vector4 m_rayTarget{ 0.0f,0.0f,0.0f };
+	Vector4 m_rayDir{ 0.0f,0.0f,0.0f };
+	
+	//Vector4 m_mouseVecW;
 
 private:
 
@@ -199,6 +198,6 @@ private:
 	bool bIsDirty = false;
 	bool m_bCanRotate = false;
 
-	X3DAUDIO_LISTENER m_cameraListener = {};
+	X3DAUDIO_LISTENER m_Listener;
 };
 

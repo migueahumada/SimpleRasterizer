@@ -1,6 +1,7 @@
 #include "Texture.h"
 #include "HelperMacros.h"
 #include <cmath>
+
 Texture::~Texture()
 {
 	SAFE_RELEASE(m_pTexture);
@@ -8,15 +9,26 @@ Texture::~Texture()
 	SAFE_RELEASE(m_pRTV);
 	SAFE_RELEASE(m_pDSV);
 }
-void Texture::createImage(const Image& img) {
-	m_image = img;
 
+void Texture::createFromFile(const String& filePath)
+{
+	if (filePath.empty())
+	{
+		return;
+	}
+
+	Image localImage;
+	localImage.decode(filePath.c_str());
+	createImage(localImage);
+
+
+	//printf("Texture was loaded from path: %s\n", filePath.c_str());
 }
 
-void Texture::createImage(const Image& img, GraphicsAPI& pGraphicsAPI, DXGI_FORMAT format)
+void Texture::createImage(const Image& img, DXGI_FORMAT format)
 {
-	createImage(img);
-	m_pTexture = pGraphicsAPI.CreateTexture(	img.getWidth(),
+	m_image = img;
+	m_pTexture = g_graphicsAPI().CreateTexture(	img.getWidth(),
 												img.getHeight(), 
 												format,
 												D3D11_USAGE_DEFAULT, 
@@ -24,30 +36,12 @@ void Texture::createImage(const Image& img, GraphicsAPI& pGraphicsAPI, DXGI_FORM
 												0,1,&m_pSRV);
 	if (m_pTexture)
 	{
-		pGraphicsAPI.m_pDeviceContext->UpdateSubresource1(m_pTexture,0,nullptr,
+		g_graphicsAPI().m_pDeviceContext->UpdateSubresource1(m_pTexture, 0, nullptr,
 			reinterpret_cast<const void*>(img.getPixels()), img.getPitch(), 0,0);
 	}
 	
 }
 
-void Texture::createImage(const Image& img, WPtr<GraphicsAPI> pGraphicsAPI, DXGI_FORMAT format)
-{
-	
-	auto GAPI = pGraphicsAPI.lock();
-
-	createImage(img);
-	m_pTexture = GAPI->CreateTexture(img.getWidth(),
-		img.getHeight(),
-		format,
-		D3D11_USAGE_DEFAULT,
-		D3D11_BIND_SHADER_RESOURCE,
-		0, 1, &m_pSRV);
-	if (m_pTexture)
-	{
-			GAPI->m_pDeviceContext->UpdateSubresource1(m_pTexture, 0, nullptr,
-			reinterpret_cast<const void*>(img.getPixels()), img.getPitch(), 0, 0);
-	}
-}
 
 void Texture::adjustTextureAddress(TEXTURE_ADDRESS::E textureAddressMode, float& u, float& v)
 {

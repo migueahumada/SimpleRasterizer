@@ -2,11 +2,14 @@
 
 #include <xaudio2.h>
 #include "HelperMacros.h"
+#include "Audio.h"
 
 class Audio;
+class Channel;
 
 class Submix
 {
+
 public:
   Submix(unsigned int inputChannels = 1, 
          unsigned int inputSampleRate = 44100);
@@ -20,15 +23,12 @@ public:
     return m_inputSampleRate;
   }
 
-  void RouteToSubmix(const WPtr<Submix>& destSubmix, unsigned int flags = 0);
-  void RouteToAudio(const WPtr<Audio>& audio, unsigned int flags = 0);
-
-  IXAudio2SubmixVoice* getSubmixVoice() const {
-    return m_pSubmixVoice;
-  }
+  //void Route(const WPtr<Channel>& channel, unsigned int flags = 0);
 
 protected:
   friend class AudioAPI;
+  friend class SoundEngine;
+  friend class Channel;
 
   unsigned int m_inputChannels;
   unsigned int m_inputSampleRate;

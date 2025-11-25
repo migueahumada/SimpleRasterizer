@@ -26,9 +26,17 @@ cbuffer MatrixCollection : register(b0)
     float4x4 World;
     float4x4 View;
     float4x4 Projection;
+    
     float4x4 lightView;
     float4x4 lightProjection;
+    
     float3 viewPos;
+    
+    float3 lightPosition;
+    float3 placeHolder;
+    float3 placeHolder2;
+    //float3 lightPosition;
+    //float3 placeholder;
     //float time;
 }
 
@@ -201,12 +209,70 @@ float2 GetRandom(float2 uv)
 
 }
 
+float4 cel_shading(PixelInput Input) : SV_Target
+{
+    float4 position = gbuffer_Position.Sample(samLinear, Input.texCoord);
+    float4 normal = gbuffer_Normal.Sample(samLinear, Input.texCoord);
+    float4 color = gbuffer_Color.Sample(samLinear, Input.texCoord);
+    
+    uint levels = 8;
+    
+    float4 green = float4(0.1, 0.4, 0.5, 1);
+    
+    float4 finalColor = floor(color * levels) / (levels - 1);
+    
+    /*
+    * 0,0,1 -> 
+    */
+    
+    
+    return finalColor;
+
+}
+//Azul es lo metálico
+
+//Un shift en el tono es un cambio en el tono para desfasarlo.
+
+// el HSV está dado por el círculo unitario
+float3 RGBtoHSV(float3 c)
+{
+    //Direccion
+    float4 K = float4(0.0f, -1.0f/3.0f, 2.0f/3.0f, -1);
+    
+    //Position
+    float4 p = (c.g < c.b) ? float4(c.bg, K.wz) : float4(c.gb, K.xy);
+    
+    //
+    float4 q = (c.r < p.x) ? float4(p.xyw, c.r) : float4(c.r, p.yzx);
+    
+    float d = q.x - min(q.w, p.y);
+    
+    float e = 1.0e-10; //No usar ifs en shaders
+    
+    return float3(abs(  q.z + (q.w - p.y) / (6.0f * d + e)), 
+                        d / (q.x + e), 
+                        q.x);
+
+}
+
+//El Hue Shift
+float3 HSVtoRGB(float3 c)
+{
+    float4 K = float4(1.0f, 2.0f/3.0f, 1.0f/3.0f, 3.0f);
+    
+    float3 p = abs(frac(c.xxx + K.xyz) * 6.0f - K.www);
+    
+    return c.z * lerp(K.xxx, saturate(p - K.xxx), c.y);
+
+}
+
 float4 pixel_main(PixelInput Input) : SV_Target
 {
     float4 position = GetPosition(Input.texCoord);
     float4 normal = GetNormal(Input.texCoord);
     float4 color = gbuffer_Color.Sample(samLinear, Input.texCoord);
     float4 ao = gbuffer_AO.Sample(samLinear, Input.texCoord);
+    
     
     float4 posInLightVP = mul(float4(position.xyz,1), lightView);
     
@@ -218,8 +284,9 @@ float4 pixel_main(PixelInput Input) : SV_Target
     
     float4 shadowMap = gbuffer_ShadowMap.Sample(samLinear, posInLightVP.xy);
     
+    //PCF o PCCF
     float shadowDepth = shadowMap.x;
-    float lightDepth = posInLightVP.z - 0.005; //bias
+    float lightDepth = posInLightVP.z - 0.005; //bias para las manchas
     float shadowFactor;
     
     if (lightDepth > shadowDepth)
@@ -235,14 +302,19 @@ float4 pixel_main(PixelInput Input) : SV_Target
     
     clip(color.w < 1.0f ? -1 : 1);
     
-    float3 lightPos = float3(20.0f, 20.0f, 5.0f);
+    //float3 lightPosVP = mul(position.xyz, lightPosition);
     
+    
+    float3 lightPos = lightPosition;
+    //float3 lightPos = float3(0.0f, 6.0f, 0.0f);
+  
     float3 lightDir = normalize(lightPos - position.xyz);
     
     //el 0.04 es un promedio de los objetos dieléctricos
     float3 specularColor = lerp(0.04f, color.rgb, position.w);
     
     //return float4(specularColor.xyz, 1);
+    
     
     float3 colorFinal = BRDF_Cook_Torrence(normal.xyz,
                                            lightDir,
@@ -251,6 +323,7 @@ float4 pixel_main(PixelInput Input) : SV_Target
                                            color.rgb,
                                            specularColor,
                                            normal.w);
+    //return float4(RGBtoHSV(colorFinal),1.0f);
     //return float4(specularColor, 1);
     // Lo = kD + kS + kA
     //return normal.wwww;

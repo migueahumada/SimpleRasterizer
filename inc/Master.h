@@ -8,14 +8,22 @@ class Master
 
 public:
   Master();
-  ~Master() = default;
+  virtual ~Master()
+  {
+    m_pMasterVoice->DestroyVoice();
+  }
   
   IXAudio2MasteringVoice* getMasterVoice()
   {
     return m_pMasterVoice;
   }
 
-
+  uint8 getOutputNumChannels()
+  {
+    XAUDIO2_VOICE_DETAILS voiceDetails{ 0 };
+    m_pMasterVoice->GetVoiceDetails(&voiceDetails);
+    return static_cast<uint8>(voiceDetails.InputChannels);
+  }
 
 private:
   friend class AudioAPI;

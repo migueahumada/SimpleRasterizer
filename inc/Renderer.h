@@ -10,6 +10,52 @@
 #include "HelperMacros.h"
 #include "MathObjects.h"
 #include "Texture.h"
+#include "Module.h"
+
+#define NUM_LIGHTS 64
+struct __declspec(align(16)) LightData
+{
+  Vector3 lightPosition;
+  float p1;
+};
+
+struct __declspec(align(16)) LightsConstantBuffer
+{
+
+
+};
+
+struct __declspec(align(16)) MatrixCollection
+{
+  Matrix4 world;
+  Matrix4 view;
+  Matrix4 projection;
+
+  Matrix4 ligthView;
+  Matrix4 lightProjection;
+
+  Vector3 viewDir;
+  float pl1;
+  Vector3 lightPosition;
+  float pl2;
+  Vector3 placeholder;
+  float pl3;
+  Vector3 placeholder2;
+  float pl4;
+
+  //LightData lightArray [NUM_LIGHTS];
+  //float time;
+};
+
+
+
+
+namespace ShadingState{
+  enum E {
+    FORWARD,
+    DEFERRED
+  };
+}
 
 class GraphicsAPI;
 class GraphicsBuffer;
@@ -20,6 +66,8 @@ class Texture;
 class World;
 class Camera;
 class Character;
+struct Mesh;
+struct MODEL_VERTEX;
 
 namespace RasterStates{
   enum E {
@@ -47,18 +95,13 @@ namespace DefaultTextures
 };
 
 //TODO: Destruir los raster states y sampler states
-class Renderer
+class Renderer : public Module<Renderer>
 {
-public:
-  Renderer(const WPtr<GraphicsAPI>& pGraphicsAPI, 
-                    const WPtr<Camera>& pCamera,
-                    const WPtr<World>& pWorld);
-  
-  Renderer(const Renderer& r) = delete;
-  Renderer(Renderer&& r) = delete;
 
-  Renderer& operator=(const Renderer&) = delete;
-  Renderer& operator=(Renderer&&) = delete;
+public:
+  Renderer(const WPtr<Camera>& pCamera,
+    const WPtr<World>& pWorld);
+  virtual ~Renderer() = default;
 
   void CompileShaders();
   void InitInputLayout();
@@ -69,11 +112,25 @@ public:
   void InitSampleFilters();
   void InitGBuffer(int width, int height);
   void SetDefaultTextures();
+  
+  
+  void SetPasses();
+  
+  void SetForwardPass();
 
   void SetShadowPass();
   void SetGeometryPass();
   void SetSSAOPass();
   void SetLightingPass();
+
+  //Forward+
+  //iF PARA forward O DEFERRED.
+  //Scene Graph para decir qué es lo que tengo que dibujar.
+  //Def -> Opacos y después alpha testing. Alpha testing en el shader de las sombras
+  
+  //Sombras
+  //Primero alpha tsitng de opacos->
+  //Todo de transparencia se tiene que hacer pase depsués de los opacos.
 
   inline Vector<Texture>& getGBuffer() {
     return m_GBuffer;
@@ -83,17 +140,40 @@ public:
     return m_dsShadowMap;
   }
 
+  MatrixCollection& GetWVP() {
+    return m_WVP;
+  }
+
+  bool m_bGeometryHit;
+
+  bool m_hit{ false };
+  void Pick();
 private:
 
-  void RenderActor(const WPtr<Character>& character);
+  void OnStartUp() override;
+
+  void OnShutdown() override;
+
+  void RenderActor(const WPtr<Character>& character, bool bDrawWithTextures);
   void RenderShadows(const WPtr<Character>& character);
   void CreateDefaultSRV(UINT color, 
                         DefaultTextures::E defaultTextureType, DXGI_FORMAT format = DXGI_FORMAT_B8G8R8A8_UNORM);
+  
+  
+  
+
+  bool RayTriangle(const Vector3& rayOrigin,
+    const Vector3& rayDir,
+    const Vector3& v0,
+    const Vector3& v1,
+    const Vector3& v2,
+    float& t);
+
+
 
   
 private:
   
-  WPtr<GraphicsAPI> m_pGraphicsAPI;
   WPtr<Camera> m_pCamera;
   WPtr<World> m_pWorld;
 
@@ -114,6 +194,9 @@ private:
   SPtr<VertexShader> m_pVS_ShadowMap;
   SPtr<PixelShader> m_pPS_ShadowMap;
 
+  SPtr<VertexShader> m_pVS_Forward;
+  SPtr<PixelShader> m_pPS_Forward;
+
   UnorderedMap<RasterStates::E, ID3D11RasterizerState1*> m_RasterStates;
   UnorderedMap<SamplerStates::E, ID3D11SamplerState*> m_SamplerStates;
 
@@ -121,6 +204,12 @@ private:
 
   Vector<Texture> m_GBuffer;
   Texture m_dsShadowMap;
-  
+  //TODOOOO
+  Texture m_forwardRTV;
+
+  ShadingState::E m_currentShadingState{ShadingState::DEFERRED};
+
+
 };
 
+Renderer& g_renderer();

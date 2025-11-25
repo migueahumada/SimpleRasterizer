@@ -51,11 +51,17 @@ cbuffer MatrixCollection : register(b0)
     float4x4 World;
     float4x4 View;
     float4x4 Projection;
-        
+    
     float4x4 lightView;
     float4x4 lightProjection;
     
     float3 viewPos;
+    
+    float3 lightPosition;
+    float3 placeHolder;
+    float3 placeHolder2;
+    //float3 lightPosition;
+    //float3 placeholder;
     //float time;
 }
 
@@ -76,6 +82,20 @@ PixelInput gbuffer_vertex_main(VertexInput Input)
     
     Output.color = Input.color;
     Output.texCoord = Input.texCoord;
+  
+    //
+    /*
+      - Primero las cordenadas mouse  -> (230, 560)
+      - Normalizamos coordenadas      -> (0.233,0.4556)
+      - Las pasamos a con signo.      -> (-0.4345, 0.15)
+      - Se normaliza a clip space en valor en z = 0.
+      - Se agarra el mismo punto en el max z = 1.
+      - Transformadas inversas y llegas a espacio de world, INVERSA DE VISTA PROYECCIÓN.
+      - Rayo en espacio de mundo.
+      - Se filta con el que tenga la menor distancia.
+  
+  */
+    
     
     return Output;
 }
@@ -93,7 +113,9 @@ GBuffer gbuffer_pixel_main(PixelInput Input)
     normal.xyz = normalize(mul(normal.xyz, TBN));
     
     Output.position = float4(Input.posW, metallic);
+    //Output.position = float4(Input.posW, 1.0f);
     Output.normal = float4(normal.xyz * 0.5f + 0.5f, roughness);
+    //Output.normal = float4(normal.xyz * 0.5f + 0.5f, 1.0f);
     Output.color = diffColor;
     
     return Output;
@@ -116,5 +138,4 @@ ShadowPixel shadow_map_vertex_main(VertexInput Input)
 float4 shadow_map_pixel_main(ShadowPixel Input) : SV_Target
 {
     return float4(0.0f, 0.0f, 0.0f, 1.0f);
-
 }
