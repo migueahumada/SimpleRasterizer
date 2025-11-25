@@ -50,11 +50,11 @@ void SoundEngine::OnStartUp()
   m_mapChannels.find("Channel2")->second->Route(m_mapSubmixes.find("Submix1")->second);
   m_mapChannels.find("Channel3")->second->Route(m_mapSubmixes.find("Submix1")->second);
   
-  m_mapSubmixes.find("Submix1")->second->m_pSubmixVoice->SetVolume(5.0f);
+  m_mapSubmixes.find("Submix1")->second->m_pSubmixVoice->SetVolume(0.01f);
 
-  Play(m_mapChannels.find("Channel1")->second, 0.2f);
-  Play(m_mapChannels.find("Channel2")->second,0.2f);
-  Play(m_mapChannels.find("Channel3")->second, 0.2f);
+  Play(m_mapChannels.find("Channel1")->second, 0.01f);
+  Play(m_mapChannels.find("Channel2")->second,0.01f);
+  Play(m_mapChannels.find("Channel3")->second, 0.01f);
 }
 
 void SoundEngine::OnShutdown()

@@ -42,7 +42,7 @@ bool AudioComponent::Play()
   }
 
 
-  g_soundEngine().Play(m_channel,1.0f);
+  g_soundEngine().Play(m_channel,0.1f);
 
   return true;
 }

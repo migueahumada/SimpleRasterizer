@@ -76,7 +76,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\include\SDL3;$(ProjectDir)inc;$(ProjectDir)inc\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\include\SDL3;$(ProjectDir)inc;$(ProjectDir)inc\imgui;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -108,13 +108,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\include;$(ProjectDir)inc;$(ProjectDir)inc\imgui;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\build\include;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\include;$(ProjectDir)inc;$(ProjectDir)inc\imgui;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\build\include;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\VisualC\x64\Debug;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\build\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL3.lib;%(AdditionalDependencies);dxguid.lib;dxgi.lib;d3d11.lib;d3dcompiler.lib;XAudio2.lib;assimp-vc143-mtd.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\VisualC\x64\Debug;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\build\lib\Debug;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.0\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL3.lib;%(AdditionalDependencies);dxguid.lib;dxgi.lib;d3d11.lib;d3dcompiler.lib;OpenCL.lib;XAudio2.lib;assimp-vc143-mtd.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -125,15 +125,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\include;$(ProjectDir)inc;$(ProjectDir)inc\imgui;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\include;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\build\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\include;$(ProjectDir)inc;$(ProjectDir)inc\imgui;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\include;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\build\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\VisualC\x64\Release;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\build\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL3.lib;%(AdditionalDependencies);dxguid.lib;dxgi.lib;d3d11.lib;d3dcompiler.lib;XAudio2.lib;assimp-vc143-mt.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\VisualC\x64\Release;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\build\lib\Release;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.0\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL3.lib;%(AdditionalDependencies);dxguid.lib;dxgi.lib;d3d11.lib;d3dcompiler.lib;OpenCL.lib;XAudio2.lib;assimp-vc143-mt.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -152,6 +152,7 @@
     <ClCompile Include="src\Channel.cpp" />
     <ClCompile Include="src\Character.cpp" />
     <ClCompile Include="src\Component.cpp" />
+    <ClCompile Include="src\ComputeAPI.cpp" />
     <ClCompile Include="src\EngineCallback.cpp" />
     <ClCompile Include="src\GraphicsAPI.cpp" />
     <ClCompile Include="src\GraphicsBuffer.cpp" />
@@ -213,6 +214,7 @@
     <ClInclude Include="inc\Channel.h" />
     <ClInclude Include="inc\Character.h" />
     <ClInclude Include="inc\Component.h" />
+    <ClInclude Include="inc\ComputeAPI.h" />
     <ClInclude Include="inc\EngineCallback.h" />
     <ClInclude Include="inc\GraphicsAPI.h" />
     <ClInclude Include="inc\GraphicsBuffer.h" />
