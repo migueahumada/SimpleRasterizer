@@ -2,6 +2,7 @@
 #include "HelperMacros.h"
 #include <xaudio2.h>
 #include <xaudio2fx.h>
+#include <x3daudio.h>
 
 class Submix;
 class VoiceCallback;
@@ -38,7 +39,7 @@ class Channel
   unsigned int m_inputChannels;
   unsigned int m_inputSampleRate;
   
-  XAUDIO2_VOICE_STATE m_voiceState;
+  XAUDIO2_VOICE_STATE m_voiceState{0};
 
   //Sends 
   XAUDIO2_VOICE_SENDS m_sends{ 0 };
@@ -48,5 +49,8 @@ class Channel
   XAUDIO2_EFFECT_CHAIN m_fxs{ 0 };
   Vector<XAUDIO2_EFFECT_DESCRIPTOR> m_fxsList;
 
+  bool m_isSpatialized = false;
+  X3DAUDIO_EMITTER m_emitter{0};
+  X3DAUDIO_DSP_SETTINGS m_dspSettings{0};
 };
 

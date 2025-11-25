@@ -2,6 +2,7 @@
 #include "Module.h"
 #include "AudioDevice.h"
 #include "AudioAPI.h"
+#include "Master.h"
 
 using ChannelMap = Map<String, SPtr<Channel>>;
 using AudioMap = Map<String, SPtr<Audio>>;
@@ -17,7 +18,7 @@ class SoundEngine : public Module<SoundEngine>
   virtual void OnStartUp() override;
   virtual void OnShutdown() override;
 
-  void Play(const WPtr<Channel>& channel, float volume = 0.0f);
+  void Play(const WPtr<Channel>& channel, float volume = 1.0f);
 
   void Update();
 
@@ -39,6 +40,10 @@ class SoundEngine : public Module<SoundEngine>
                      int32 numChannels,
                      int32 inSampleRate);
 
+  uint8 getMainOutputNumChannels()
+  {
+    return m_pMasterOutput->getOutputNumChannels();
+  }
  protected:
 
   SPtr<Master> m_pMasterOutput;

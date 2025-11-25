@@ -218,27 +218,20 @@ void ImGuiAPI::SetSoundEngineUI(bool bSet)
 
 		style->Colors[ImGuiCol_FrameBg] = m_BgWaveformColor;
 		
-		ImGui::PlotLines(g_soundEngine().GetAudios().find("Audio1")->first.c_str(),
-			g_soundEngine().GetAudios().find("Audio1")->second->getAmplitudeSamples().data(),
-			g_soundEngine().GetAudios().find("Audio1")->second->getAmplitudeSamples().size(),
-			0,
-			g_soundEngine().GetAudios().find("Audio1")->first.c_str(),
-			-1.0f, 1.0f, ImVec2(ImGui::GetWindowSize().x, 150.0f), 4);
-			
 
-		ImGui::PlotLines(g_soundEngine().GetAudios().find("Audio2")->first.c_str(),
-			g_soundEngine().GetAudios().find("Audio2")->second->getAmplitudeSamples().data(),
-			g_soundEngine().GetAudios().find("Audio2")->second->getAmplitudeSamples().size(),
-			0,
-			g_soundEngine().GetAudios().find("Audio2")->first.c_str(),
-			-1.0f, 1.0f, ImVec2(ImGui::GetWindowSize().x, 150.0f), 4);
-
-		ImGui::PlotLines(g_soundEngine().GetAudios().find("Audio3")->first.c_str(),
-			g_soundEngine().GetAudios().find("Audio3")->second->getAmplitudeSamples().data(),
-			g_soundEngine().GetAudios().find("Audio3")->second->getAmplitudeSamples().size(),
-			0,
-			g_soundEngine().GetAudios().find("Audio3")->first.c_str(),
-			-1.0f, 1.0f, ImVec2(ImGui::GetWindowSize().x, 150.0f), 4);
+		
+		for ( Map<String, SPtr<Audio>>::const_iterator it = g_soundEngine().GetAudios().begin(),
+					itEnd = g_soundEngine().GetAudios().end();
+				 it != itEnd;
+				 ++it)
+		{
+			ImGui::PlotLines(it->first.c_str(),
+				it->second->getAmplitudeSamples().data(),
+				it->second->getAmplitudeSamples().size(),
+				0,
+				it->first.c_str(),
+				-1.0f, 1.0f, ImVec2(ImGui::GetWindowSize().x, 150.0f), 4);
+		}
 
 		style->Colors[ImGuiCol_FrameBg] = LastColor;
 	}

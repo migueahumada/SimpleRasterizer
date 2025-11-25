@@ -11,7 +11,6 @@
 #include "Texture.h"
 #include "Camera.h"
 #include "GraphicsAPI.h"
-#include "AudioAPI.h"
 #include "Character.h"
 #include "World.h"
 #include "Actor.h"
@@ -95,10 +94,12 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	auto pWndHandle = SDL_GetPointerProperty(	SDL_GetWindowProperties(g_pWindow),
 											SDL_PROP_WINDOW_WIN32_HWND_POINTER, 
 											nullptr);
-	if (pWndHandle)
+	if (!pWndHandle)
 	{
-		GraphicsAPI::StartUp(pWndHandle);
+		return SDL_AppResult::SDL_APP_FAILURE;
 	}
+	
+	GraphicsAPI::StartUp(pWndHandle);
 
 	g_pCamera = make_shared<Camera>();
 	g_pWorld = make_shared<World>();
@@ -156,34 +157,6 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																											Vector3(-3.0f, 0.0f, 0.0f),
 																											Vector3(1.0f, 1.0f, 1.0f));
 	g_pSecondaryActor->SetName("Pyramid Head");
-	
-	
-	
-
-	//g_audioAPI().Init();
-
-	//g_pCallback = make_shared<VoiceCallback>();
-
-	//g_pMaster = g_audioAPI().CreateMaster();
-
-	//g_audioAPI().Init3DAudio(g_pMaster);
-
-	//g_pSubmix = g_audioAPI().CreateSubmix(2, 48000);
-	//
-	//g_pSound = g_audioAPI().CreateSoundEffect("Mark",
-	//																					"./audio/MX_Menu_Loop.wav", g_pCallback);
-	//
-	//g_pSound2 = g_audioAPI().CreateSoundEffect("Woosh",
-	//																					"./audio/Audio_001.wav");
-
-	//g_pSound->RouteTo(g_pSubmix);
-	//g_pSound2->RouteTo(g_pSubmix);
-
-	//g_pSound->getSourceVoice()->SetFrequencyRatio(1.2f);
-	//g_pSubmix->getSubmixVoice()->SetVolume(1.0f);
-	//g_audioAPI().Play(g_pSound, 0.8f);
-	//g_audioAPI().Play(g_pSound2, 0.3f);
-
 	
 
 	int32_t cursorData[2] = { 0, 0 };
@@ -344,7 +317,6 @@ void SDL_AppQuit(void* appstate, SDL_AppResult result)
 	
 	AudioAPI::Shutdown();
 	SoundEngine::Shutdown();
-	
 	ImGuiAPI::Shutdown();
 	ResourceManager::Shutdown();
 	Renderer::Shutdown();

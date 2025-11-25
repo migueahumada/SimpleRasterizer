@@ -36,14 +36,6 @@ void SoundEngine::OnStartUp()
 
   SPtr<Submix> pSubmix = g_audioAPI().CreateSubmix();
 
-  //SPtr<Channel> pEmptyChannel = g_audioAPI().CreateChannel(2, 48000);
-  //if (!pEmptyChannel)
-  //{
-  //  return;
-  //}
-
-  /*pEmptyChannel->SubmitAudio(pAudio);*/
-
   m_mapChannels.insert({"Channel1", pChannel});
   m_mapChannels.insert({ "Channel2", pChannel2 });
   m_mapChannels.insert({ "Channel3", pChannel3 });
@@ -63,8 +55,6 @@ void SoundEngine::OnStartUp()
   Play(m_mapChannels.find("Channel1")->second, 0.2f);
   Play(m_mapChannels.find("Channel2")->second,0.2f);
   Play(m_mapChannels.find("Channel3")->second, 0.2f);
-
-  //float add = m_mapAudios.find("Audio1")->second->getSample(450);
 }
 
 void SoundEngine::OnShutdown()
@@ -82,8 +72,7 @@ void SoundEngine::Play(const WPtr<Channel>& channel, float volume)
 
   CHANNEL->m_pSourceVoice->SetVolume(volume);
 
-  CHANNEL->m_pSourceVoice->Start(0);
-  
+  CHANNEL->m_pSourceVoice->Start(0); 
 }
 
 void SoundEngine::Update()

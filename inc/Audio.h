@@ -65,7 +65,7 @@ public:
 	//How many bytes per samples -> bitdepth / 8
 	inline const uint8 getBytesPerSample() const
 	{
-		return m_bitDepth / 8;
+		return m_bitDepth >> 3;
 	}
 
 	//What's the sample rate
@@ -105,6 +105,8 @@ protected:
 	WAVEFORMATEXTENSIBLE m_waveFile{ 0 };
 	XAUDIO2_BUFFER m_buffer{ 0 };
 
+	//TODO: use this
+	Vector<float> m_floatSamples;
 	uint8 m_numChannels;
 	uint32 m_sampleRate;
 	uint8 m_bitDepth;

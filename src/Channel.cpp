@@ -2,12 +2,24 @@
 #include "Audio.h"
 #include "Submix.h"
 #include "AudioAPI.h"
+#include "SoundEngine.h"
 
 Channel::Channel(unsigned int inputChannels, 
                  unsigned int inputSampleRate)
   : m_inputChannels(inputChannels),
     m_inputSampleRate(inputSampleRate)
 {
+  if (m_isSpatialized)
+  {
+    m_emitter.ChannelCount = 1;
+    m_emitter.CurveDistanceScaler = m_emitter.DopplerScaler = 1.0f;
+
+    FLOAT32* matrix = new FLOAT32[g_soundEngine().getMainOutputNumChannels()];
+    m_dspSettings.SrcChannelCount = 1;
+    m_dspSettings.DstChannelCount = g_soundEngine().getMainOutputNumChannels();
+    m_dspSettings.pMatrixCoefficients = matrix;
+  }
+  
 }
 
 Channel::~Channel()

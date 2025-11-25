@@ -42,12 +42,6 @@ bool AudioComponent::Play()
   }
 
 
-
-  if (m_channel.expired())
-  {
-    auto AUDIO = m_audio.lock();
-  }
-
   g_soundEngine().Play(m_channel,1.0f);
 
   return true;
