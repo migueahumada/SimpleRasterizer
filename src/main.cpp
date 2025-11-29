@@ -20,6 +20,7 @@
 #include "Model.h"
 #include "ResourceManager.h"
 #include "SoundEngine.h"
+#include "ComputeAPI.h"
 #include "UUID.h"
 
 
@@ -109,6 +110,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	SoundEngine::StartUp();
 	ResourceManager::StartUp();
 	ImGuiAPI::StartUp(g_pWindow, g_pWorld, g_pCamera);
+	ComputeAPI::StartUp();
 
 	g_imguiAPI().Init(g_graphicsAPI().m_pDevice, g_graphicsAPI().m_pDeviceContext);
 
@@ -321,7 +323,7 @@ void SDL_AppQuit(void* appstate, SDL_AppResult result)
 	ResourceManager::Shutdown();
 	Renderer::Shutdown();
 	GraphicsAPI::Shutdown();
-
+	ComputeAPI::Shutdown();
 	
 
 	if (g_pWindow)

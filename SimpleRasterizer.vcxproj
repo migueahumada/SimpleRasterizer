@@ -92,7 +92,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\include\SDL3;$(ProjectDir)inc;$(ProjectDir)inc\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\include\SDL3;$(ProjectDir)inc;$(ProjectDir)inc\imgui;$(CUDA_PATH)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -108,7 +108,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\include;$(ProjectDir)inc;$(ProjectDir)inc\imgui;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\build\include;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\include;$(ProjectDir)inc;$(ProjectDir)inc\imgui;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\build\include;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\include;$(CUDA_PATH)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -125,7 +125,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\include;$(ProjectDir)inc;$(ProjectDir)inc\imgui;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\include;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\build\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\include;$(ProjectDir)inc;$(ProjectDir)inc\imgui;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\include;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\build\include;$(CUDA_PATH)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -166,6 +166,7 @@
     <ClCompile Include="src\imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="src\imgui\imgui_tables.cpp" />
     <ClCompile Include="src\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\Kernel.cpp" />
     <ClCompile Include="src\Light.cpp" />
     <ClCompile Include="src\main.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
@@ -230,6 +231,7 @@
     <ClInclude Include="inc\imgui\imstb_rectpack.h" />
     <ClInclude Include="inc\imgui\imstb_textedit.h" />
     <ClInclude Include="inc\imgui\imstb_truetype.h" />
+    <ClInclude Include="inc\Kernel.h" />
     <ClInclude Include="inc\Light.h" />
     <ClInclude Include="inc\Master.h" />
     <ClInclude Include="inc\Material.h" />
@@ -304,6 +306,12 @@
     <Media Include="audio\AudioPrueba.wav" />
     <Media Include="audio\Audio_001.wav" />
     <Media Include="audio\MX_Menu_Loop.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="compute\default.cl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

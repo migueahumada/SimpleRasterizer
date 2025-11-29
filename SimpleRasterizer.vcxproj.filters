@@ -64,6 +64,15 @@
     <Filter Include="Header Files\GameFramework\Components">
       <UniqueIdentifier>{1a1c0cbd-5e7f-4885-99ed-7ea191c5376b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Compute">
+      <UniqueIdentifier>{30e01d60-d7e9-4c68-8d61-4f6ce45332cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Compute">
+      <UniqueIdentifier>{ba011a08-a15f-4235-85b1-d7e80201cdb3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Compute">
+      <UniqueIdentifier>{4dcf8b00-efb4-40de-bbd3-8a2a31cdd00f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp.bak">
@@ -215,6 +224,12 @@
     </ClCompile>
     <ClCompile Include="src\ResourceManager.cpp">
       <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Kernel.cpp">
+      <Filter>Source Files\Compute</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ComputeAPI.cpp">
+      <Filter>Source Files\Compute</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -371,6 +386,12 @@
     <ClInclude Include="inc\ResourceManager.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
+    <ClInclude Include="inc\Kernel.h">
+      <Filter>Header Files\Compute</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ComputeAPI.h">
+      <Filter>Header Files\Compute</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\Light1.hlsl">
@@ -405,5 +426,10 @@
     <Media Include="audio\MX_Menu_Loop.wav">
       <Filter>Resource Files\Audio</Filter>
     </Media>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="compute\default.cl">
+      <Filter>Resource Files\Compute</Filter>
+    </None>
   </ItemGroup>
 </Project>
