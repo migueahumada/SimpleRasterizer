@@ -370,9 +370,11 @@ float4 ao_main(PixelInput Input) : SV_Target
     for (int i = 0; i < iterations; ++i)
     {
         float2 coord1 = reflect(vec[i], random) * radius;
+    //Giro del vector de 45°
         float2 coord2 = float2(coord1.x * 0.707f - coord1.y * 0.707f,
                                coord1.x * 0.707f + coord1.y * 0.707f);
         
+    //Escalado de diferntes distancias
         ao += DoAmbientOcclussion(Input.texCoord, coord1 * 0.25, pos.xyz, normal);
         ao += DoAmbientOcclussion(Input.texCoord, coord2 * 0.50, pos.xyz, normal);
         ao += DoAmbientOcclussion(Input.texCoord, coord1 * 0.75, pos.xyz, normal);

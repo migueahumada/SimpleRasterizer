@@ -36,7 +36,7 @@ bool Model::LoadFromFile(const char* filePath)
     Vector<float2> temp_tc;
     Vector<Vector3> temp_norm;
 
-    UnorderedMap<FaceVertex, uint32> uniqueVertices;
+    UMap<FaceVertex, uint32> uniqueVertices;
 
     for (const auto& line: lines)
     {

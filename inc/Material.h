@@ -54,7 +54,7 @@ public:
 
 	void SetMaterialTexture(const String& path, TextureType::E textureType);
 
-	UnorderedMap<TextureType::E, String> m_filePaths;
+	UMap<TextureType::E, String> m_filePaths;
 
 
 private:

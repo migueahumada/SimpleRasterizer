@@ -1,6 +1,6 @@
 #include "ComputeAPI.h"
 #include <fstream>
-
+#include "GraphicsAPI.h"
 
 
 ComputeAPI& g_ComputeAPI()
@@ -10,42 +10,86 @@ ComputeAPI& g_ComputeAPI()
 
 void ComputeAPI::OnStartUp()
 {
+  //Error code
   cl_int err;
-  cl_uint numPlatforms;
 
+  //Plataforma y dispositivos
+  cl_uint numPlatforms;
   err = clGetPlatformIDs(0, nullptr, &numPlatforms);
-  THROW_ON_ERROR(err, "No compute num platforms found");
+  THROW_ON_ERROR(err, "No compute platforms found");
 
   Vector<cl_platform_id> platforms(numPlatforms);
   err = clGetPlatformIDs(numPlatforms, platforms.data(), nullptr);
-  THROW_ON_ERROR(err, "No compute platforms found");
-
-  for (cl_uint i = 0; i < numPlatforms; ++i)
+  THROW_ON_ERROR(err, "No compute platform list found");
+  
+  if (m_useDirectX)
   {
-    cl_platform_id& curPlatform = platforms[i];
-
-    m_numDevices = 0;
-    err = clGetDeviceIDs(curPlatform, CL_DEVICE_TYPE_ALL, 0, nullptr, &m_numDevices);
-    THROW_ON_ERROR(err, "No OpenCL devices found");
-
-    Vector<cl_device_id> devices(m_numDevices);
-    clGetDeviceIDs(curPlatform, CL_DEVICE_TYPE_ALL, m_numDevices, devices.data(), nullptr);
-    for (cl_uint j = 0; j < m_numDevices; ++j)
+    cl_platform_id extPlatform = nullptr;
+    for (auto p : platforms)
     {
-
-      cl_device_id& currDevice = devices[j];
-
-      size_t infoSize = 0;
-      clGetDeviceInfo(currDevice, CL_DEVICE_NAME, 0, nullptr, &infoSize);
-
-      Vector<char> deviceName(infoSize);
-      clGetDeviceInfo(currDevice, CL_DEVICE_NAME, infoSize, deviceName.data(), nullptr);
-
-      std::cout << "Device " << j << ".- " << deviceName.data() << std::endl;
+      if (hasPlatformExtension(p, "cl_nv_d3d11_sharing"))
+      {
+        extPlatform = p;
+        break;
+      }
     }
 
+    auto clGetDeviceIDsFromD3D11NV = (clGetDeviceIDsFromD3D11NV_fn)clGetExtensionFunctionAddressForPlatform(extPlatform, "clGetDeviceIDsFromD3D11NV");
+    auto clCreateFromD3D11BufferNV = (clCreateFromD3D11BufferNV_fn)clGetExtensionFunctionAddressForPlatform(extPlatform, "clCreateFromD3D11BufferNV");
+    auto clCreateFromD3D11Texture2DNV = (clCreateFromD3D11Texture2DNV_fn)clGetExtensionFunctionAddressForPlatform(extPlatform, "clCreateFromD3D11Texture2DNV");
+    auto clCreateFromD3D11Texture3DNV = (clCreateFromD3D11Texture3DNV_fn)clGetExtensionFunctionAddressForPlatform(extPlatform, "clCreateFromD3D11Texture3DNV");
+    auto clEnqueueAcquireD3D11ObjectsNV = (clEnqueueAcquireD3D11ObjectsNV_fn)clGetExtensionFunctionAddressForPlatform(extPlatform, "clEnqueueAcquireD3D11ObjectsNV");
+    auto clEnqueueReleaseD3D11ObjectsNV = (clEnqueueReleaseD3D11ObjectsNV_fn)clGetExtensionFunctionAddressForPlatform(extPlatform, "clEnqueueReleaseD3D11ObjectsNV");
+
+    cl_platform_id& curPlatform = platforms[0];
+
+    cl_uint numDevices = 0;
+    err = clGetDeviceIDsFromD3D11NV(curPlatform, 
+                                    CL_D3D11_DEVICE_NV, 
+                                    g_graphicsAPI().m_pDevice,
+                                    CL_PREFERRED_DEVICES_FOR_D3D11_NV,
+                                    0, nullptr,&numDevices);
+    THROW_ON_ERROR(err,"No DirectX devices found");
+
+    Vector<cl_device_id> devices(numDevices);
+    err = clGetDeviceIDsFromD3D11NV(curPlatform, 
+                                    CL_D3D11_DEVICE_NV,
+                                    g_graphicsAPI().m_pDevice,
+                                    CL_PREFERRED_DEVICES_FOR_D3D11_NV,
+                                    numDevices, devices.data(), nullptr);
     m_device = devices[0];
   }
+  else
+  {
+    for (cl_uint i = 0; i < numPlatforms; ++i)
+    {
+      cl_platform_id& curPlatform = platforms[i];
+
+      m_numDevices = 0;
+      err = clGetDeviceIDs(curPlatform, CL_DEVICE_TYPE_ALL, 0, nullptr, &m_numDevices);
+      THROW_ON_ERROR(err, "No OpenCL devices found");
+
+      Vector<cl_device_id> devices(m_numDevices);
+      clGetDeviceIDs(curPlatform, CL_DEVICE_TYPE_ALL, m_numDevices, devices.data(), nullptr);
+      for (cl_uint j = 0; j < m_numDevices; ++j)
+      {
+
+        cl_device_id& currDevice = devices[j];
+
+        size_t infoSize = 0;
+        clGetDeviceInfo(currDevice, CL_DEVICE_NAME, 0, nullptr, &infoSize);
+
+        Vector<char> deviceName(infoSize);
+        clGetDeviceInfo(currDevice, CL_DEVICE_NAME, infoSize, deviceName.data(), nullptr);
+
+        std::cout << "Device " << j << ".- " << deviceName.data() << std::endl;
+      }
+
+      m_device = devices[0];
+    }
+  }
+
+  
 
   m_context = clCreateContext(nullptr, 1, &m_device, nullptr, nullptr, &err);
   THROW_ON_ERROR(err, "Failed to create compute context");
@@ -78,8 +122,6 @@ void ComputeAPI::OnStartUp()
   auto myKernel = m_kernelMap.find("New Kernel");
 
   size_t globalWorkSize = numElements;
-
-  
 
   bool value1 = ConfigureKernel(myKernel->second, 0, sizeof(cl_mem),  &aKernelBuffer->getBuffer());
   
@@ -200,6 +242,20 @@ bool ComputeAPI::ConfigureKernel(const UPtr<Kernel>& kernel,
 
   return true;
   
+}
+
+bool ComputeAPI::hasPlatformExtension(cl_platform_id platform,
+                                      const char* nameExtension)
+{
+  
+  size_t size = 0;
+  clGetPlatformInfo(platform, CL_PLATFORM_EXTENSIONS,0, nullptr, &size);
+  
+  String strExtensions(size,'\0');
+  clGetPlatformInfo(platform, CL_PLATFORM_EXTENSIONS, size,
+                    &strExtensions[0], nullptr);
+  
+  return strExtensions.find(nameExtension) != std::string::npos;
 }
 
 

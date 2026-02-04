@@ -105,7 +105,7 @@ namespace MKEngine{
 		auto CAMERA = m_pCamera.lock();
 
 		CAMERA->SetLookAt(Vector3(0, 0, -6.0f), Vector3(0, 0, 0), Vector3(0, 1, 0));		//Setea la matriz de la cámara
-		CAMERA->SetPerspective(3.141592653f / 4.0f, width, height, 0.1f, 1000.0f);
+		CAMERA->SetPerspective(3.141592653f / 4.0f, (float)width, (float)height, 0.1f, 1000.0f);
 	}
 
 	void MKRenderer::InitWVP()
@@ -489,14 +489,14 @@ namespace MKEngine{
 		};
 
 		g_graphicsAPI().m_pDeviceContext->VSSetShader(m_pVS_ShadowMap->m_pVertexShader,
-			nullptr,
-			0);
+																									nullptr,
+																									0);
 		g_graphicsAPI().m_pDeviceContext->PSSetShader(m_pPS_ShadowMap->m_pPixelShader,
-			nullptr,
-			0);
+																									nullptr,
+																									0);
 		g_graphicsAPI().m_pDeviceContext->OMSetRenderTargets(renderTargets.size(),
-			renderTargets.data(),
-			m_dsShadowMap.m_pDSV);
+																												 renderTargets.data(),
+																												 m_dsShadowMap.m_pDSV);
 
 		for (auto& actor : WORLD->getActors())
 		{

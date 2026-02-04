@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+
 #include <map>
 #include <cassert>
 
@@ -11,7 +12,18 @@
 #define SAFE_RELEASE(p) { if(p){p->Release(); p = nullptr;} }
 #define SHOW_ERROR(msg) {MessageBox(nullptr,msg, L"Error",MB_OK);}
 
-#define XAUDIO
+
+
+#if defined (_WIN32) || defined (_WIN64)
+	#define DX11
+	#define XAUDIO
+#elif defined(__APPLE__) && defined(__MACH__)
+	#define METAL
+	#define CORE_AUDIO
+#elif defined(__linux__)
+	#define OPEN_GL
+	#define OPEN_AL
+#endif
 
 //SMART POINTERS
 template <typename T>
@@ -31,7 +43,7 @@ template <typename T>
 using Vector = std::vector<T>;
 
 template <typename K, typename V>
-using UnorderedMap = std::unordered_map<K, V>;
+using UMap = std::unordered_map<K, V>;
 
 template <typename K, typename V>
 using Map = std::map<K, V>;

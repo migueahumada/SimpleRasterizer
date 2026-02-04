@@ -125,7 +125,7 @@ void Renderer::InitCamera(int width, int height)
 	auto CAMERA = m_pCamera.lock();
 
 	CAMERA->SetLookAt(Vector3(0, 0, -6.0f), Vector3(0, 0, 0), Vector3(0, 1, 0));		//Setea la matriz de la cámara
-	CAMERA->SetPerspective(3.141592653f / 4.0f, width, height, 0.1f, 1000.0f);
+	CAMERA->SetPerspective(3.141592653f / 4.0f, (float)width, (float)height, 0.1f, 1000.0f);
 }
 
 void Renderer::InitWVP()
@@ -816,7 +816,7 @@ void Renderer::SetShadowPass()
 	g_graphicsAPI().m_pDeviceContext->PSSetShader(m_pPS_ShadowMap->m_pPixelShader,
 		nullptr,
 		0);
-	g_graphicsAPI().m_pDeviceContext->OMSetRenderTargets(renderTargets.size(),
+	g_graphicsAPI().m_pDeviceContext->OMSetRenderTargets((UINT)renderTargets.size(),
 																						 renderTargets.data(),
 																						 m_dsShadowMap.m_pDSV);
 

@@ -47,9 +47,6 @@ struct __declspec(align(16)) MatrixCollection
   //float time;
 };
 
-
-
-
 namespace ShadingState{
   enum E {
     FORWARD,
@@ -144,7 +141,7 @@ public:
     return m_WVP;
   }
 
-  bool m_bGeometryHit;
+  bool m_bGeometryHit {false};
 
   bool m_hit{ false };
   void Pick();
@@ -154,23 +151,19 @@ private:
 
   void OnShutdown() override;
 
-  void RenderActor(const WPtr<Character>& character, bool bDrawWithTextures);
+  void RenderActor(const WPtr<Character>& character, 
+                   bool bDrawWithTextures);
   void RenderShadows(const WPtr<Character>& character);
   void CreateDefaultSRV(UINT color, 
-                        DefaultTextures::E defaultTextureType, DXGI_FORMAT format = DXGI_FORMAT_B8G8R8A8_UNORM);
-  
-  
-  
+                        DefaultTextures::E defaultTextureType, 
+                        DXGI_FORMAT format = DXGI_FORMAT_B8G8R8A8_UNORM);
 
   bool RayTriangle(const Vector3& rayOrigin,
-    const Vector3& rayDir,
-    const Vector3& v0,
-    const Vector3& v1,
-    const Vector3& v2,
-    float& t);
-
-
-
+                   const Vector3& rayDir,
+                   const Vector3& v0,
+                   const Vector3& v1,
+                   const Vector3& v2,
+                   float& t);
   
 private:
   
@@ -197,14 +190,13 @@ private:
   SPtr<VertexShader> m_pVS_Forward;
   SPtr<PixelShader> m_pPS_Forward;
 
-  UnorderedMap<RasterStates::E, ID3D11RasterizerState1*> m_RasterStates;
-  UnorderedMap<SamplerStates::E, ID3D11SamplerState*> m_SamplerStates;
+  UMap<RasterStates::E, ID3D11RasterizerState1*> m_RasterStates;
+  UMap<SamplerStates::E, ID3D11SamplerState*> m_SamplerStates;
 
-  UnorderedMap<DefaultTextures::E, ID3D11ShaderResourceView*> m_DefaultTextures; 
+  UMap<DefaultTextures::E, ID3D11ShaderResourceView*> m_DefaultTextures;
 
   Vector<Texture> m_GBuffer;
   Texture m_dsShadowMap;
-  //TODOOOO
   Texture m_forwardRTV;
 
   ShadingState::E m_currentShadingState{ShadingState::DEFERRED};

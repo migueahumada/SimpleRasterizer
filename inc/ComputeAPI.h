@@ -3,6 +3,9 @@
 #include "Module.h"
 #include <CL/cl.h>
 #include <iostream>
+#ifdef DX11
+  #include <CL/cl_d3d11_ext.h>
+#endif
 #include "Kernel.h"
 /*
   Macro for doing something when the message
@@ -18,6 +21,7 @@
 }                                                  \
 
 using KernelMap = Map<String, UPtr<Kernel>>;
+
 
 class ComputeAPI : public Module<ComputeAPI>
 {
@@ -43,12 +47,20 @@ class ComputeAPI : public Module<ComputeAPI>
                        cl_uint argIndex,
                        size_t size,
                        const void* kernelBuffer);
+  
+  bool hasPlatformExtension(cl_platform_id platform, 
+                            const char* nameExtension);
 
  private:
+
+  
+
   cl_device_id m_device {0};
   cl_context m_context {0};
   cl_command_queue m_cmdQueue {0};
   cl_uint m_numDevices {0};
+
+  bool m_useDirectX{false};
   
   /*
     Holds all the Kernel Objects
