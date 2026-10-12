@@ -29,7 +29,7 @@ void Character::Init()
   m_localTransform.setRotation(Vector3(0.0f, 180.0f,0.0f));
   m_localTransform.setScale(m_scaleOffset);
 
-  m_audioComponent = make_unique<AudioComponent>("Prueba1","D:/Coding/C++/SimpleRasterizer/audio/MX_Menu_Loop.wav");
+  m_audioComponent = make_unique<AudioComponent>("Prueba1","audio/MX_Menu_Loop.wav");
 
   m_audioComponent->Play();
 

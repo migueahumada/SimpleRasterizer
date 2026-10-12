@@ -24,11 +24,11 @@ void SoundEngine::OnStartUp()
   g_audioAPI().Init3DAudio(m_pMasterOutput);
 
   SPtr<Audio> pAudio = g_audioAPI().CreateAudio("Audio x",
-    "D:/Coding/C++/SimpleRasterizer/audio/Audio_001.wav");
+    "audio/Audio_001.wav");
   SPtr<Audio> pAudio2 = g_audioAPI().CreateAudio("Draggin Rock",
-    "D:/Coding/C++/SimpleRasterizer/audio/DraggingRock.wav");
+    "audio/DraggingRock.wav");
   SPtr<Audio> pAudio3 = g_audioAPI().CreateAudio("Laser Gun",
-    "D:/Coding/C++/SimpleRasterizer/audio/LaserGun.wav");
+    "audio/LaserGun.wav");
 
   SPtr<Channel> pChannel = g_audioAPI().CreateChannel(pAudio, 2, 48000);
   SPtr<Channel> pChannel2 = g_audioAPI().CreateChannel(pAudio2, 2, 48000);

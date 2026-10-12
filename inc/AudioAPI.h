@@ -82,26 +82,5 @@ private:
 /// <param name="from">submix o audio fuente</param>
 /// <param name="to">submix destino, no puede ser audio</param>
 /// <param name="flags"> banderas extras de xaudio </param>
-template<typename T, typename S>
-void AudioAPI::RouteTo(const SPtr<T>& from, const SPtr<S>& to, unsigned int flags)
-{
-  static_assert(std::is_base_of<Audio,T>::value || 
-                std::is_base_of<Submix,T>::value,
-                "T must be deribed from Audio or Channel");
-  static_assert(std::is_base_of<Submix, S>::value,
-                "S must be deribed from Audio or Channel");
- 
-
-  auto FROM = from.lock();
-  auto TO = to.lock();
-
-  XAUDIO2_SEND_DESCRIPTOR sendDesc{0};
-  memset(&sendDesc, 0, sizeof(XAUDIO2_SEND_DESCRIPTOR));
-
-  if (typeid(T) == Audio)
-  {
-    printf("This is audio");
-  }
-}
 
 AudioAPI& g_audioAPI();

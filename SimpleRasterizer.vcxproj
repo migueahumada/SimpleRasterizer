@@ -108,12 +108,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\include;$(ProjectDir)inc;$(ProjectDir)inc\imgui;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\build\include;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\nagat\Documents\Coding\DevLibs\SDL-release-3.2.4\SDL-release-3.2.4\include;$(ProjectDir)inc;$(ProjectDir)inc\imgui;C:\Users\nagat\Documents\Coding\DevLibs\assimp-6.0.1\assimp-6.0.1\build\include;C:\Users\nagat\Documents\Coding\DevLibs\assimp-6.0.1\assimp-6.0.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\Coding\Libs\SDL-release-3.2.4\SDL-release-3.2.4\VisualC\x64\Debug;D:\Coding\Libs\assimp-6.0.1\assimp-6.0.1\build\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\nagat\Documents\Coding\DevLibs\SDL-release-3.2.4\SDL-release-3.2.4\VisualC\x64\Debug;C:\Users\nagat\Documents\Coding\DevLibs\assimp-6.0.1\assimp-6.0.1\build\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL3.lib;%(AdditionalDependencies);dxguid.lib;dxgi.lib;d3d11.lib;d3dcompiler.lib;XAudio2.lib;assimp-vc143-mtd.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

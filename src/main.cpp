@@ -131,19 +131,19 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	g_pWorld->Init();
 
 	g_pFourthActor = g_pWorld->SpawnActor<Character>(nullptr,
-		"D:/Coding/C++/SimpleRasterizer/Models/DiscFloor/Disc.obj",
+		"Models/DiscFloor/Disc.obj",
 		Vector3(0.0f, 0.0f, 0.0f),
 		Vector3(4.0f, 4.0f, 4.0f));
 	g_pFourthActor->SetName("Floor");
 
 	g_pSeventhActor = g_pWorld->SpawnActor<Character>(nullptr,
-		"D:/Models3D/RexTestModel/Rex_mat.obj",
+		"Models/RexTestModel/Rex_mat.obj",
 		Vector3(0.0f, 0.0f, 0.0f),
 		Vector3(1.0f, 1.0f, 1.0f));
 
 	g_pSeventhActor->SetName("REX");
 
-	
+	/*
 	
 	g_pSecondaryActor = g_pWorld->SpawnActor<Character>(nullptr,
 																											"D:/Models3D/brr_brr_patapim_game_ready_3d_model_free/BrainRot.obj",
@@ -156,7 +156,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 																											"D:/Models3D/PlayStation 2 - Silent Hill 2 - Pyramid Head/PyramidHead.obj",
 																											Vector3(-3.0f, 0.0f, 0.0f),
 																											Vector3(1.0f, 1.0f, 1.0f));
-	g_pSecondaryActor->SetName("Pyramid Head");
+	g_pSecondaryActor->SetName("Pyramid Head");*/
 	
 
 	int32_t cursorData[2] = { 0, 0 };
